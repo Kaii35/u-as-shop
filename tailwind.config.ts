@@ -27,6 +27,10 @@ export default {
           dark: '#8A3621',
           soft: '#F7E9E4',
         },
+        // Alias semanticos al estilo shadcn, para que los componentes de
+        // terceros que esperan bg-background / text-foreground funcionen.
+        background: '#FFFFFF',
+        foreground: '#141110',
         ok: '#2F6B4F',
         warn: '#9A6B1F',
         danger: '#B3261E',

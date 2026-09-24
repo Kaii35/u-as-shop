@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, CreditCard, Headset, ShieldCheck, Truck } from 'lucide-react';
 import { brands, categories, media, products } from '../data/catalog';
 import { cn, isEmail } from '../lib/utils';
@@ -8,6 +8,7 @@ import { ProductGrid } from '../components/ProductCard';
 import { Button } from '../components/ui/Button';
 import { Reveal } from '../components/ui/Overlays';
 import { Img, SectionHeading } from '../components/ui/Primitives';
+import { MinimalistHero } from '@/components/ui/minimalist-hero';
 import type { ProductTag } from '../types';
 
 const TABS: Array<{ id: string; label: string; test: (p: (typeof products)[number]) => boolean }> = [
@@ -39,33 +40,37 @@ export default function Home() {
 }
 
 /**
- * Banner de entrada. Apaisado y de alto acotado: en una tienda el trabajo del
- * hero es llevar al catálogo, no ocupar la primera pantalla entera.
+ * Banner de entrada (componente MinimalistHero).
+ *
+ * Se apagan su cabecera y su pie: la tienda ya tiene header con buscador,
+ * carrito y cuenta, y footer propio, así que mostrarlos duplicaría el menú.
+ * El círculo va en terracota de marca en vez del amarillo del original, y la
+ * foto se enmascara en círculo porque el catálogo son fotos rectangulares,
+ * no recortes PNG con fondo transparente.
  */
 function Hero() {
+  const navigate = useNavigate();
   return (
-    <section className="container-x pt-4 md:pt-6">
-      <div className="relative overflow-hidden rounded-lg border border-line bg-sand">
-        <div className="absolute inset-0">
-          <Img src={media.heroMain} alt="" label="Campaña Aurelle" />
-        </div>
-        {/* El degradado garantiza contraste del texto sobre cualquier foto. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-white/10 md:to-transparent" />
-        <div className="relative flex min-h-[260px] max-w-[540px] flex-col items-start justify-center gap-3 p-6 md:min-h-[320px] md:p-10">
-          <span className="kicker">Temporada 2026</span>
-          <h1 className="display text-h2 text-balance md:text-h1">
-            Todo para tu estación, en un solo lugar.
-          </h1>
-          <p className="max-w-[42ch] text-body text-ash md:text-lead">
-            Esmaltes, geles, herramientas y nail art de las marcas que usan las profesionales.
-          </p>
-          <div className="flex flex-wrap gap-2 pt-1">
-            <Link to="/tienda"><Button size="lg">Ver catálogo <ArrowRight size={15} strokeWidth={2} /></Button></Link>
-            <Link to="/tienda?oferta=1"><Button size="lg" variant="secondary">Ofertas</Button></Link>
-          </div>
-        </div>
-      </div>
-    </section>
+    <div className="container-x">
+      <MinimalistHero
+        className="h-auto min-h-[520px] px-0 py-8 md:min-h-[600px] md:px-0 md:py-10"
+        showHeader={false}
+        showFooter={false}
+        logoText="Aurelle"
+        navLinks={[]}
+        socialLinks={[]}
+        locationText=""
+        mainText="Esmaltes, geles, herramientas y nail art de las marcas que usan las profesionales. Envíos a toda Colombia."
+        readMoreLink="/tienda"
+        readMoreLabel="Ver catálogo"
+        onReadMore={() => navigate('/tienda')}
+        imageSrc="/images/editorial/hero-portrait.jpg"
+        imageAlt="Manos con manicura profesional"
+        imageShape="circle"
+        accentClassName="bg-clay-soft"
+        overlayText={{ part1: 'menos', part2: 'es más.' }}
+      />
+    </div>
   );
 }
 
