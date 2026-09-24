@@ -6,16 +6,17 @@ export const slugify = (s: string) =>
   normalize(s).replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 /**
- * Imágenes de campaña. Las actuales son placeholders SVG generados en la paleta
- * de la marca (/public/images/editorial). Reemplázalas por tus fotos reales.
+ * Imágenes de campaña (fotografía, licencia Unsplash). El hero está recortado
+ * apaisado y con el sujeto a la derecha, porque su mitad izquierda queda bajo
+ * el degradado y el titular.
  */
 export const media: Record<'heroMain' | 'heroDetail' | 'editMain' | 'editDetail' | 'login' | 'register', string | undefined> = {
-  heroMain: '/images/editorial/hero-main.svg',
-  heroDetail: '/images/editorial/hero-detail.svg',
-  editMain: '/images/editorial/edit-main.svg',
-  editDetail: '/images/editorial/edit-detail.svg',
-  login: '/images/editorial/auth-login.svg',
-  register: '/images/editorial/auth-register.svg',
+  heroMain: '/images/editorial/hero-main.jpg',
+  heroDetail: '/images/editorial/hero-detail.jpg',
+  editMain: '/images/editorial/edit-main.jpg',
+  editDetail: '/images/editorial/edit-detail.jpg',
+  login: '/images/editorial/auth-login.jpg',
+  register: '/images/editorial/auth-register.jpg',
 };
 
 const CATS: Array<[string, string, string, string, string]> = [
@@ -50,7 +51,7 @@ const CATS: Array<[string, string, string, string, string]> = [
 
 export const categories: Category[] = CATS.map(([id, name, description]) => ({
   id, name, description, slug: slugify(name),
-  image: `/images/categories/${id}.svg`,
+  image: `/images/categories/${id}.jpg`,
 }));
 
 export const brands: Brand[] = ['Velours Pro', 'Nácar Lab', 'Atelier Nº9', 'Lumière Gel', 'Solenne', 'Kirei', 'Maré Cosmetics', 'Oriel Lash']

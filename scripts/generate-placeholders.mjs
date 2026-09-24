@@ -243,7 +243,7 @@ function packshot(obj, shades, variant) {
   return canvas(W, H, { defs: obj.defs, body }, tint);
 }
 
-/* ---------- editorial ---------- */
+/* ---------- motivos editoriales (sin uso actual, se conservan por si vuelven) ---------- */
 const NAIL_COLS = ['#D9A5AE', '#E3C1B3', '#9E1F36', '#5E2433', '#EBC3C6', '#C7B8E0', '#7A5347', '#F1E6DF'];
 const shine = `<path d="M-31 62 C-33 -8 -25 -54 0 -60 C10 -56 18 -42 23 -22 L-26 30 Z" fill="#fff" opacity=".2"/>`;
 
@@ -314,24 +314,7 @@ for (const [pid, make] of Object.entries(PRODUCTS)) {
   for (const v of ['a', 'b']) { const [obj, shades] = make(); write(`products/${pid}-${v}.svg`, packshot(obj, shades, v)); }
 }
 
-const CATS = {
-  c1: () => O.slim('#EFE6DF'), c2: () => O.bottle('#9E1F36'), c3: () => O.jar('#EDE7E2'),
-  c4: () => O.crystals(), c5: () => O.lamp(), c6: () => O.lashes(),
-  c7: () => O.tube('#F3E4E6'), c8: () => O.pump('#CFA07C'), c9: () => O.organizer(),
-};
-for (const [cid, make] of Object.entries(CATS)) {
-  const obj = make();
-  const body = `<circle cx="${W / 2}" cy="440" r="290" fill="#fff" opacity=".38"/>
-    <g transform="translate(${W / 2},500) rotate(-6) scale(1.05)">${obj.body}</g>
-    <rect y="${H * 0.45}" width="${W}" height="${H * 0.55}" fill="${P.ink}" opacity=".08"/>`;
-  write(`categories/${cid}.svg`, canvas(W, H, { defs: obj.defs, body }, { a: P.nude, b: P.blush, c: mix(P.blush, P.wine, 0.3) }));
-}
-
-write('editorial/hero-main.svg', editorial(1200, 1500, { motif: 'wheel' }));
-write('editorial/hero-detail.svg', editorial(700, 700, { motif: 'closeup', cols: ['#D9A5AE', '#9E1F36', '#E3C1B3'], tint: { a: P.nude, b: P.blush, c: mix(P.blush, P.wine, 0.25) } }));
-write('editorial/edit-main.svg', editorial(1000, 1300, { motif: 'wheel', cols: CHROME.concat(['#D9A5AE', '#5E2433', '#C7B8E0', '#F1E6DF', '#9E1F36', '#E3C1B3']), tint: { a: P.ivory, b: P.blush, c: mix(P.blush, P.wine, 0.35) } }));
-write('editorial/edit-detail.svg', editorial(800, 800, { motif: 'object', obj: O.crystals(), tint: { a: P.nude, b: P.blush, c: P.blush } }));
-write('editorial/auth-login.svg', editorial(1000, 1400, { motif: 'wheel', tint: { a: P.blush, b: mix(P.blush, P.wine, 0.2), c: P.wine } }));
-write('editorial/auth-register.svg', editorial(1000, 1400, { motif: 'closeup', cols: ['#E3C1B3', '#D9A5AE', '#5E2433'], tint: { a: P.nude, b: P.blush, c: mix(P.wine, P.blush, 0.4) } }));
+// Las categorías y las piezas editoriales usan fotografía (public/images/categories
+// y /editorial); este script sólo genera los packshots de producto.
 
 console.log('listo');

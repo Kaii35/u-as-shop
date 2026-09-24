@@ -52,18 +52,26 @@ src/
 
 ## Imágenes
 
-Las imágenes actuales son **placeholders SVG** generados en la paleta de la marca, para
-poder ver el diseño completo antes de tener fotos reales. Están en `public/images/`:
+Dos tipos, a propósito:
 
-| Carpeta | Contenido | Se usa en |
+| Carpeta | Qué es | Se usa en |
 | --- | --- | --- |
-| `products/pN-a.svg`, `pN-b.svg` | Packshot de cada producto; la `-b` es la vista al hover | `images` de cada producto |
-| `categories/cN.svg` | Una por categoría | propiedad `image` de la categoría |
-| `editorial/` | `hero-main`, `hero-detail`, `edit-main`, `edit-detail`, `auth-login`, `auth-register` | objeto `media` |
+| `public/images/editorial/` | Fotografía real (licencia Unsplash: uso comercial libre, sin atribución obligatoria) | objeto `media` |
+| `public/images/categories/` | Fotografía real, una por categoría | propiedad `image` de la categoría |
+| `public/images/products/` | Packshots vectoriales generados en la paleta de la marca, `pN-a.svg` + `pN-b.svg` (la `-b` es la vista al hover) | `images` de cada producto |
 
-Para poner las fotos reales, sustituye el archivo conservando el nombre, o edita las rutas
-en `data/catalog.ts` (`media`, `image` de categoría y `images` de producto). Formato
-recomendado: 4:5 (800 × 1000) para producto y categoría.
+Los productos siguen siendo ilustraciones porque el stock libre no tiene packshots de
+insumos profesionales (builder gel, polygel, torno, lash lift, foils cromados): una foto
+aproximada mostraría el producto equivocado. Al ser todos iguales, la grilla se ve
+consistente. Sustitúyelos por tus fotos de producto cuando las tengas.
+
+**Proporciones.** Cada recorte está hecho a la medida de su contenedor, no a un 4:5
+genérico: la grilla de categorías es un bento con tarjetas apaisadas de distinta relación
+(6×2, 3×1, 6×1, 4×2, 4×1) y el hero es apaisado con el sujeto desplazado a la derecha,
+porque su mitad izquierda queda bajo el degradado y el titular. Si cambias una imagen,
+respeta la proporción de la que reemplazas o el `object-cover` volverá a recortar de más.
+
+Para regenerar los packshots de producto: `node scripts/generate-placeholders.mjs public/images`.
 
 ## Siguiente paso: conectar backend
 
