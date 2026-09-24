@@ -7,12 +7,19 @@ import { useStore } from '../store/StoreContext';
 import { NAV_ITEMS } from './Header';
 import { Logo } from './ui/Primitives';
 
-const PAYMENTS = ['VISA', 'Mastercard', 'AMEX', 'PSE', 'Nequi', 'Daviplata', 'Contra entrega'];
+const PAYMENTS = ['VISA', 'Mastercard', 'AMEX', 'PSE', 'Nequi', 'Daviplata'];
 const SOCIAL = [
   { label: 'Instagram', Icon: Instagram },
   { label: 'TikTok', Icon: Music2 },
   { label: 'Facebook', Icon: Facebook },
   { label: 'YouTube', Icon: Youtube },
+];
+const HELP = [
+  ['WhatsApp +57 310 000 0000', '#'],
+  ['hola@aurelle.co', 'mailto:hola@aurelle.co'],
+  ['Envíos y entregas', '#'],
+  ['Cambios y devoluciones', '#'],
+  ['Preguntas frecuentes', '#'],
 ];
 
 export function Footer() {
@@ -23,59 +30,69 @@ export function Footer() {
     setEmail('');
     notify({ title: 'Suscripción confirmada', description: 'Revisa tu correo: te enviamos tu código' });
   };
-  const col = 'flex flex-col gap-3 text-[14.5px] font-light';
-  const head = 'mb-1.5 text-[11px] font-medium uppercase tracking-[.2em] text-blush';
+  const col = 'flex flex-col gap-2 text-body';
+  const head = 'text-meta font-semibold uppercase tracking-[.1em] text-white/45';
+  const link = 'text-white/70 transition-colors hover:text-white';
 
   return (
-    <footer className="container-x bg-ink pb-8 pt-[clamp(56px,6vw,96px)] text-ivory">
-      <div className="grid gap-[clamp(32px,4vw,56px)] sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
-        <div className="flex max-w-[380px] flex-col gap-[18px]">
-          <Logo size="lg" light />
-          <p className="text-[15px] font-light leading-relaxed">
-            Insumos profesionales para uñas, pestañas, piel y cuidado personal, seleccionados para quienes hacen de la belleza su oficio.
+    <footer className="bg-ink text-white">
+      <div className="container-x grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+        <div className="flex max-w-[340px] flex-col gap-3">
+          <Logo light />
+          <p className="text-body text-white/70">
+            Insumos profesionales para uñas, pestañas y cuidado personal. Envíos a toda Colombia.
           </p>
-          <div className="flex gap-1.5 rounded-full border border-ivory/25 p-[5px]">
-            <input value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && subscribe()} placeholder="Tu correo" aria-label="Correo para el newsletter" className="h-[42px] min-w-0 flex-1 bg-transparent px-4 text-sm outline-none placeholder:text-ivory/60" />
-            <button onClick={subscribe} aria-label="Suscribirme" className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-blush text-wine"><ArrowRight size={16} strokeWidth={1.5} /></button>
+          <div className="flex gap-1.5 pt-1">
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && subscribe()}
+              placeholder="Tu correo"
+              aria-label="Correo para el newsletter"
+              className="h-10 min-w-0 flex-1 rounded border border-white/20 bg-transparent px-3 text-body outline-none transition-colors placeholder:text-white/40 focus:border-white/50"
+            />
+            <button onClick={subscribe} aria-label="Suscribirme" className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded bg-clay text-white transition-colors hover:bg-clay-dark">
+              <ArrowRight size={16} strokeWidth={2} />
+            </button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 pt-1">
             {SOCIAL.map(({ label, Icon }) => (
-              <a key={label} href="#" aria-label={label} className="flex h-[42px] w-[42px] items-center justify-center rounded-full border border-ivory/25 transition-colors hover:bg-ivory hover:text-ink">
-                <Icon size={16} strokeWidth={1.5} />
+              <a key={label} href="#" aria-label={label} className="flex h-9 w-9 items-center justify-center rounded border border-white/20 text-white/70 transition-colors hover:border-white hover:text-white">
+                <Icon size={15} strokeWidth={2} />
               </a>
             ))}
           </div>
         </div>
         <div className={col}>
-          <span className={head}>Tienda</span>
-          {NAV_ITEMS.map((n) => <Link key={n.label} to={n.to} className="hover:text-blush">{n.label}</Link>)}
-          <Link to="/cuenta" className="hover:text-blush">Mi cuenta</Link>
+          <span className={head}>Comprar</span>
+          {NAV_ITEMS.map((n) => <Link key={n.label} to={n.to} className={link}>{n.label}</Link>)}
         </div>
         <div className={col}>
           <span className={head}>Categorías</span>
-          {categories.map((c) => <Link key={c.id} to={`/tienda?cat=${c.slug}`} className="hover:text-blush">{c.name}</Link>)}
+          {categories.slice(0, 6).map((c) => <Link key={c.id} to={`/tienda?cat=${c.slug}`} className={link}>{c.name}</Link>)}
+          <Link to="/tienda" className="text-clay-soft transition-colors hover:text-white">Ver todas</Link>
         </div>
         <div className={col}>
-          <span className={head}>Atención al cliente</span>
-          <a href="#">WhatsApp +57 310 000 0000</a>
-          <a href="mailto:hola@aurelle.co">hola@aurelle.co</a>
-          <a href="#">Envíos y entregas</a>
-          <a href="#">Cambios y devoluciones</a>
-          <a href="#">Preguntas frecuentes</a>
-          <span className="text-[13px] text-blush">Lunes a sábado · 8:00 a. m. – 7:00 p. m.</span>
+          <span className={head}>Ayuda</span>
+          {HELP.map(([label, href]) => <a key={label} href={href} className={link}>{label}</a>)}
+          <span className="pt-1 text-meta text-white/45">Lun a sáb · 8:00 a. m. – 7:00 p. m.</span>
         </div>
       </div>
-      <div className="mt-[clamp(40px,5vw,72px)] flex flex-wrap items-center justify-between gap-5 border-t border-ivory/15 pt-6">
-        <div className="flex flex-wrap gap-1.5">
-          {PAYMENTS.map((p) => <span key={p} className="rounded-md border border-ivory/25 px-3 py-[7px] text-[11px] font-semibold tracking-[.08em]">{p}</span>)}
+
+      <div className="container-x flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-white/10 py-5">
+        <div className="flex flex-wrap gap-1">
+          {PAYMENTS.map((p) => (
+            <span key={p} className="rounded-xs border border-white/20 px-2 py-1 text-meta font-semibold text-white/60">{p}</span>
+          ))}
         </div>
-        <div className="flex flex-wrap gap-5 text-[13px] font-light">
-          <a href="#">Política de privacidad</a>
-          <a href="#">Términos y condiciones</a>
-          <span className="text-blush">© {new Date().getFullYear()} Aurelle Professional Beauty</span>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-meta text-white/45">
+          <a href="#" className="transition-colors hover:text-white">Privacidad</a>
+          <a href="#" className="transition-colors hover:text-white">Términos</a>
+          <span>© {new Date().getFullYear()} Aurelle</span>
         </div>
       </div>
-      <div className="h-[72px] md:hidden" />
+      {/* Deja sitio para la barra inferior fija de móvil. */}
+      <div className="h-14 md:hidden" />
     </footer>
   );
 }

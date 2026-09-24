@@ -46,7 +46,7 @@ export default function Register() {
   };
 
   const eye = (
-    <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'} className="flex h-10 w-10 items-center justify-center text-muted">
+    <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'} className="flex h-10 w-10 items-center justify-center text-mist">
       {show ? <EyeOff size={20} strokeWidth={1.5} /> : <Eye size={20} strokeWidth={1.5} />}
     </button>
   );
@@ -56,17 +56,17 @@ export default function Register() {
       reverse
       image={media.register}
       aside={
-        <div className="flex flex-col gap-3 rounded-[20px] bg-ivory/95 px-7 py-[26px]">
-          <span className="text-[11px] font-medium uppercase tracking-[.2em] text-wine">Beneficios de tu cuenta</span>
+        <div className="flex flex-col gap-3 rounded-lg bg-white/95 px-7 py-[26px]">
+          <span className="text-meta font-medium uppercase tracking-[.2em] text-clay">Beneficios de tu cuenta</span>
           {['10% en tu primera compra', 'Seguimiento de pedidos en tiempo real', 'Favoritos y direcciones guardadas'].map((b) => (
-            <span key={b} className="flex items-center gap-2.5 text-[14.5px]"><Check size={16} strokeWidth={1.5} className="text-wine" />{b}</span>
+            <span key={b} className="flex items-center gap-2.5 text-body"><Check size={16} strokeWidth={1.5} className="text-clay" />{b}</span>
           ))}
         </div>
       }
     >
       <form onSubmit={submit} noValidate className="flex flex-col gap-5">
-        <span className="eyebrow">Nueva cuenta</span>
-        <h1 className="h-display text-[clamp(40px,4.4vw,60px)] tracking-[-.03em]">Únete a <em className="text-wine">Aurelle</em></h1>
+        <span className="kicker">Nueva cuenta</span>
+        <h1 className="display text-h3">Únete a <em className="text-clay">Aurelle</em></h1>
         <GoogleButton loading={loading} onClick={() => done('Valentina', 'Ríos', 'valentina.rios@gmail.com')}>Registrarme con Google</GoogleButton>
         <Divider>o con tu correo</Divider>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -82,17 +82,17 @@ export default function Register() {
           <div className="flex gap-1" aria-hidden="true">
             {[0, 1, 2, 3].map((i) => <span key={i} className={cn('h-[3px] flex-1 rounded-full transition-colors', i < score ? STRENGTH_COLOR[score - 1] : 'bg-ink/10')} />)}
           </div>
-          <span className="text-[12.5px] text-muted">{f.pass ? STRENGTH[score] : 'Mínimo 8 caracteres, una mayúscula y un número'}</span>
+          <span className="text-cap text-mist">{f.pass ? STRENGTH[score] : 'Mínimo 8 caracteres, una mayúscula y un número'}</span>
         </div>
         <Input label="Confirmar contraseña" type={show ? 'text' : 'password'} autoComplete="new-password" {...bind('pass2')} />
         <div className="flex flex-col gap-1.5">
           <Checkbox checked={terms} onChange={(v) => { setTerms(v); setErrors((x) => ({ ...x, terms: undefined })); }}>
             Acepto los términos y condiciones y la política de tratamiento de datos.
           </Checkbox>
-          {errors.terms && <span role="alert" className="text-[12.5px] text-danger">{errors.terms}</span>}
+          {errors.terms && <span role="alert" className="text-cap text-danger">{errors.terms}</span>}
         </div>
         <Button type="submit" size="lg" loading={loading}>{loading ? 'Creando tu cuenta…' : 'Crear cuenta'}</Button>
-        <p className="text-center text-[14.5px]">¿Ya tienes cuenta? <Link to="/ingresar" className="font-medium text-wine underline">Iniciar sesión</Link></p>
+        <p className="text-center text-body">¿Ya tienes cuenta? <Link to="/ingresar" className="font-medium text-clay underline">Iniciar sesión</Link></p>
       </form>
     </AuthLayout>
   );

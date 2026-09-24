@@ -8,7 +8,7 @@ import { PRICE_MAX, ProductFilters, type FilterState } from '../components/Produ
 import { Button } from '../components/ui/Button';
 import { CloseButton, Sheet } from '../components/ui/Overlays';
 
-const PAGE = 9;
+const PAGE = 12;
 const SORTS = {
   rel: { label: 'Relevancia', fn: (a: P, b: P) => Number(b.tags.includes('best')) - Number(a.tags.includes('best')) || b.reviewCount - a.reviewCount },
   pop: { label: 'Popularidad', fn: (a: P, b: P) => b.reviewCount - a.reviewCount },
@@ -29,7 +29,9 @@ export default function Shop() {
   const [maxPrice, setMaxPrice] = useState(PRICE_MAX);
   const [onlyStock, setOnlyStock] = useState(false);
   const [minRating, setMinRating] = useState(0);
-  const [sort, setSort] = useState<SortKey>('rel');
+  // El menú enlaza /tienda?orden=nuevo, así que el orden inicial sale de la URL.
+  const urlSort = params.get('orden');
+  const [sort, setSort] = useState<SortKey>(urlSort && urlSort in SORTS ? (urlSort as SortKey) : 'rel');
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [limit, setLimit] = useState(PAGE);
   const [sheet, setSheet] = useState(false);
@@ -92,42 +94,42 @@ export default function Shop() {
   );
 
   return (
-    <div className="container-x pb-[clamp(64px,7vw,110px)] pt-[clamp(20px,3vw,40px)]">
-      <nav aria-label="Migas de pan" className="mb-[22px] flex items-center gap-2 text-[12.5px] text-muted">
-        <Link to="/" className="hover:text-wine">Inicio</Link><span>/</span>
-        <Link to="/tienda" className="hover:text-wine">Tienda</Link>
-        {crumb && <><span>/</span><span className="text-ink">{crumb}</span></>}
+    <div className="container-x pb-section pt-4 md:pb-section-lg">
+      <nav aria-label="Migas de pan" className="mb-3 flex items-center gap-1.5 text-cap text-mist">
+        <Link to="/" className="transition-colors hover:text-clay">Inicio</Link><span className="text-line">/</span>
+        <Link to="/tienda" className="transition-colors hover:text-clay">Tienda</Link>
+        {crumb && <><span className="text-line">/</span><span className="text-ink">{crumb}</span></>}
       </nav>
-      <header className="flex flex-wrap items-end justify-between gap-6 border-b border-ink/10 pb-[clamp(24px,3vw,36px)]">
-        <div className="flex max-w-2xl flex-col gap-3">
-          <h1 className="h-display text-[clamp(40px,5.4vw,80px)] tracking-[-.03em]">{title}</h1>
-          <p className="text-[16.5px] font-light leading-relaxed">{desc}</p>
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
+        <div className="flex max-w-2xl flex-col gap-1">
+          <h1 className="display text-h3">{title}</h1>
+          <p className="max-w-[70ch] text-body text-ash">{desc}</p>
         </div>
-        <label className="flex h-12 w-full items-center gap-2.5 rounded-full border border-ink/20 bg-white px-[18px] text-muted sm:w-[360px]">
-          <Search size={18} strokeWidth={1.5} />
-          <input value={q} onChange={(e) => setParam('q', e.target.value || null)} placeholder="Buscar en la tienda" className="min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none" />
+        <label className="flex h-10 w-full items-center gap-2 rounded border border-line bg-white px-3 text-mist transition-colors focus-within:border-clay sm:w-[300px]">
+          <Search size={16} strokeWidth={2} />
+          <input value={q} onChange={(e) => setParam('q', e.target.value || null)} placeholder="Buscar en la tienda" className="min-w-0 flex-1 bg-transparent text-body text-ink outline-none placeholder:text-mist" />
         </label>
       </header>
 
-      <div className="mt-[clamp(20px,2.4vw,32px)] grid items-start gap-[clamp(28px,3.4vw,56px)] md:grid-cols-[248px_minmax(0,1fr)]">
-        <aside className="sticky top-[150px] hidden max-h-[calc(100vh-170px)] overflow-auto pr-1 md:block" aria-label="Filtros">{filterPanel}</aside>
+      <div className="mt-4 grid items-start gap-6 md:grid-cols-[208px_minmax(0,1fr)]">
+        <aside className="sticky top-28 hidden max-h-[calc(100vh-8rem)] overflow-auto pr-1 md:block" aria-label="Filtros">{filterPanel}</aside>
 
         <div className="min-w-0">
-          <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3.5">
-            <div className="flex items-center gap-3">
-              <Button size="sm" variant="secondary" className="md:hidden" onClick={() => setSheet(true)}>
-                <SlidersHorizontal size={16} strokeWidth={1.5} /> Filtros{chips.length ? ` (${chips.length})` : ''}
-              </Button>
-              <span className="text-sm text-muted">{results.length} {results.length === 1 ? 'producto' : 'productos'}</span>
-            </div>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
-              <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Ordenar por" className="h-11 cursor-pointer rounded-full border border-ink/20 bg-white px-4 text-sm outline-none">
+              <Button size="sm" variant="secondary" className="md:hidden" onClick={() => setSheet(true)}>
+                <SlidersHorizontal size={14} strokeWidth={2} /> Filtros{chips.length ? ` (${chips.length})` : ''}
+              </Button>
+              <span className="tnum text-cap text-mist">{results.length} {results.length === 1 ? 'producto' : 'productos'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Ordenar por" className="h-9 cursor-pointer rounded border border-line bg-white px-2.5 text-body outline-none transition-colors hover:border-ink">
                 {Object.entries(SORTS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
               </select>
-              <div className="flex rounded-full border border-ink/20 p-[3px]" role="group" aria-label="Vista">
+              <div className="flex rounded border border-line p-0.5" role="group" aria-label="Vista">
                 {([['grid', LayoutGrid], ['list', List]] as const).map(([v, Icon]) => (
-                  <button key={v} onClick={() => setView(v)} aria-pressed={view === v} aria-label={v === 'grid' ? 'Cuadrícula' : 'Lista'} className={cn('flex h-9 w-[38px] items-center justify-center rounded-full', view === v && 'bg-ink text-ivory')}>
-                    <Icon size={16} strokeWidth={1.5} />
+                  <button key={v} onClick={() => setView(v)} aria-pressed={view === v} aria-label={v === 'grid' ? 'Cuadrícula' : 'Lista'} className={cn('flex h-7 w-8 cursor-pointer items-center justify-center rounded-xs transition-colors', view === v ? 'bg-ink text-white' : 'text-mist hover:text-ink')}>
+                    <Icon size={14} strokeWidth={2} />
                   </button>
                 ))}
               </div>
@@ -135,42 +137,42 @@ export default function Shop() {
           </div>
 
           {chips.length > 0 && (
-            <div className="mb-6 flex flex-wrap items-center gap-2">
+            <div className="mb-4 flex flex-wrap items-center gap-1.5">
               {chips.map((c) => (
-                <button key={c.label} onClick={c.remove} className="flex h-[34px] items-center gap-2 rounded-full bg-nude pl-3.5 pr-2.5 text-[13px] text-wine hover:bg-blush">
-                  {c.label} <X size={14} strokeWidth={1.5} />
+                <button key={c.label} onClick={c.remove} className="flex h-7 cursor-pointer items-center gap-1.5 rounded border border-line bg-sand pl-2.5 pr-2 text-cap text-ash transition-colors hover:border-clay hover:text-clay">
+                  {c.label} <X size={12} strokeWidth={2} />
                 </button>
               ))}
-              <button onClick={clearAll} className="px-1.5 text-[13px] underline">Limpiar todo</button>
+              <button onClick={clearAll} className="cursor-pointer px-1.5 text-cap text-clay underline underline-offset-4">Limpiar todo</button>
             </div>
           )}
 
           {results.length ? (
             <ProductGrid products={results.slice(0, limit)} layout={view} />
           ) : (
-            <div className="flex flex-col items-center gap-4 px-5 py-20 text-center">
-              <span className="flex h-[88px] w-[88px] items-center justify-center rounded-full bg-nude text-wine"><Search size={28} strokeWidth={1.2} /></span>
-              <h3 className="font-display text-[30px]">No encontramos coincidencias</h3>
-              <p className="max-w-[380px] font-light text-muted">Prueba con menos filtros o busca por marca o categoría.</p>
+            <div className="flex flex-col items-center gap-3 px-5 py-16 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-sand text-clay"><Search size={22} strokeWidth={1.75} /></span>
+              <h3 className="display text-h4">No encontramos coincidencias</h3>
+              <p className="max-w-[44ch] text-body text-mist">Prueba con menos filtros o busca por marca o categoría.</p>
               <Button onClick={clearAll}>Limpiar filtros</Button>
             </div>
           )}
 
           {results.length > limit && (
-            <div className="mt-12 flex justify-center">
-              <Button variant="secondary" onClick={() => setLimit((l) => l + 6)}>Cargar más productos</Button>
+            <div className="mt-7 flex justify-center">
+              <Button variant="secondary" onClick={() => setLimit((l) => l + PAGE)}>Cargar más productos</Button>
             </div>
           )}
         </div>
       </div>
 
       <Sheet open={sheet} onClose={() => setSheet(false)} side="bottom" label="Filtros">
-        <div className="sticky top-0 z-[2] flex flex-col items-center gap-3.5 bg-ivory px-[22px] pb-2.5 pt-2">
-          <span className="h-1 w-10 rounded-full bg-ink/20" />
-          <div className="flex w-full items-center justify-between"><span className="font-display text-2xl">Filtros</span><CloseButton onClick={() => setSheet(false)} /></div>
+        <div className="sticky top-0 z-[2] flex flex-col items-center gap-2 border-b border-line bg-white px-4 pb-2 pt-2">
+          <span className="h-1 w-9 rounded-full bg-line" />
+          <div className="flex w-full items-center justify-between"><span className="display text-h5">Filtros</span><CloseButton onClick={() => setSheet(false)} /></div>
         </div>
-        <div className="flex-1 overflow-auto px-[22px] pb-4">{filterPanel}</div>
-        <div className="border-t border-ink/10 px-[22px] py-4">
+        <div className="flex-1 overflow-auto px-4 py-4">{filterPanel}</div>
+        <div className="border-t border-line px-4 py-3">
           <Button block size="lg" onClick={() => setSheet(false)}>Ver {results.length} productos</Button>
         </div>
       </Sheet>

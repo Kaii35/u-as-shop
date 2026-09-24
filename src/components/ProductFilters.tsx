@@ -26,22 +26,22 @@ const RATINGS: Array<[number, string]> = [[0, 'Todas'], [4, '4 o más'], [4.5, '
 
 export function ProductFilters({ value, onToggleCategory, onToggleBrand, onChange, onClear }: Props) {
   return (
-    <div className="flex flex-col gap-[30px]">
+    <div className="flex flex-col gap-6">
       <Group title="Categoría">
         {categories.map((c) => (
           <Checkbox key={c.id} checked={value.categories.includes(c.slug)} onChange={() => onToggleCategory(c.slug)}>
-            <span className="flex justify-between gap-2">{c.name}<span className="text-xs text-muted">{products.filter((p) => p.categoryId === c.id).length}</span></span>
+            <span className="flex justify-between gap-2">{c.name}<span className="tnum text-meta text-mist">{products.filter((p) => p.categoryId === c.id).length}</span></span>
           </Checkbox>
         ))}
       </Group>
       <Group title="Marca">
         {brands.map((b) => (
           <Checkbox key={b.slug} checked={value.brands.includes(b.slug)} onChange={() => onToggleBrand(b.slug)}>
-            <span className="flex justify-between gap-2">{b.name}<span className="text-xs text-muted">{products.filter((p) => p.brand === b.name).length}</span></span>
+            <span className="flex justify-between gap-2">{b.name}<span className="tnum text-meta text-mist">{products.filter((p) => p.brand === b.name).length}</span></span>
           </Checkbox>
         ))}
       </Group>
-      <Group title="Precio máximo" aside={<span className="text-sm font-medium text-wine">{formatCOP(value.maxPrice)}</span>}>
+      <Group title="Precio máximo" aside={<span className="tnum text-body font-semibold text-ink">{formatCOP(value.maxPrice)}</span>}>
         <input
           type="range"
           min={PRICE_MIN}
@@ -52,7 +52,7 @@ export function ProductFilters({ value, onToggleCategory, onToggleBrand, onChang
           aria-label="Precio máximo"
           className="w-full"
         />
-        <div className="flex justify-between text-xs text-muted"><span>{formatCOP(PRICE_MIN)}</span><span>{formatCOP(PRICE_MAX)}</span></div>
+        <div className="tnum flex justify-between text-meta text-mist"><span>{formatCOP(PRICE_MIN)}</span><span>{formatCOP(PRICE_MAX)}</span></div>
       </Group>
       <Group title="Valoración">
         {RATINGS.map(([v, l]) => <Checkbox key={v} radio checked={value.minRating === v} onChange={() => onChange({ minRating: v })}>{l}</Checkbox>)}
@@ -61,15 +61,15 @@ export function ProductFilters({ value, onToggleCategory, onToggleBrand, onChang
         <Checkbox checked={value.onlyStock} onChange={(v) => onChange({ onlyStock: v })}>Solo productos disponibles</Checkbox>
         <Checkbox checked={value.onlyOffers} onChange={(v) => onChange({ onlyOffers: v })}>Solo en oferta</Checkbox>
       </Group>
-      <button onClick={onClear} className="link-underline self-start">Limpiar filtros</button>
+      <button onClick={onClear} className="link-arrow self-start">Limpiar filtros</button>
     </div>
   );
 }
 
 function Group({ title, aside, children }: { title: string; aside?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <fieldset className="flex flex-col gap-3.5">
-      <legend className="mb-3.5 flex w-full items-baseline justify-between text-[11px] font-medium uppercase tracking-[.2em]">{title}{aside}</legend>
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 flex w-full items-baseline justify-between text-meta font-semibold uppercase tracking-[.08em] text-ink">{title}{aside}</legend>
       {children}
     </fieldset>
   );

@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img">
 <defs>
 <linearGradient id="bg60" x1="0" y1="0" x2=".6" y2="1">
-<stop offset="0" stop-color="#FAF7F2"/><stop offset=".55" stop-color="#F5E7E8"/><stop offset="1" stop-color="#E8C8CF"/>
+<stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F6F3EF"/><stop offset="1" stop-color="#EFE7E0"/>
 </linearGradient>
 <radialGradient id="v61" cx=".5" cy=".42" r=".72">
-<stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#572B3A" stop-opacity=".16"/>
+<stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#141110" stop-opacity=".07"/>
 </radialGradient>
 <linearGradient id="g59" x1="0" y1="0" x2="1" y2="0">
 <stop offset="0" stop-color="#bba187"/>
@@ -16,12 +16,12 @@
 </defs>
 <rect width="800" height="1000" fill="url(#bg60)"/>
 <circle cx="400" cy="470" r="300" fill="#fff" opacity=".5"/>
-<path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="#E8C8CF" opacity=".45"/>
-<g transform="translate(400,520) rotate(0) scale(1)"><ellipse cx="0" cy="200" rx="80" ry="12.8" fill="#572B3A" opacity=".13"/>
+<path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="#EFE7E0" opacity=".45"/>
+<g transform="translate(400,520) rotate(0) scale(1)"><ellipse cx="0" cy="200" rx="80" ry="12.8" fill="#A8432A" opacity=".13"/>
 <rect x="-62" y="-10" width="124" height="205" rx="30" fill="url(#g59)"/>
 <rect x="-42" y="14" width="14" height="150" rx="7" fill="#fff" opacity=".4"/>
-<rect x="-30" y="-40" width="60" height="32" rx="6" fill="#E8C8CF"/>
-<rect x="-22" y="-155" width="44" height="118" rx="12" fill="#3F1E2A"/>
+<rect x="-30" y="-40" width="60" height="32" rx="6" fill="#EFE7E0"/>
+<rect x="-22" y="-155" width="44" height="118" rx="12" fill="#8A3621"/>
 <rect x="-13" y="-140" width="7" height="80" rx="3.5" fill="#fff" opacity=".28"/>
 <rect x="-70" y="90" width="140" height="42" rx="6" fill="#fff" opacity=".85"/></g>
 <rect width="800" height="1000" fill="url(#v61)"/>

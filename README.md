@@ -80,12 +80,38 @@ Para regenerar los packshots de producto: `node scripts/generate-placeholders.mj
 - **Pagos**: el punto de integración está en `pages/Checkout.tsx → place()`. Pasarelas habituales en Colombia: Wompi, PayU, Mercado Pago, ePayco (tarjeta, PSE, Nequi, Daviplata).
 - **Persistencia**: carrito, favoritos y sesión se guardan en `localStorage` (`aurelle.*`).
 
-## Tokens de diseño
+## Sistema de diseño
 
-Definidos en `tailwind.config.ts`:
+Definido en `tailwind.config.ts` y `src/index.css`. Tres reglas que el código respeta:
+ningún componente escribe un hex ni un tamaño de fuente arbitrario, la escala
+tipográfica tiene 9 pasos y el mayor es 44px, y el espaciado es múltiplo de 4.
 
-- Colores: `blush #E8C8CF`, `nude #F5E7E8`, `ivory #FAF7F2`, `wine #572B3A` / `wine-dark #3F1E2A`, `ink #242124`, `muted #6E6368`
-- Tipografía: `font-display` Bodoni Moda · `font-sans` Jost
-- Utilidades propias en `index.css`: `.eyebrow`, `.label-xs`, `.h-display`, `.container-x`, `.link-underline`
+**Color.** Neutros cálidos, porque la fotografía del sitio es cálida y los grises
+fríos la ensucian. Un solo color saturado, que por eso significa siempre precio,
+oferta o acción.
+
+| Token | Hex | Uso |
+| --- | --- | --- |
+| `ink` | `#141110` | Texto principal, botón primario |
+| `ash` | `#5C554F` | Texto secundario |
+| `mist` | `#8A827B` | Metadatos |
+| `line` | `#E7E2DC` | Bordes y separadores |
+| `sand` | `#F6F3EF` | Superficie alterna |
+| `clay` | `#A8432A` | Acento (`clay-dark`, `clay-soft`) |
+| `ok` / `warn` / `danger` | `#2F6B4F` / `#9A6B1F` / `#B3261E` | Estados |
+
+**Tipografía.** `font-display` Archivo (titulares) · `font-sans` Inter (todo lo demás).
+
+| Paso | px | Paso | px |
+| --- | --- | --- | --- |
+| `text-meta` | 11 | `text-h5` | 18 |
+| `text-cap` | 12 | `text-h4` | 22 |
+| `text-body` | 14 | `text-h3` | 28 |
+| `text-lead` | 16 | `text-h2` | 36 |
+| | | `text-h1` | 44 |
+
+**Utilidades propias** (`index.css`): `.container-x`, `.section-y`, `.display`,
+`.kicker`, `.label-xs`, `.card`, `.row-kv`, `.link-arrow`, `.link-quiet`, `.tnum`
+(cifras de ancho fijo, para que los precios no bailen al cambiar).
 
 Cupón de demo: **PRO10** (10%). Envío gratis desde $250.000.

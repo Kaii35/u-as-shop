@@ -3,22 +3,72 @@
 @tailwind utilities;
 
 @layer base {
-  html { -webkit-font-smoothing: antialiased; }
-  body { @apply bg-ivory font-sans text-ink; }
-  ::selection { @apply bg-blush; }
-  :focus-visible { outline: 2px solid #572B3A; outline-offset: 2px; }
-  input[type='range'] { accent-color: #572B3A; }
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-white text-body text-ink;
+  }
+  ::selection {
+    @apply bg-clay-soft text-clay-dark;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-clay ring-offset-2 ring-offset-white;
+  }
+  input[type='range'] {
+    accent-color: #a8432a;
+  }
+  /* Los números de precio y cantidad no deben bailar de ancho al cambiar. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @layer components {
-  .eyebrow { @apply flex items-center gap-3 text-[11px] font-medium uppercase tracking-[.24em] text-wine; }
-  .eyebrow::before { content: ''; @apply h-px w-8 bg-current; }
-  .label-xs { @apply text-[10.5px] font-medium uppercase tracking-[.2em] text-muted; }
-  .h-display { @apply font-display font-normal leading-none tracking-[-.025em]; }
-  .container-x { @apply px-5 md:px-[clamp(20px,4vw,56px)]; }
-  .link-underline { @apply inline-flex items-center gap-2.5 border-b border-ink pb-1.5 text-[11.5px] font-medium uppercase tracking-[.18em] transition-colors hover:border-wine hover:text-wine; }
+  /* Ancho de página. Un solo lugar define el gutter. */
+  .container-x {
+    @apply mx-auto w-full max-w-[1400px] px-4 md:px-8;
+  }
+  /* Ritmo vertical de sección. */
+  .section-y {
+    @apply py-section md:py-section-lg;
+  }
+
+  /* Etiqueta de sección en versalitas. Sustituye al antiguo .eyebrow con su raya. */
+  .kicker {
+    @apply text-meta font-semibold uppercase tracking-[.12em] text-clay;
+  }
+  .label-xs {
+    @apply text-meta font-medium uppercase tracking-[.08em] text-mist;
+  }
+  /* Titulares: la familia display siempre va con tracking negativo. */
+  .display {
+    @apply font-display font-semibold tracking-[-.02em];
+  }
+
+  .link-quiet {
+    @apply text-ash underline-offset-4 transition-colors hover:text-clay hover:underline;
+  }
+  .link-arrow {
+    @apply inline-flex items-center gap-1.5 text-body font-medium text-ink underline-offset-4 transition-colors hover:text-clay hover:underline;
+  }
+
+  /* Superficie de tarjeta reutilizable. */
+  .card {
+    @apply rounded-lg border border-line bg-white;
+  }
+  /* Fila de datos clave/valor, usada en carrito, checkout y cuenta. */
+  .row-kv {
+    @apply flex items-baseline justify-between gap-4 text-body;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

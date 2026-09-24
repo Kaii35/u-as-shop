@@ -11,21 +11,25 @@ interface FieldProps {
 
 function Field({ id, label, hint, error, className, children }: FieldProps & { id: string; children: ReactNode }) {
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
+    <div className={cn('flex flex-col gap-1.5', className)}>
       {label && (
-        <label htmlFor={id} className="text-[11px] font-medium uppercase tracking-[.14em]">
+        <label htmlFor={id} className="text-cap font-medium text-ash">
           {label}
-          {hint && <span className="ml-2 font-normal normal-case tracking-normal text-muted">{hint}</span>}
+          {hint && <span className="ml-1.5 font-normal text-mist">{hint}</span>}
         </label>
       )}
       {children}
-      {error && <p id={`${id}-err`} role="alert" className="text-[12.5px] text-danger">{error}</p>}
+      {error && <p id={`${id}-err`} role="alert" className="text-cap text-danger">{error}</p>}
     </div>
   );
 }
 
+/** Caja de campo: 40px de alto, esquina de 8px y foco marcado con el acento. */
 const box = (error?: string) =>
-  cn('rounded-xl border bg-white transition-colors focus-within:border-wine', error ? 'border-danger' : 'border-ink/20');
+  cn(
+    'rounded border bg-white transition-colors focus-within:ring-2 focus-within:ring-clay/25',
+    error ? 'border-danger focus-within:border-danger' : 'border-line focus-within:border-clay',
+  );
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement>, FieldProps {
   trailing?: ReactNode;
@@ -39,16 +43,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const fid = id ?? auto;
   return (
     <Field id={fid} label={label} hint={hint} error={error} className={className}>
-      <div className={cn('flex h-[52px] items-center', box(error))}>
+      <div className={cn('flex h-10 items-center', box(error))}>
         <input
           ref={ref}
           id={fid}
           aria-invalid={!!error}
           aria-describedby={error ? `${fid}-err` : undefined}
-          className={cn('h-full min-w-0 flex-1 bg-transparent px-[18px] text-[15.5px] outline-none placeholder:text-muted/70', inputClassName)}
+          className={cn('h-full min-w-0 flex-1 rounded bg-transparent px-3 text-body outline-none placeholder:text-mist', inputClassName)}
           {...rest}
         />
-        {trailing && <div className="pr-1.5">{trailing}</div>}
+        {trailing && <div className="pr-1">{trailing}</div>}
       </div>
     </Field>
   );
@@ -60,7 +64,7 @@ export function Select({ label, hint, error, className, id, children, ...rest }:
   const fid = id ?? auto;
   return (
     <Field id={fid} label={label} hint={hint} error={error} className={className}>
-      <select id={fid} aria-invalid={!!error} className={cn('h-[52px] px-3.5 text-[15px] outline-none', box(error))} {...rest}>
+      <select id={fid} aria-invalid={!!error} className={cn('h-10 cursor-pointer px-2.5 text-body outline-none', box(error))} {...rest}>
         {children}
       </select>
     </Field>
@@ -73,7 +77,7 @@ export function Textarea({ label, hint, error, className, id, ...rest }: Textare
   const fid = id ?? auto;
   return (
     <Field id={fid} label={label} hint={hint} error={error} className={className}>
-      <textarea id={fid} className={cn('resize-y px-[18px] py-3.5 text-[15.5px] leading-normal outline-none', box(error))} {...rest} />
+      <textarea id={fid} className={cn('resize-y px-3 py-2.5 text-body leading-normal outline-none', box(error))} {...rest} />
     </Field>
   );
 }
@@ -87,14 +91,14 @@ export function Checkbox({ checked, onChange, children, radio, className }: {
       role={radio ? 'radio' : 'checkbox'}
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={cn('flex min-h-7 items-start gap-3 text-left text-[14.5px] leading-snug transition-colors hover:text-wine', className)}
+      className={cn('flex min-h-6 cursor-pointer items-start gap-2.5 text-left text-body leading-snug text-ash transition-colors hover:text-ink', className)}
     >
       <span className={cn(
-        'mt-px flex h-[18px] w-[18px] shrink-0 items-center justify-center border transition-colors',
-        radio ? 'rounded-full' : 'rounded-[5px]',
-        checked ? (radio ? 'border-wine' : 'border-wine bg-wine text-ivory') : 'border-ink/30',
+        'mt-px flex h-4 w-4 shrink-0 items-center justify-center border transition-colors',
+        radio ? 'rounded-full' : 'rounded-xs',
+        checked ? (radio ? 'border-clay' : 'border-clay bg-clay text-white') : 'border-line bg-white',
       )}>
-        {checked && (radio ? <span className="h-2.5 w-2.5 rounded-full bg-wine" /> : <Check size={13} strokeWidth={2} />)}
+        {checked && (radio ? <span className="h-2 w-2 rounded-full bg-clay" /> : <Check size={11} strokeWidth={3} />)}
       </span>
       <span className="flex-1">{children}</span>
     </button>

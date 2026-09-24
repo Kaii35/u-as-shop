@@ -2,7 +2,7 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
-type Variant = 'primary' | 'secondary' | 'dark' | 'light' | 'ghost';
+type Variant = 'primary' | 'secondary' | 'accent' | 'light' | 'ghost';
 type Size = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -12,17 +12,21 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
+/**
+ * Botones rectangulares y en caja baja. Los de píldora en versalitas pertenecían
+ * al registro editorial anterior; en una tienda densa restan legibilidad y espacio.
+ */
 const variants: Record<Variant, string> = {
-  primary: 'bg-wine text-ivory hover:bg-wine-dark',
-  secondary: 'border border-ink text-ink hover:bg-ink hover:text-ivory',
-  dark: 'bg-ink text-ivory hover:bg-wine',
-  light: 'bg-ivory text-wine hover:bg-blush',
-  ghost: 'text-ink hover:text-wine',
+  primary: 'bg-ink text-white hover:bg-ash',
+  secondary: 'border border-line bg-white text-ink hover:border-ink',
+  accent: 'bg-clay text-white hover:bg-clay-dark',
+  light: 'bg-white text-ink hover:bg-sand',
+  ghost: 'text-ash hover:bg-sand hover:text-ink',
 };
 const sizes: Record<Size, string> = {
-  sm: 'h-11 px-5 text-[11px]',
-  md: 'h-[52px] px-7 text-xs',
-  lg: 'h-14 px-8 text-xs',
+  sm: 'h-9 gap-1.5 px-3 text-cap',
+  md: 'h-11 gap-2 px-4 text-body',
+  lg: 'h-12 gap-2 px-5 text-body',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -34,12 +38,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center gap-2.5 rounded-full font-medium uppercase tracking-[.15em] transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex cursor-pointer items-center justify-center rounded font-medium transition-colors duration-200 ease-soft disabled:cursor-not-allowed disabled:opacity-45',
         variants[variant], sizes[size], block && 'w-full', className,
       )}
       {...rest}
     >
-      {loading && <Loader2 size={16} className="animate-spin" />}
+      {loading && <Loader2 size={15} className="animate-spin" />}
       {children}
     </button>
   );
@@ -49,12 +53,12 @@ export function IconButton({ className, label, badge, ...rest }: ButtonHTMLAttri
   return (
     <button
       aria-label={label}
-      className={cn('relative flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-nude', className)}
+      className={cn('relative flex h-10 w-10 cursor-pointer items-center justify-center rounded text-ink transition-colors hover:bg-sand', className)}
       {...rest}
     >
       {rest.children}
       {!!badge && (
-        <span className="absolute right-1 top-1 min-w-[17px] rounded-full bg-wine px-1 text-center text-[10px] font-semibold leading-[17px] text-ivory">
+        <span className="tnum absolute right-0.5 top-0.5 min-w-[16px] rounded-full bg-clay px-1 text-center text-[10px] font-semibold leading-4 text-white">
           {badge}
         </span>
       )}

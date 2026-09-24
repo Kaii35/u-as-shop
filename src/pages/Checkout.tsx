@@ -98,10 +98,10 @@ export default function Checkout() {
   if (placed) {
     return (
       <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="container-x flex flex-col items-center gap-5 py-[clamp(40px,8vw,120px)] text-center">
-        <span className="flex h-[92px] w-[92px] items-center justify-center rounded-full bg-wine text-ivory"><Check size={30} strokeWidth={1.2} /></span>
-        <span className="text-[11px] font-medium uppercase tracking-[.24em] text-wine">Pedido {placed.number}</span>
-        <h1 className="h-display text-[clamp(40px,5vw,72px)] tracking-[-.03em]">Gracias, <em className="text-wine">{placed.name}.</em></h1>
-        <p className="max-w-[480px] text-[17px] font-light leading-relaxed">Recibimos tu pedido por {formatCOP(placed.total)}. Te enviamos la confirmación por correo y te avisaremos cuando salga hacia tu dirección.</p>
+        <span className="flex h-[92px] w-[92px] items-center justify-center rounded-full bg-clay text-white"><Check size={30} strokeWidth={1.2} /></span>
+        <span className="text-meta font-medium uppercase tracking-[.24em] text-clay">Pedido {placed.number}</span>
+        <h1 className="display text-h3">Gracias, <em className="text-clay">{placed.name}.</em></h1>
+        <p className="max-w-[480px] text-lead leading-relaxed">Recibimos tu pedido por {formatCOP(placed.total)}. Te enviamos la confirmación por correo y te avisaremos cuando salga hacia tu dirección.</p>
         <div className="mt-2 flex flex-wrap justify-center gap-2.5">
           <Button onClick={() => navigate(user ? '/cuenta' : '/ingresar')}>Ver mis pedidos</Button>
           <Button variant="secondary" onClick={() => navigate('/tienda')}>Seguir comprando</Button>
@@ -113,7 +113,7 @@ export default function Checkout() {
   if (!cart.length) {
     return (
       <div className="flex flex-col items-center gap-4 px-5 py-24 text-center">
-        <h1 className="font-display text-[40px]">Tu carrito está vacío</h1>
+        <h1 className="display text-h4">Tu carrito está vacío</h1>
         <Link to="/tienda"><Button>Explorar productos</Button></Link>
       </div>
     );
@@ -131,11 +131,11 @@ export default function Checkout() {
               return (
                 <li key={label} className={cn('flex items-center', n < STEPS.length && 'flex-1')}>
                   <button type="button" onClick={() => done && setStep(n)} disabled={!done} aria-current={on ? 'step' : undefined} className="flex shrink-0 items-center gap-2.5 disabled:cursor-default">
-                    <span className={cn('flex h-8 w-8 items-center justify-center rounded-full border text-[13px] font-medium transition-colors',
-                      on ? 'border-wine bg-wine text-ivory' : done ? 'border-ink bg-ink text-ivory' : 'border-ink/25 text-muted')}>
+                    <span className={cn('flex h-8 w-8 items-center justify-center rounded-full border text-cap font-medium transition-colors',
+                      on ? 'border-clay bg-clay text-white' : done ? 'border-ink bg-ink text-white' : 'border-line text-mist')}>
                       {done ? <Check size={14} strokeWidth={2} /> : n}
                     </span>
-                    <span className={cn('text-[13.5px]', on ? 'text-ink' : 'text-muted', !on && 'max-sm:hidden')}>{label}</span>
+                    <span className={cn('text-cap', on ? 'text-ink' : 'text-mist', !on && 'max-sm:hidden')}>{label}</span>
                   </button>
                   {n < STEPS.length && <span className={cn('mx-3 h-px min-w-6 flex-1', done ? 'bg-ink' : 'bg-ink/15')} />}
                 </li>
@@ -149,7 +149,7 @@ export default function Checkout() {
                 <>
                   <div className="flex flex-wrap items-baseline justify-between gap-3">
                     <StepTitle>Información de contacto</StepTitle>
-                    {!user && <Link to="/ingresar" className="text-sm text-wine underline">¿Ya tienes cuenta? Inicia sesión</Link>}
+                    {!user && <Link to="/ingresar" className="text-body text-clay underline">¿Ya tienes cuenta? Inicia sesión</Link>}
                   </div>
                   <Input label="Nombre completo" placeholder="Nombre y apellidos" autoComplete="name" {...bind('name')} />
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -199,7 +199,7 @@ export default function Checkout() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     {PAY_OPTIONS.map((o) => <OptionCard key={o.id} selected={f.pay === o.id} onSelect={() => { set('pay', o.id); setErrors({}); }} label={o.label} desc={o.desc} />)}
                   </div>
-                  <div className="flex flex-col gap-4 rounded-2xl border border-ink/10 bg-white p-6">
+                  <div className="flex flex-col gap-4 rounded-lg border border-line bg-white p-6">
                     {f.pay === 'card' && (
                       <>
                         <Input label="Número de tarjeta" inputMode="numeric" autoComplete="cc-number" placeholder="0000 0000 0000 0000" {...bind('cardNumber')} />
@@ -216,17 +216,17 @@ export default function Checkout() {
                           <option value="">Selecciona tu banco</option>
                           {banks.map((b) => <option key={b}>{b}</option>)}
                         </Select>
-                        <p className="text-sm text-muted">Al confirmar te redirigiremos a PSE para autorizar el débito.</p>
+                        <p className="text-body text-mist">Al confirmar te redirigiremos a PSE para autorizar el débito.</p>
                       </>
                     )}
                     {f.pay === 'wallet' && (
                       <>
                         <Input label="Número Nequi o Daviplata" type="tel" placeholder="300 000 0000" {...bind('wallet')} />
-                        <p className="text-sm text-muted">Recibirás una notificación en tu app para aprobar el pago.</p>
+                        <p className="text-body text-mist">Recibirás una notificación en tu app para aprobar el pago.</p>
                       </>
                     )}
-                    {f.pay === 'cod' && <p className="text-[14.5px] leading-relaxed">Paga en efectivo al recibir tu pedido. Disponible en Bogotá, Medellín, Cali, Barranquilla, Bucaramanga y Pereira.</p>}
-                    <span className="flex items-center gap-2 text-[12.5px] text-muted"><Lock size={16} strokeWidth={1.5} /> Tus datos se procesan de forma cifrada. No almacenamos tu tarjeta.</span>
+                    {f.pay === 'cod' && <p className="text-body leading-relaxed">Paga en efectivo al recibir tu pedido. Disponible en Bogotá, Medellín, Cali, Barranquilla, Bucaramanga y Pereira.</p>}
+                    <span className="flex items-center gap-2 text-cap text-mist"><Lock size={16} strokeWidth={1.5} /> Tus datos se procesan de forma cifrada. No almacenamos tu tarjeta.</span>
                   </div>
                 </>
               )}
@@ -234,7 +234,7 @@ export default function Checkout() {
               {step === 5 && (
                 <>
                   <StepTitle>Revisa y confirma</StepTitle>
-                  <dl className="flex flex-col border-t border-ink/10">
+                  <dl className="flex flex-col border-t border-line">
                     <ReviewRow label="Contacto" value={`${f.name} · ${f.email} · ${f.phone}`} onEdit={() => setStep(1)} />
                     <ReviewRow label="Entrega" value={`${f.address}, ${f.city} · ${f.dept}`} onEdit={() => setStep(2)} />
                     <ReviewRow label="Envío" value={{ std: 'Estándar', exp: 'Express', pick: 'Recoger en showroom' }[f.ship] + ` · ${t.shipping ? formatCOP(t.shipping) : 'Gratis'}`} onEdit={() => setStep(3)} />
@@ -243,7 +243,7 @@ export default function Checkout() {
                   <Checkbox checked={f.terms} onChange={(v) => set('terms', v)}>
                     Acepto los términos y condiciones, la política de privacidad y el tratamiento de mis datos personales.
                   </Checkbox>
-                  {errors.terms && <span role="alert" className="text-[12.5px] text-danger">{errors.terms}</span>}
+                  {errors.terms && <span role="alert" className="text-cap text-danger">{errors.terms}</span>}
                 </>
               )}
             </motion.div>
@@ -270,33 +270,33 @@ export default function Checkout() {
 }
 
 function StepTitle({ children }: { children: ReactNode }) {
-  return <h2 className="font-display text-[clamp(30px,3vw,40px)] leading-[1.05]">{children}</h2>;
+  return <h2 className="display text-h4 leading-[1.05]">{children}</h2>;
 }
 
 function OptionCard({ selected, onSelect, label, desc, aside }: { selected: boolean; onSelect: () => void; label: string; desc: string; aside?: string }) {
   return (
     <button type="button" role="radio" aria-checked={selected} onClick={onSelect}
-      className={cn('flex items-center gap-4 rounded-2xl border p-5 text-left transition-colors', selected ? 'border-wine bg-white' : 'border-ink/15 hover:border-ink/40')}>
-      <span className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded-full border', selected ? 'border-wine' : 'border-ink/30')}>
-        {selected && <span className="h-2.5 w-2.5 rounded-full bg-wine" />}
+      className={cn('flex items-center gap-4 rounded-lg border p-5 text-left transition-colors', selected ? 'border-clay bg-white' : 'border-line hover:border-ink/40')}>
+      <span className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded-full border', selected ? 'border-clay' : 'border-line')}>
+        {selected && <span className="h-2.5 w-2.5 rounded-full bg-clay" />}
       </span>
       <span className="flex flex-1 flex-col gap-1">
-        <span className="text-[15.5px] font-medium">{label}</span>
-        <span className="text-[13.5px] text-muted">{desc}</span>
+        <span className="text-body font-medium">{label}</span>
+        <span className="text-cap text-mist">{desc}</span>
       </span>
-      {aside && <span className="text-[15px] font-medium text-wine">{aside}</span>}
+      {aside && <span className="text-body font-medium text-clay">{aside}</span>}
     </button>
   );
 }
 
 function ReviewRow({ label, value, onEdit }: { label: string; value: string; onEdit: () => void }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-ink/10 py-[18px]">
+    <div className="flex justify-between gap-4 border-b border-line py-[18px]">
       <div className="flex flex-col gap-1">
         <dt className="label-xs">{label}</dt>
-        <dd className="text-[15px]">{value}</dd>
+        <dd className="text-body">{value}</dd>
       </div>
-      <button onClick={onEdit} className="text-sm text-wine underline">Editar</button>
+      <button onClick={onEdit} className="text-body text-clay underline">Editar</button>
     </div>
   );
 }

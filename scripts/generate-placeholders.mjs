@@ -2,7 +2,16 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const OUT = process.argv[2];
-const P = { blush: '#E8C8CF', nude: '#F5E7E8', ivory: '#FAF7F2', wine: '#572B3A', wineDark: '#3F1E2A', ink: '#242124' };
+// Paleta del sistema de diseno (ver tailwind.config.ts). Los nombres se conservan
+// por compatibilidad con los dibujos; los valores son los del sistema actual.
+const P = {
+  blush: '#EFE7E0',   // tinte calido claro
+  nude: '#F6F3EF',    // sand
+  ivory: '#FFFFFF',
+  wine: '#A8432A',    // clay
+  wineDark: '#8A3621',
+  ink: '#141110',
+};
 
 /* ---------- color helpers ---------- */
 const hex2rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -209,7 +218,7 @@ const O = {
 };
 
 /* ---------- lienzo ---------- */
-function canvas(w, h, inner, { a = P.ivory, b = P.nude, c = P.blush } = {}) {
+function canvas(w, h, inner, { a = '#FFFFFF', b = P.nude, c = P.blush } = {}) {
   const bg = id('bg'); const vg = id('v');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img">
   <defs>
@@ -217,7 +226,7 @@ function canvas(w, h, inner, { a = P.ivory, b = P.nude, c = P.blush } = {}) {
       <stop offset="0" stop-color="${a}"/><stop offset=".55" stop-color="${b}"/><stop offset="1" stop-color="${c}"/>
     </linearGradient>
     <radialGradient id="${vg}" cx=".5" cy=".42" r=".72">
-      <stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="${P.wine}" stop-opacity=".16"/>
+      <stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="${P.ink}" stop-opacity=".07"/>
     </radialGradient>
     ${inner.defs ?? ''}
   </defs>
@@ -239,7 +248,7 @@ function packshot(obj, shades, variant) {
     <path d="M0 ${H} L0 ${H - 210} Q ${W / 2} ${H - 330} ${W} ${H - 210} L${W} ${H} Z" fill="${P.blush}" opacity=".45"/>
     <g transform="translate(${W / 2},${isB ? 545 : 520}) rotate(${isB ? -14 : 0}) scale(${isB ? 1.34 : 1})">${obj.body}</g>
     ${swatches}`;
-  const tint = isB ? { a: P.nude, b: P.blush, c: mix(P.blush, P.wine, 0.18) } : {};
+  const tint = isB ? { a: P.nude, b: P.blush, c: mix(P.blush, P.wine, 0.12) } : {};
   return canvas(W, H, { defs: obj.defs, body }, tint);
 }
 

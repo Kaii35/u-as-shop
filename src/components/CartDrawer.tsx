@@ -16,10 +16,10 @@ export function CouponField() {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex gap-2">
-        <input value={code} onChange={(e) => { setCode(e.target.value); setMsg(''); }} onKeyDown={(e) => e.key === 'Enter' && apply()} placeholder="Cupón de descuento" aria-label="Cupón de descuento" className="h-11 min-w-0 flex-1 rounded-full border border-ink/20 bg-ivory px-4 text-sm uppercase outline-none focus:border-wine" />
+        <input value={code} onChange={(e) => { setCode(e.target.value); setMsg(''); }} onKeyDown={(e) => e.key === 'Enter' && apply()} placeholder="Cupón de descuento" aria-label="Cupón de descuento" className="h-9 min-w-0 flex-1 rounded border border-line bg-white px-2.5 text-body uppercase outline-none transition-colors focus:border-clay" />
         <Button size="sm" variant="secondary" onClick={apply}>Aplicar</Button>
       </div>
-      {(msg || coupon) && <span className="text-[12.5px] text-wine">{msg || `Código ${coupon} aplicado`}</span>}
+      {(msg || coupon) && <span className="text-cap text-clay">{msg || `Código ${coupon} aplicado`}</span>}
     </div>
   );
 }
@@ -33,70 +33,70 @@ export function CartDrawer() {
 
   return (
     <Sheet open={cartOpen} onClose={closeCart} side="right" label="Carrito de compras">
-      <div className="flex items-center justify-between px-6 pb-[18px] pt-[22px]">
-        <h2 className="font-display text-[28px]">Tu carrito <span className="font-sans text-[15px] text-muted">({t.count})</span></h2>
+      <div className="flex items-center justify-between border-b border-line px-4 py-3">
+        <h2 className="display text-h5">Tu carrito <span className="tnum font-sans text-body font-normal text-mist">({t.count})</span></h2>
         <CloseButton onClick={closeCart} label="Cerrar carrito" />
       </div>
 
       {cart.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-8 py-10 text-center">
-          <span className="relative flex h-[120px] w-[120px] items-center justify-center rounded-t-full rounded-b bg-nude text-wine">
-            <ShoppingBag size={30} strokeWidth={1.2} />
-            <Sparkles size={16} strokeWidth={1.5} className="absolute right-3.5 top-[18px] text-blush" />
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-10 text-center">
+          <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-sand text-clay">
+            <ShoppingBag size={24} strokeWidth={1.75} />
+            <Sparkles size={12} strokeWidth={2} className="absolute right-3 top-3.5 text-clay/50" />
           </span>
-          <h3 className="font-display text-[30px] leading-tight">Tu carrito está vacío</h3>
-          <p className="font-light text-muted">Descubre esmaltes, geles y herramientas pensadas para tu próximo set.</p>
+          <h3 className="display text-h5">Tu carrito está vacío</h3>
+          <p className="max-w-[34ch] text-body text-mist">Descubre esmaltes, geles y herramientas para tu próximo set.</p>
           <Button onClick={() => go('/tienda')}>Explorar productos</Button>
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-2.5 px-6 pb-[18px]">
-            <span className="flex items-center gap-2 text-[13.5px] text-wine">
-              <Truck size={16} strokeWidth={1.5} />
+          <div className="flex flex-col gap-1.5 px-4 py-3">
+            <span className="flex items-center gap-1.5 text-cap text-ash">
+              <Truck size={14} strokeWidth={2} className="shrink-0 text-clay" />
               {t.net >= FREE_SHIPPING_FROM ? 'Tu pedido tiene envío gratis a toda Colombia' : `Te faltan ${formatCOP(FREE_SHIPPING_FROM - t.net)} para envío gratis`}
             </span>
-            <span className="h-1 overflow-hidden rounded-full bg-nude"><span className="block h-full bg-wine transition-[width] duration-700" style={{ width: `${pct}%` }} /></span>
+            <span className="h-1 overflow-hidden rounded-full bg-sand"><span className="block h-full rounded-full bg-clay transition-[width] duration-500" style={{ width: `${pct}%` }} /></span>
           </div>
-          <ul className="flex-1 overflow-auto border-t border-ink/10 px-6">
+          <ul className="flex-1 overflow-auto border-t border-line px-4">
             {cart.map((l, i) => {
               const p = getProduct(l.productId);
               if (!p) return null;
               const u = unitPrice(p, l.size);
               const v = variantLabel(p, l.shade, l.size);
               return (
-                <li key={`${l.productId}-${l.shade}-${l.size}`} className="flex gap-4 border-b border-ink/10 py-[18px]">
-                  <button onClick={() => go(`/producto/${p.slug}`)} className="h-[108px] w-[88px] shrink-0 overflow-hidden rounded-md"><Img src={p.images[0]} alt={p.name} /></button>
-                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                    <div className="flex justify-between gap-2.5">
-                      <button onClick={() => go(`/producto/${p.slug}`)} className="text-left text-[15px] leading-snug hover:text-wine">{p.name}</button>
-                      <button onClick={() => removeLine(i)} aria-label={`Eliminar ${p.name}`} className="flex h-8 w-8 shrink-0 items-center justify-center text-muted hover:text-danger"><Trash2 size={16} strokeWidth={1.5} /></button>
+                <li key={`${l.productId}-${l.shade}-${l.size}`} className="flex gap-3 border-b border-line py-3">
+                  <button onClick={() => go(`/producto/${p.slug}`)} className="h-[84px] w-[68px] shrink-0 cursor-pointer overflow-hidden rounded border border-line bg-sand"><Img src={p.images[0]} alt={p.name} /></button>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <div className="flex justify-between gap-2">
+                      <button onClick={() => go(`/producto/${p.slug}`)} className="cursor-pointer text-left text-body leading-snug transition-colors hover:text-clay">{p.name}</button>
+                      <button onClick={() => removeLine(i)} aria-label={`Eliminar ${p.name}`} className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded text-mist transition-colors hover:bg-sand hover:text-danger"><Trash2 size={14} strokeWidth={2} /></button>
                     </div>
                     {v && (
-                      <span className="flex items-center gap-1.5 text-[12.5px] text-muted">
-                        {p.shades && <span className="h-[11px] w-[11px] rounded-full shadow-[inset_0_0_0_1px_rgba(36,33,36,.14)]" style={{ background: p.shades[l.shade].hex }} />}
+                      <span className="flex items-center gap-1.5 text-meta text-mist">
+                        {p.shades && <span className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-ink/10" style={{ background: p.shades[l.shade].hex }} />}
                         {v}
                       </span>
                     )}
-                    <span className="text-[12.5px] text-muted">{formatCOP(u)} c/u</span>
+                    <span className="tnum text-meta text-mist">{formatCOP(u)} c/u</span>
                     <div className="mt-auto flex items-center justify-between">
                       <QuantitySelector size="sm" value={l.qty} onChange={(q) => setQty(i, q)} max={Math.max(p.stock, 1)} />
-                      <span className="font-medium text-wine">{formatCOP(u * l.qty)}</span>
+                      <span className="tnum text-body font-semibold">{formatCOP(u * l.qty)}</span>
                     </div>
                   </div>
                 </li>
               );
             })}
           </ul>
-          <div className="flex flex-col gap-3 border-t border-ink/10 bg-white px-6 pb-6 pt-[18px]">
+          <div className="flex flex-col gap-2 border-t border-line bg-white px-4 pb-4 pt-3">
             <CouponField />
             <Row label="Subtotal" value={formatCOP(t.subtotal)} />
             {t.discount > 0 && <Row label={`Descuento ${coupon}`} value={`−${formatCOP(t.discount)}`} accent />}
             <Row label="Envío estimado" value={t.shipping ? formatCOP(t.shipping) : 'Gratis'} />
-            <div className="flex items-baseline justify-between border-t border-ink/10 pt-2.5">
-              <span className="font-display text-[22px]">Total</span>
-              <span className="text-[22px] font-medium text-wine">{formatCOP(t.total)}</span>
+            <div className="flex items-baseline justify-between border-t border-line pt-2">
+              <span className="display text-h5">Total</span>
+              <span className="tnum display text-h5">{formatCOP(t.total)}</span>
             </div>
-            <Button size="lg" onClick={() => go('/checkout')}>Continuar con la compra <ArrowRight size={16} strokeWidth={1.5} /></Button>
+            <Button size="lg" onClick={() => go('/checkout')}>Continuar con la compra <ArrowRight size={15} strokeWidth={2} /></Button>
             <Button variant="secondary" onClick={closeCart}>Seguir comprando</Button>
           </div>
         </>
@@ -106,5 +106,5 @@ export function CartDrawer() {
 }
 
 function Row({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return <div className={`flex justify-between text-[14.5px] ${accent ? 'text-wine' : ''}`}><span>{label}</span><span>{value}</span></div>;
+  return <div className={`row-kv ${accent ? 'text-clay' : 'text-ash'}`}><span>{label}</span><span className="tnum">{value}</span></div>;
 }

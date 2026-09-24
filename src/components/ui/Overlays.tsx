@@ -12,16 +12,16 @@ export function Modal({ open, onClose, children, className, label }: {
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-3">
-          <motion.div className="absolute inset-0 bg-ink/50" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+          <motion.div className="absolute inset-0 bg-ink/45" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-label={label}
-            className={cn('relative max-h-[calc(100vh-24px)] w-full overflow-auto rounded-[20px] bg-ivory', className)}
-            initial={{ opacity: 0, y: 16, scale: 0.98 }}
+            className={cn('relative max-h-[calc(100vh-24px)] w-full overflow-auto rounded-lg bg-white shadow-pop', className)}
+            initial={{ opacity: 0, y: 10, scale: 0.99 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.98 }}
-            transition={{ duration: 0.3, ease: [0.2, 0.7, 0.2, 1] }}
+            exit={{ opacity: 0, y: 6, scale: 0.99 }}
+            transition={{ duration: 0.22, ease: [0.2, 0.7, 0.3, 1] }}
           >
             {children}
           </motion.div>
@@ -33,8 +33,8 @@ export function Modal({ open, onClose, children, className, label }: {
 
 export function CloseButton({ onClick, className, label = 'Cerrar' }: { onClick: () => void; className?: string; label?: string }) {
   return (
-    <button onClick={onClick} aria-label={label} className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ink/15 transition-colors hover:bg-nude', className)}>
-      <X size={18} strokeWidth={1.5} />
+    <button onClick={onClick} aria-label={label} className={cn('flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded text-ash transition-colors hover:bg-sand hover:text-ink', className)}>
+      <X size={17} strokeWidth={2} />
     </button>
   );
 }
@@ -49,7 +49,7 @@ export function Sheet({ open, onClose, side = 'right', children, className, labe
   const pos = {
     right: 'right-0 top-0 bottom-0 w-full sm:w-[460px] shadow-drawer',
     left: 'left-0 top-0 bottom-0 w-[min(360px,88vw)]',
-    bottom: 'inset-x-0 bottom-0 max-h-[85vh] rounded-t-3xl',
+    bottom: 'inset-x-0 bottom-0 max-h-[85vh] rounded-t-xl',
   }[side];
   return (
     <AnimatePresence>
@@ -60,11 +60,11 @@ export function Sheet({ open, onClose, side = 'right', children, className, labe
             role="dialog"
             aria-modal="true"
             aria-label={label}
-            className={cn('absolute flex flex-col overflow-hidden bg-ivory', pos, className)}
+            className={cn('absolute flex flex-col overflow-hidden bg-white', pos, className)}
             initial={offscreen}
             animate={{ x: 0, y: 0 }}
             exit={offscreen}
-            transition={{ duration: 0.45, ease: [0.2, 0.7, 0.2, 1] }}
+            transition={{ duration: 0.3, ease: [0.2, 0.7, 0.3, 1] }}
           >
             {children}
           </motion.aside>
@@ -80,10 +80,10 @@ export function Reveal({ children, className, delay = 0 }: { children: ReactNode
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : { opacity: 0, y: 24 }}
+      initial={reduce ? false : { opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1], delay }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.4, ease: [0.2, 0.7, 0.3, 1], delay }}
     >
       {children}
     </motion.div>
