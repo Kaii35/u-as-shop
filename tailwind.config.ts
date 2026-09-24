@@ -10,6 +10,11 @@ import type { Config } from 'tailwindcss';
  * 3. El espaciado es múltiplo de 4. Las secciones usan `section` / `section-lg`.
  */
 export default {
+  // La tienda no tiene modo oscuro. Con el valor por defecto ('media') las
+  // variantes dark: de componentes de terceros se activarian segun el SO y
+  // dejarian media web en claro y esa seccion en oscuro. Con 'class' solo
+  // aplican si alguien anade .dark al html, cosa que no hacemos.
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {

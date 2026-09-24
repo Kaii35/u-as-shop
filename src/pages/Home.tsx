@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Reveal } from '../components/ui/Overlays';
 import { Img, SectionHeading } from '../components/ui/Primitives';
 import { MinimalistHero } from '@/components/ui/minimalist-hero';
+import { Component as StackInteractor } from '@/components/ui/connoisseur-stack-interactor';
 import type { ProductTag } from '../types';
 
 const TABS: Array<{ id: string; label: string; test: (p: (typeof products)[number]) => boolean }> = [
@@ -31,6 +32,7 @@ export default function Home() {
       <Hero />
       <BenefitStrip />
       <Categories />
+      <Collections />
       <Featured />
       <Promos />
       <Brands />
@@ -106,6 +108,34 @@ function Categories() {
         {categories.map((c, i) => (
           <CategoryCard key={c.id} category={c} large={i === 0} className="aspect-[4/3]" />
         ))}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Colecciones destacadas (componente StackInteractor). Tres categorías reales
+ * del catálogo; el componente sólo admite tres porque sus clipId están
+ * cableados a los tres <clipPath> de su SVG.
+ */
+function Collections() {
+  const navigate = useNavigate();
+  return (
+    <section className="bg-sand">
+      <div className="container-x section-y">
+        <SectionHeading
+          eyebrow="Colecciones"
+          title="Explora por especialidad"
+          action={<Link to="/tienda" className="link-arrow">Ver toda la tienda <ArrowRight size={14} strokeWidth={2} /></Link>}
+        />
+        <StackInteractor
+          items={[
+            { num: '01', name: 'Esmaltes semipermanentes', clipId: 'clip-original', image: '/images/collections/semipermanentes.jpg', href: '/tienda?cat=esmaltes-semipermanentes' },
+            { num: '02', name: 'Nail art y decoración', clipId: 'clip-hexagons', image: '/images/collections/nail-art.jpg', href: '/tienda?cat=nail-art-y-decoracion' },
+            { num: '03', name: 'Herramientas y equipos', clipId: 'clip-pixels', image: '/images/collections/herramientas.jpg', href: '/tienda?cat=herramientas-y-equipos' },
+          ]}
+          onSelect={(item) => item.href && navigate(item.href)}
+        />
       </div>
     </section>
   );
