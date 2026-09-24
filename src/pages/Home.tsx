@@ -10,6 +10,7 @@ import { Reveal } from '../components/ui/Overlays';
 import { Img, SectionHeading } from '../components/ui/Primitives';
 import { MinimalistHero } from '@/components/ui/minimalist-hero';
 import { Component as StackInteractor } from '@/components/ui/connoisseur-stack-interactor';
+import { FeatureCards } from '@/components/ui/feature-cards';
 import type { ProductTag } from '../types';
 
 const TABS: Array<{ id: string; label: string; test: (p: (typeof products)[number]) => boolean }> = [
@@ -19,18 +20,18 @@ const TABS: Array<{ id: string; label: string; test: (p: (typeof products)[numbe
   { id: 'sale', label: 'En oferta', test: (p) => !!p.oldPrice },
 ];
 
-const BENEFITS = [
-  { Icon: Truck, title: 'Envío gratis desde $250.000', text: 'A toda Colombia · Express en ciudades principales' },
-  { Icon: CreditCard, title: 'Paga como prefieras', text: 'Tarjeta, PSE, Nequi, Daviplata o contra entrega' },
-  { Icon: ShieldCheck, title: 'Producto original', text: 'Distribuidor autorizado · Garantía de 12 meses' },
-  { Icon: Headset, title: 'Asesoría técnica', text: 'Por WhatsApp, de lunes a sábado' },
+const PROMISES = [
+  { kicker: 'Envíos', title: 'Gratis desde $250.000', detail: 'A toda Colombia · Express en ciudades principales', image: '/images/promesas/envios.jpg', Icon: Truck },
+  { kicker: 'Pagos', title: 'Paga como prefieras', detail: 'Tarjeta, PSE, Nequi, Daviplata o contra entrega', image: '/images/promesas/pagos.jpg', Icon: CreditCard },
+  { kicker: 'Garantía', title: 'Producto original', detail: 'Distribuidor autorizado · 12 meses', image: '/images/promesas/garantia.jpg', Icon: ShieldCheck },
+  { kicker: 'Asesoría', title: 'Soporte técnico real', detail: 'Por WhatsApp, de lunes a sábado', image: '/images/promesas/asesoria.jpg', Icon: Headset },
 ];
 
 export default function Home() {
   return (
     <>
       <Hero />
-      <BenefitStrip />
+      <Promises />
       <Categories />
       <Collections />
       <Featured />
@@ -76,20 +77,34 @@ function Hero() {
   );
 }
 
-function BenefitStrip() {
+/**
+ * Sección de promesas de la tienda. Sustituye a la tira de iconos, que era
+ * una fila de texto pequeño sin jerarquía ni peso visual.
+ *
+ * Va sobre fondo oscuro a propósito: es el único corte de contraste entre el
+ * banner y el catálogo, y hace que las garantías se lean como una declaración
+ * de marca y no como un pie de página.
+ */
+function Promises() {
   return (
-    <section className="container-x pt-4">
-      <ul className="grid grid-cols-2 gap-px overflow-hidden rounded border border-line bg-line lg:grid-cols-4">
-        {BENEFITS.map(({ Icon, title, text }) => (
-          <li key={title} className="flex items-start gap-2.5 bg-white p-3">
-            <Icon size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-clay" />
-            <span className="flex min-w-0 flex-col">
-              <span className="text-cap font-semibold leading-tight">{title}</span>
-              <span className="text-meta text-mist">{text}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
+    <section className="bg-ink text-white">
+      <div className="container-x section-y">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 md:mb-7">
+          <div className="flex max-w-xl flex-col gap-1.5">
+            <span className="text-meta font-semibold uppercase tracking-[.12em] text-clay-soft">Por qué Aurelle</span>
+            <h2 className="display text-h4 text-white md:text-h3">Comprar aquí es otra cosa</h2>
+          </div>
+          <p className="max-w-[46ch] text-body text-white/60">
+            Cuatro cosas que damos por sentadas para que tú solo pienses en el servicio.
+          </p>
+        </div>
+        <FeatureCards
+          items={PROMISES.map(({ kicker, title, detail, image, Icon }) => ({
+            kicker, title, detail, image,
+            icon: <Icon size={15} strokeWidth={2} />,
+          }))}
+        />
+      </div>
     </section>
   );
 }
