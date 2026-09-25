@@ -18,6 +18,7 @@
     "api:migrate": "npm --prefix server run prisma:migrate",
     "api:seed": "npm --prefix server run seed",
     "api:typecheck": "npm --prefix server run typecheck",
+    "api:payments-check": "npm --prefix server run payments:check",
     "setup": "npm run db:up && npm run api:install && npm --prefix server run prisma:generate && npm --prefix server run prisma:deploy && npm run api:seed"
   },
   "dependencies": {

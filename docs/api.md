@@ -478,3 +478,131 @@ responde `400` en vez de crear basura que nadie lee.
 
 Un ADMIN no puede quitarse a sí mismo el rol ni desactivarse: `400`. Es la
 forma más fácil de quedarse fuera del panel sin manera de volver a entrar.
+
+---
+
+# 9. Pagos
+
+La arquitectura, el porqué de cada decisión y la puesta en producción están en
+**`docs/pagos.md`**. Aquí solo van las formas que viajan por el cable.
+
+Regla que atraviesa todo esto: **el monto nunca se toma del navegador.** Quien
+controla el cliente controla lo que manda, así que el servidor recalcula el
+total desde su propia base y firma ese número. Lo que llegue en el cuerpo es,
+como mucho, informativo.
+
+## 9.1 Públicas
+
+### `POST /api/payments/intent`
+
+Abre un intento de cobro. Crea el pedido en `PENDING`, **aparta las unidades**
+y devuelve a dónde mandar a la clienta.
+
+```jsonc
+{
+  "items": [{ "productId": "p1", "quantity": 2, "variant": "Rosé Silk / 15 ml" }],
+  "customer": {
+    "name": "…", "email": "…", "phone": "3001112233",
+    "legalIdType": "CC", "legalId": "1020304050"
+  },
+  "shipping": { "line1": "…", "city": "Medellín", "region": "Antioquia", "country": "CO" },
+  "couponCode": "AURELLE20",       // opcional
+  "shippingMethod": "std"          // std | exp | pick
+}
+```
+
+→ `201`
+
+```jsonc
+{
+  "reference": "AU-11614-a7f3",
+  "orderNumber": "AU-11614",
+  "checkoutUrl": "https://checkout.wompi.co/p/?public-key=…",
+  "provider": "WOMPI",             // o "MOCK"
+  "amountInCents": 18760000,
+  "expiresAt": "2026-09-25T14:05:00.000Z",
+  "totals": { "subtotal": 187600, "discount": 0, "shipping": 0, "total": 187600 }
+}
+```
+
+Errores: `409 INSUFFICIENT_STOCK` si algo no alcanza (**y no se crea nada**),
+`400` si el carrito llega vacío o con un producto inactivo.
+
+El cliente **redirige** a `checkoutUrl`. No lo abre en un iframe: las pasarelas
+lo bloquean y además impide ver la barra de direcciones, que es justo donde la
+clienta comprueba que está pagando en un sitio legítimo.
+
+### `GET /api/payments/:reference`
+
+Estado del cobro. Es lo que consulta la pantalla de retorno.
+
+```jsonc
+{
+  "reference": "AU-11614-a7f3",
+  "status": "APPROVED",            // PENDING | APPROVED | DECLINED | VOIDED | ERROR | EXPIRED
+  "message": "Pago aprobado. Te enviamos la confirmación por correo.",
+  "orderNumber": "AU-11614",
+  "orderStatus": "PAID",
+  "amount": 187600,
+  "methodType": "CARD",
+  "expiresAt": "…",
+  "updatedAt": "…"
+}
+```
+
+Acepta `?transactionId=` — el `id` que Wompi añade a la URL de retorno. Si
+viene y el cobro sigue pendiente, el servidor **le pregunta a la pasarela antes
+de responder**. Es la red de seguridad para cuando el webhook se pierde: sin
+ella, alguien que ya pagó vería "pendiente" hasta que Wompi reintentara.
+
+No expone datos del cliente: la referencia viaja en una URL y las URLs se
+comparten, se guardan en el historial y acaban en los registros del servidor.
+
+### `POST /api/payments/webhook/wompi`
+
+Lo llama Wompi, no el navegador. **Sin token**: lo que autentica el aviso es el
+checksum, verificado con el secreto de eventos.
+
+- Firma mala → `401`, y el intento **se registra igual**: un aviso falsificado
+  es justo lo que hay que poder mirar después.
+- Aviso repetido → `200` sin volver a aplicar nada.
+- Cualquier aviso aceptado → `200`. Wompi reintenta mientras no reciba un 200,
+  así que responder 500 por un fallo nuestro es correcto: queremos el reintento.
+
+### `POST /api/payments/mock/:reference` — **solo con `PAYMENT_PROVIDER=mock`**
+
+`{ "outcome": "APPROVED" | "DECLINED" | "PENDING" }`. Es el botón que en la
+demo hace de banco. **La ruta no se registra si Wompi está activo**: una vía
+para marcar pagos como aprobados a voluntad no puede existir en producción.
+
+## 9.2 Panel
+
+### `GET /api/admin/payments`
+Query: `status`, `provider`, `search` (referencia, pedido o correo), `from`,
+`to`, `page`, `limit`. Devuelve `Paged<PaymentAdmin>` más
+`totals: { approved, approvedAmount, pending, declined }`.
+
+```jsonc
+{
+  "id": "…", "reference": "AU-11614-a7f3", "provider": "WOMPI",
+  "status": "APPROVED", "amount": 187600, "methodType": "CARD",
+  "providerTransactionId": "1234-1610641025-49201",
+  "providerStatus": "APPROVED", "statusMessage": null,
+  "reservationState": "CONSUMED",
+  "order": { "id": "…", "number": "AU-11614", "status": "PAID", "customerName": "…" },
+  "expiresAt": "…", "approvedAt": "…", "lastSyncedAt": "…", "createdAt": "…"
+}
+```
+
+### `GET /api/admin/payments/:id`
+Lo anterior más `events[]`: la bitácora completa con `source`, `status`,
+`checksumOk`, `applied`, `note` y `createdAt`. Es lo que se mira cuando una
+clienta dice que pagó y el pedido aparece sin pagar.
+
+### `POST /api/admin/payments/:id/sync`
+Vuelve a preguntarle a la pasarela y aplica lo que diga. Para destrabar un
+cobro a mano sin tocar la base.
+
+### `GET /api/admin/payments/health`
+`{ provider, configured, problems[], pendingOlderThan15m, expiredNotReleased }`.
+Los dos últimos son los que delatan que algo se quedó a medias.

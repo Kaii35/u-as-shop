@@ -13,6 +13,9 @@ import { inventoryRoutes } from './routes/inventory.js';
 import { orderRoutes } from './routes/orders.js';
 import { promotionRoutes } from './routes/promotions.js';
 import { settingRoutes } from './routes/settings.js';
+import { paymentRoutes } from './routes/payments.js';
+import { adminPaymentRoutes } from './routes/admin-payments.js';
+import { assertPaymentsReady } from './payments/index.js';
 
 const app = Fastify({
   logger: env.isProduction
@@ -34,17 +37,19 @@ app.get('/health', async () => {
   return { status: 'ok', time: new Date().toISOString() };
 });
 
-// Públicas: las consume la tienda.
-await app.register(catalogRoutes);
-// Del panel: todas exigen sesión salvo el login.
-await app.register(authRoutes);
-await app.register(dashboardRoutes);
-await app.register(productRoutes);
-await app.register(inventoryRoutes);
-await app.register(orderRoutes);
-await app.register(promotionRoutes);
-await app.register(settingRoutes);
-
+/**
+ * El manejador de errores va ANTES de registrar las rutas, y el orden importa
+ * de verdad.
+ *
+ * Fastify propaga a cada plugin el manejador que existia en el momento de
+ * cargarlo. Con los `await app.register(...)` por delante, los plugins se
+ * quedaban con el manejador por defecto: un `InsufficientStockError` salia
+ * como 500 "Internal Server Error" en vez del 409 con el mensaje que dice que
+ * referencia falta, y todo error viajaba con la forma de Fastify
+ * ({statusCode, error, message}) en vez de la del contrato ({ error }).
+ * El panel enseñaba "Error interno del servidor" justo cuando mas concreto
+ * tenia que ser.
+ */
 app.setErrorHandler((error: FastifyError, _request, reply) => {
   if (error instanceof InsufficientStockError) {
     return reply.code(409).send({ error: error.message, code: 'INSUFFICIENT_STOCK' });
@@ -69,6 +74,26 @@ app.setErrorHandler((error: FastifyError, _request, reply) => {
     error: status >= 500 ? 'Error interno del servidor' : error.message,
   });
 });
+
+// Públicas: las consume la tienda.
+await app.register(catalogRoutes);
+// Del panel: todas exigen sesión salvo el login.
+await app.register(authRoutes);
+await app.register(dashboardRoutes);
+await app.register(productRoutes);
+await app.register(inventoryRoutes);
+await app.register(orderRoutes);
+await app.register(promotionRoutes);
+await app.register(settingRoutes);
+// Pagos: el intento y el webhook son publicos; el webhook se autentica con su
+// propia firma, no con el token del panel.
+await app.register(paymentRoutes);
+await app.register(adminPaymentRoutes);
+
+// Arrancar con la pasarela mal configurada es peor que no arrancar: la tienda
+// pareceria sana y fallaria justo al cobrar. En produccion se niega.
+assertPaymentsReady((msg) => app.log.warn(msg));
+
 
 const shutdown = async (signal: string): Promise<void> => {
   app.log.info(`${signal} recibido, cerrando…`);

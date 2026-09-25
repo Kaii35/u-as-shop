@@ -234,6 +234,7 @@ model Order {
 
   items     OrderItem[]
   movements InventoryMovement[]
+  payments  Payment[]
 
   /// Fecha de la venta. Se puede fijar al sembrar historia, por eso no es
   /// solo `now()` en la práctica: todas las series del panel se agrupan por aquí.
@@ -410,4 +411,142 @@ model Setting {
   updatedAt DateTime @updatedAt
 
   @@map("settings")
+}
+
+// ---------------------------------------------------------------------------
+// Pagos
+//
+// El pedido y el cobro son cosas distintas y por eso son dos tablas. Un pedido
+// puede tener varios intentos de pago (la tarjeta se rechaza y la clienta lo
+// vuelve a intentar con otra), y cada intento tiene su propia vida. Meterlo
+// todo en Order obligaria a machacar el intento anterior y se perderia el
+// rastro de por que fallo el primero.
+// ---------------------------------------------------------------------------
+
+enum PaymentProvider {
+  /// Pasarela simulada. Permite probar el flujo completo sin credenciales.
+  MOCK
+  /// Wompi (Bancolombia).
+  WOMPI
+}
+
+/// Los estados de Wompi mas EXPIRED, que es nuestro: la pasarela no avisa
+/// cuando alguien abandona el checkout, y sin ese estado las unidades
+/// reservadas se quedarian bloqueadas para siempre.
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  VOIDED
+  ERROR
+  EXPIRED
+}
+
+/// Que se hizo con las unidades que el intento tenia apartadas.
+///
+/// Existe para que soltar la reserva sea idempotente: los webhooks llegan
+/// repetidos y desordenados, y sin este sello el mismo aviso devolveria las
+/// unidades dos veces y el stock quedaria inflado.
+enum ReservationState {
+  /// Apartadas, esperando el desenlace del pago.
+  HELD
+  /// El pago se aprobo: dejaron de estar apartadas y salieron de bodega.
+  CONSUMED
+  /// El pago no prospero: volvieron a estar disponibles.
+  RELEASED
+}
+
+model Payment {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// La que viaja a la pasarela y vuelve en el webhook. Es la clave con la que
+  /// se reconcilia, asi que es unica aunque el pedido tenga varios intentos.
+  reference String          @unique
+  provider  PaymentProvider
+  status    PaymentStatus   @default(PENDING)
+
+  /// En centavos porque es lo que cobra la pasarela. En el resto del sistema
+  /// el dinero son pesos enteros; la conversion ocurre solo aqui.
+  amountInCents Int
+  currency      String @default("COP")
+
+  /// CARD, NEQUI, PSE, BANCOLOMBIA_TRANSFER… Lo dice la pasarela al resolver,
+  /// no se sabe al crear el intento porque la clienta todavia no ha elegido.
+  methodType String?
+
+  providerTransactionId String? @unique
+  providerStatus        String?
+  /// Mensaje de la pasarela. Sirve para explicar un rechazo sin adivinar.
+  statusMessage         String?
+
+  /// A donde se manda a la clienta a pagar.
+  checkoutUrl String?
+  /// A donde vuelve despues.
+  redirectUrl String
+
+  /// Cuando dejan de valer las unidades apartadas.
+  expiresAt        DateTime
+  reservationState ReservationState @default(HELD)
+
+  approvedAt   DateTime?
+  /// Ultima vez que se le pregunto a la pasarela. El webhook es la via
+  /// principal, pero los webhooks se pierden y hay que poder preguntar.
+  lastSyncedAt DateTime?
+
+  /// La ultima respuesta cruda de la pasarela, tal cual. Cuando un cobro se
+  /// discute, lo unico que vale es lo que dijo la pasarela, no como lo
+  /// interpretamos nosotros.
+  raw Json?
+
+  events PaymentEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([status, expiresAt])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+enum PaymentEventSource {
+  /// Aviso de la pasarela.
+  WEBHOOK
+  /// Consulta que hicimos nosotros.
+  POLL
+  /// Alguien lo forzo desde el panel.
+  MANUAL
+}
+
+/// Bitacora de todo lo que le paso a un cobro.
+///
+/// La `fingerprint` es lo que hace idempotente la reconciliacion: Wompi
+/// reintenta los webhooks y el mismo aviso puede llegar tres veces. Con el
+/// indice unico, el segundo choca y se descarta sin volver a mover stock.
+model PaymentEvent {
+  id        String  @id @default(cuid())
+  paymentId String
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  source PaymentEventSource
+  /// Estado que traia el aviso.
+  status PaymentStatus
+  /// Huella del aviso: transaccion + estado + monto + marca de tiempo.
+  fingerprint String
+  /// False cuando la firma no cuadro. Se guarda igual: un intento de
+  /// suplantacion es justo lo que hay que poder mirar despues.
+  checksumOk Boolean @default(true)
+  /// Si el aviso cambio algo o llego tarde y se ignoro.
+  applied    Boolean @default(false)
+  note       String?
+  payload    Json?
+
+  createdAt DateTime @default(now())
+
+  @@unique([paymentId, fingerprint])
+  @@index([paymentId, createdAt])
+  @@map("payment_events")
 }

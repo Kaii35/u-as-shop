@@ -1,20 +1,21 @@
 import { useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Lock } from 'lucide-react';
-import { banks, departments } from '../data/catalog';
-import { cn, digits, formatCOP, isEmail, SHIPPING_COST, FREE_SHIPPING_FROM } from '../lib/utils';
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, Lock, RefreshCw } from 'lucide-react';
+import { departments, getProduct } from '../data/catalog';
+import { cn, digits, formatCOP, isEmail, variantLabel, SHIPPING_COST, FREE_SHIPPING_FROM, type Totals } from '../lib/utils';
+import { ApiError } from '../lib/api';
+import { createPaymentIntent, rememberPaymentReference, type PaymentIntentResponse } from '../lib/payments';
 import { useStore } from '../store/StoreContext';
 import { CheckoutSummary } from '../components/CheckoutSummary';
 import { Button } from '../components/ui/Button';
 import { Checkbox, Input, Select, Textarea } from '../components/ui/Input';
-import type { PaymentMethod, ShippingMethod } from '../types';
+import type { ShippingMethod } from '../types';
 
 interface Form {
   name: string; email: string; phone: string; docType: string; doc: string;
   dept: string; city: string; address: string; notes: string;
-  ship: ShippingMethod; pay: PaymentMethod;
-  cardNumber: string; cardName: string; cardExp: string; cardCvc: string; bank: string; wallet: string;
+  ship: ShippingMethod;
   terms: boolean;
 }
 type Errors = Partial<Record<keyof Form, string>>;
@@ -22,12 +23,19 @@ type Errors = Partial<Record<keyof Form, string>>;
 const STEPS = ['Contacto', 'Entrega', 'Envío', 'Pago', 'Confirmación'];
 const NEXT_LABEL = ['Continuar a entrega', 'Continuar a envío', 'Continuar a pago', 'Revisar pedido'];
 
-const PAY_OPTIONS: Array<{ id: PaymentMethod; label: string; desc: string }> = [
-  { id: 'card', label: 'Tarjeta crédito o débito', desc: 'Visa, Mastercard, American Express, Diners' },
-  { id: 'pse', label: 'PSE', desc: 'Débito desde tu cuenta bancaria' },
-  { id: 'wallet', label: 'Nequi o Daviplata', desc: 'Aprueba el pago desde tu celular' },
-  { id: 'cod', label: 'Pago contra entrega', desc: 'Efectivo al recibir · disponible en ciudades principales' },
+/**
+ * Medios disponibles, solo informativos: con un checkout alojado la clienta
+ * elige y paga en la pasarela. Pedirle aquí el número de tarjeta sería teatro
+ * —no viajaría a ninguna parte— y nos dejaría datos de tarjeta en las manos.
+ */
+const PAY_METHODS = [
+  'Tarjeta de crédito o débito · Visa, Mastercard, American Express, Diners',
+  'PSE · débito desde tu cuenta bancaria',
+  'Nequi o Daviplata · apruebas desde tu celular',
+  'Bancolombia · botón de transferencia',
 ];
+
+const SHIP_LABEL: Record<ShippingMethod, string> = { std: 'Estándar', exp: 'Express', pick: 'Recoger en showroom' };
 
 function validate(step: number, f: Form): Errors {
   const e: Errors = {};
@@ -42,33 +50,44 @@ function validate(step: number, f: Form): Errors {
     if (f.city.trim().length < 3) e.city = 'Escribe la ciudad o municipio';
     if (f.address.trim().length < 6) e.address = 'Escribe la dirección completa';
   }
-  if (step === 4) {
-    if (f.pay === 'card') {
-      if (digits(f.cardNumber).length < 15) e.cardNumber = 'Número de tarjeta incompleto';
-      if (f.cardName.trim().length < 3) e.cardName = 'Nombre como aparece en la tarjeta';
-      if (!/^\d{2}\s?\/\s?\d{2}$/.test(f.cardExp)) e.cardExp = 'Formato MM/AA';
-      if (digits(f.cardCvc).length < 3) e.cardCvc = 'CVC';
-    }
-    if (f.pay === 'pse' && !f.bank) e.bank = 'Selecciona tu banco';
-    if (f.pay === 'wallet' && digits(f.wallet).length !== 10) e.wallet = 'Número de 10 dígitos';
-  }
   if (step === 5 && !f.terms) e.terms = 'Debes aceptar los términos para continuar';
   return e;
 }
 
+/**
+ * Salida hacia la pasarela.
+ *
+ * Se redirige la pestaña entera, nunca un iframe: las pasarelas lo bloquean
+ * con cabeceras y, sobre todo, un iframe esconde la barra de direcciones, que
+ * es justo donde la clienta comprueba que está pagando en un sitio legítimo.
+ */
+const goToGateway = (checkoutUrl: string) => window.location.assign(checkoutUrl);
+
 export default function Checkout() {
-  const { cart, user, totals, clearCart } = useStore();
+  const { cart, user, coupon, totals } = useStore();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<Errors>({});
   const [placing, setPlacing] = useState(false);
-  const [placed, setPlaced] = useState<{ number: string; total: number; name: string } | null>(null);
+  /** Mensaje junto al botón. `retry` solo cuando reintentar puede servir de algo. */
+  const [failure, setFailure] = useState<{ message: string; retry: boolean } | null>(null);
+  /** Intento ya creado cuyo total no coincide con el que habíamos pintado. */
+  const [repriced, setRepriced] = useState<PaymentIntentResponse | null>(null);
   const [f, setF] = useState<Form>({
     name: user ? `${user.firstName} ${user.lastName}` : '', email: user?.email ?? '', phone: user?.phone ?? '',
-    docType: 'CC', doc: '', dept: '', city: '', address: '', notes: '', ship: 'std', pay: 'card',
-    cardNumber: '', cardName: '', cardExp: '', cardCvc: '', bank: '', wallet: '', terms: false,
+    docType: 'CC', doc: '', dept: '', city: '', address: '', notes: '', ship: 'std',
+    terms: false,
   });
   const t = totals(f.ship);
+
+  /**
+   * El total de esta pantalla es informativo: el que se cobra es el que
+   * recalcula el servidor al abrir el intento, con sus precios y su stock.
+   * Si difieren, manda el del servidor y es el que se pinta.
+   */
+  const shown: Totals = repriced
+    ? { ...t, ...repriced.totals, net: repriced.totals.subtotal - repriced.totals.discount }
+    : t;
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => { setF((s) => ({ ...s, [k]: v })); setErrors((e) => ({ ...e, [k]: undefined })); };
   const bind = (k: keyof Form) => ({ value: f[k] as string, onChange: (e: { target: { value: string } }) => set(k, e.target.value as never), error: errors[k] });
@@ -81,34 +100,58 @@ export default function Checkout() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const place = () => {
+  const place = async () => {
     const e = validate(5, f);
     setErrors(e);
     if (Object.keys(e).length) return;
+    setFailure(null);
     setPlacing(true);
-    // Aquí se integraría la pasarela de pago (Wompi, PayU, Mercado Pago, ePayco…)
-    window.setTimeout(() => {
-      setPlaced({ number: `AU-${10500 + Math.floor(Math.random() * 400)}`, total: t.total, name: f.name.split(' ')[0] });
-      clearCart();
-      setPlacing(false);
-      window.scrollTo({ top: 0 });
-    }, 1400);
-  };
+    try {
+      const intent = await createPaymentIntent({
+        items: cart.map((l) => {
+          const p = getProduct(l.productId);
+          const variant = p ? variantLabel(p, l.shade, l.size) : '';
+          return { productId: l.productId, quantity: l.qty, ...(variant ? { variant } : {}) };
+        }),
+        customer: {
+          name: f.name.trim(),
+          email: f.email.trim(),
+          phone: digits(f.phone),
+          legalIdType: f.docType,
+          legalId: digits(f.doc),
+        },
+        shipping: { line1: f.address.trim(), city: f.city.trim(), region: f.dept, country: 'CO' },
+        ...(coupon ? { couponCode: coupon } : {}),
+        shippingMethod: f.ship,
+      });
 
-  if (placed) {
-    return (
-      <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="container-x flex flex-col items-center gap-5 py-[clamp(40px,8vw,120px)] text-center">
-        <span className="flex h-[92px] w-[92px] items-center justify-center rounded-full bg-clay text-white"><Check size={30} strokeWidth={1.2} /></span>
-        <span className="text-meta font-medium uppercase tracking-[.24em] text-clay">Pedido {placed.number}</span>
-        <h1 className="display text-h3">Gracias, <em className="text-clay">{placed.name}.</em></h1>
-        <p className="max-w-[480px] text-lead leading-relaxed">Recibimos tu pedido por {formatCOP(placed.total)}. Te enviamos la confirmación por correo y te avisaremos cuando salga hacia tu dirección.</p>
-        <div className="mt-2 flex flex-wrap justify-center gap-2.5">
-          <Button onClick={() => navigate(user ? '/cuenta' : '/ingresar')}>Ver mis pedidos</Button>
-          <Button variant="secondary" onClick={() => navigate('/tienda')}>Seguir comprando</Button>
-        </div>
-      </motion.div>
-    );
-  }
+      // Antes de irse: si vuelve sin nada en la URL, esto es lo único que
+      // permite recuperar el hilo del cobro.
+      rememberPaymentReference(intent.reference);
+
+      // El carrito NO se vacía aquí. Se vacía cuando el pago se confirme
+      // aprobado: si el banco rechaza y la clienta vuelve, tiene que
+      // encontrar su carrito intacto para reintentar.
+
+      if (intent.totals.total !== t.total) {
+        // Nadie sale hacia la pasarela con un precio distinto del que aceptó.
+        setRepriced(intent);
+        setPlacing(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      goToGateway(intent.checkoutUrl);
+    } catch (err) {
+      setPlacing(false);
+      if (err instanceof ApiError) {
+        // El 409 dice qué referencia se quedó sin unidades: se muestra tal
+        // cual, porque el servidor sabe qué falta y nosotros no.
+        setFailure({ message: err.message, retry: err.status === 0 || err.status >= 500 });
+        return;
+      }
+      setFailure({ message: 'No pudimos iniciar el pago. Revisa tu conexión e inténtalo de nuevo.', retry: true });
+    }
+  };
 
   if (!cart.length) {
     return (
@@ -122,7 +165,7 @@ export default function Checkout() {
   return (
     <div className="container-x mx-auto max-w-[1320px] pb-[clamp(64px,7vw,110px)] pt-[clamp(24px,3vw,48px)]">
       <div className="grid items-start gap-[clamp(28px,4vw,64px)] lg:grid-cols-[minmax(0,1fr)_400px]">
-        <div className="order-1 lg:order-2"><CheckoutSummary totals={t} /></div>
+        <div className="order-1 lg:order-2"><CheckoutSummary totals={shown} /></div>
 
         <div className="order-2 flex min-w-0 flex-col gap-8 lg:order-1">
           <ol className="flex items-center overflow-x-auto pb-1" aria-label="Pasos del checkout">
@@ -158,7 +201,8 @@ export default function Checkout() {
                   </div>
                   <div className="grid grid-cols-[minmax(120px,160px)_minmax(0,1fr)] gap-4">
                     <Select label="Documento" value={f.docType} onChange={(e) => set('docType', e.target.value)}>
-                      <option value="CC">C.C.</option><option value="CE">C.E.</option><option value="NIT">NIT</option><option value="PA">Pasaporte</option>
+                      {/* Los valores son los que acepta la pasarela; `PP` es pasaporte. */}
+                      <option value="CC">C.C.</option><option value="CE">C.E.</option><option value="NIT">NIT</option><option value="PP">Pasaporte</option>
                     </Select>
                     <Input label="Número" placeholder="Para la factura electrónica" inputMode="numeric" {...bind('doc')} />
                   </div>
@@ -184,9 +228,9 @@ export default function Checkout() {
                 <>
                   <StepTitle>Método de envío</StepTitle>
                   {([
-                    ['std', 'Estándar', '3 a 5 días hábiles · Servientrega', t.net >= FREE_SHIPPING_FROM ? 'Gratis' : formatCOP(SHIPPING_COST.std)],
-                    ['exp', 'Express', '24 a 48 horas en ciudades principales', formatCOP(SHIPPING_COST.exp)],
-                    ['pick', 'Recoger en showroom', 'Bogotá · Usaquén, disponible en 2 horas', 'Gratis'],
+                    ['std', SHIP_LABEL.std, '3 a 5 días hábiles · Servientrega', t.net >= FREE_SHIPPING_FROM ? 'Gratis' : formatCOP(SHIPPING_COST.std)],
+                    ['exp', SHIP_LABEL.exp, '24 a 48 horas en ciudades principales', formatCOP(SHIPPING_COST.exp)],
+                    ['pick', SHIP_LABEL.pick, 'Bogotá · Usaquén, disponible en 2 horas', 'Gratis'],
                   ] as Array<[ShippingMethod, string, string, string]>).map(([id, label, desc, price]) => (
                     <OptionCard key={id} selected={f.ship === id} onSelect={() => set('ship', id)} label={label} desc={desc} aside={price} />
                   ))}
@@ -195,38 +239,24 @@ export default function Checkout() {
 
               {step === 4 && (
                 <>
-                  <StepTitle>Método de pago</StepTitle>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {PAY_OPTIONS.map((o) => <OptionCard key={o.id} selected={f.pay === o.id} onSelect={() => { set('pay', o.id); setErrors({}); }} label={o.label} desc={o.desc} />)}
-                  </div>
-                  <div className="flex flex-col gap-4 rounded-lg border border-line bg-white p-6">
-                    {f.pay === 'card' && (
-                      <>
-                        <Input label="Número de tarjeta" inputMode="numeric" autoComplete="cc-number" placeholder="0000 0000 0000 0000" {...bind('cardNumber')} />
-                        <Input label="Nombre en la tarjeta" autoComplete="cc-name" {...bind('cardName')} />
-                        <div className="grid grid-cols-2 gap-4">
-                          <Input label="Vencimiento" placeholder="MM/AA" autoComplete="cc-exp" {...bind('cardExp')} />
-                          <Input label="CVC" inputMode="numeric" autoComplete="cc-csc" placeholder="123" {...bind('cardCvc')} />
-                        </div>
-                      </>
-                    )}
-                    {f.pay === 'pse' && (
-                      <>
-                        <Select label="Banco" {...bind('bank')}>
-                          <option value="">Selecciona tu banco</option>
-                          {banks.map((b) => <option key={b}>{b}</option>)}
-                        </Select>
-                        <p className="text-body text-mist">Al confirmar te redirigiremos a PSE para autorizar el débito.</p>
-                      </>
-                    )}
-                    {f.pay === 'wallet' && (
-                      <>
-                        <Input label="Número Nequi o Daviplata" type="tel" placeholder="300 000 0000" {...bind('wallet')} />
-                        <p className="text-body text-mist">Recibirás una notificación en tu app para aprobar el pago.</p>
-                      </>
-                    )}
-                    {f.pay === 'cod' && <p className="text-body leading-relaxed">Paga en efectivo al recibir tu pedido. Disponible en Bogotá, Medellín, Cali, Barranquilla, Bucaramanga y Pereira.</p>}
-                    <span className="flex items-center gap-2 text-cap text-mist"><Lock size={16} strokeWidth={1.5} /> Tus datos se procesan de forma cifrada. No almacenamos tu tarjeta.</span>
+                  <StepTitle>Cómo vas a pagar</StepTitle>
+                  <p className="text-body leading-relaxed text-ash">
+                    Al confirmar te llevamos a la pasarela de pagos, donde eliges el medio y autorizas el cobro.
+                    Verás la dirección del sitio en la barra de tu navegador y volverás aquí con el resultado.
+                  </p>
+                  <div className="flex flex-col gap-3 rounded-lg border border-line bg-white p-6">
+                    <span className="label-xs">Medios disponibles</span>
+                    <ul className="flex flex-col gap-2">
+                      {PAY_METHODS.map((m) => (
+                        <li key={m} className="flex items-start gap-2.5 text-body text-ash">
+                          <Check size={15} strokeWidth={2} className="mt-0.5 shrink-0 text-clay" />
+                          {m}
+                        </li>
+                      ))}
+                    </ul>
+                    <span className="flex items-center gap-2 text-cap text-mist">
+                      <Lock size={16} strokeWidth={1.5} /> Nunca vemos ni guardamos los datos de tu tarjeta.
+                    </span>
                   </div>
                 </>
               )}
@@ -237,8 +267,8 @@ export default function Checkout() {
                   <dl className="flex flex-col border-t border-line">
                     <ReviewRow label="Contacto" value={`${f.name} · ${f.email} · ${f.phone}`} onEdit={() => setStep(1)} />
                     <ReviewRow label="Entrega" value={`${f.address}, ${f.city} · ${f.dept}`} onEdit={() => setStep(2)} />
-                    <ReviewRow label="Envío" value={{ std: 'Estándar', exp: 'Express', pick: 'Recoger en showroom' }[f.ship] + ` · ${t.shipping ? formatCOP(t.shipping) : 'Gratis'}`} onEdit={() => setStep(3)} />
-                    <ReviewRow label="Pago" value={PAY_OPTIONS.find((o) => o.id === f.pay)!.label} onEdit={() => setStep(4)} />
+                    <ReviewRow label="Envío" value={`${SHIP_LABEL[f.ship]} · ${shown.shipping ? formatCOP(shown.shipping) : 'Gratis'}`} onEdit={() => setStep(3)} />
+                    <ReviewRow label="Pago" value="Eliges el medio en la pasarela segura" onEdit={() => setStep(4)} />
                   </dl>
                   <Checkbox checked={f.terms} onChange={(v) => set('terms', v)}>
                     Acepto los términos y condiciones, la política de privacidad y el tratamiento de mis datos personales.
@@ -249,6 +279,20 @@ export default function Checkout() {
             </motion.div>
           </AnimatePresence>
 
+          {repriced && (
+            <p role="status" className="flex items-start gap-2.5 rounded border border-line bg-sand p-4 text-body text-ash">
+              <AlertTriangle size={16} strokeWidth={1.8} className="mt-0.5 shrink-0 text-clay" />
+              <span>Actualizamos el precio de tu pedido: el total ahora es <strong className="tnum font-semibold text-ink">{formatCOP(repriced.totals.total)}</strong>. Revísalo y continúa cuando quieras.</span>
+            </p>
+          )}
+
+          {failure && (
+            <p role="alert" className="flex items-start gap-2.5 rounded border border-danger/40 bg-white p-4 text-body text-danger">
+              <AlertTriangle size={16} strokeWidth={1.8} className="mt-0.5 shrink-0" />
+              <span>{failure.message}</span>
+            </p>
+          )}
+
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
             {step > 1 ? (
               <Button variant="ghost" className="px-0" onClick={() => setStep((s) => s - 1)}><ArrowLeft size={16} strokeWidth={1.5} /> Volver</Button>
@@ -257,9 +301,14 @@ export default function Checkout() {
             )}
             {step < 5 ? (
               <Button size="lg" className="min-w-[240px]" onClick={next}>{NEXT_LABEL[step - 1]} <ArrowRight size={16} strokeWidth={1.5} /></Button>
+            ) : repriced ? (
+              // El intento ya está creado: se reutiliza su checkoutUrl en vez de abrir otro.
+              <Button size="lg" className="min-w-[260px]" onClick={() => goToGateway(repriced.checkoutUrl)}>
+                Ir a pagar · {formatCOP(repriced.totals.total)} <ArrowRight size={16} strokeWidth={1.5} />
+              </Button>
             ) : (
-              <Button size="lg" className="min-w-[260px]" loading={placing} onClick={place}>
-                {placing ? 'Procesando pago…' : `Confirmar pedido · ${formatCOP(t.total)}`}
+              <Button size="lg" className="min-w-[260px]" loading={placing} onClick={() => void place()}>
+                {placing ? 'Abriendo el pago…' : failure?.retry ? <><RefreshCw size={16} strokeWidth={1.5} /> Reintentar</> : `Ir a pagar · ${formatCOP(t.total)}`}
               </Button>
             )}
           </div>

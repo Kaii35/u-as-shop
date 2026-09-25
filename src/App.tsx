@@ -12,6 +12,8 @@ import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductPage from './pages/ProductDetail';
 import Checkout from './pages/Checkout';
+import PaymentResult from './pages/PaymentResult';
+import MockCheckout from './pages/MockCheckout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Account from './pages/Account';
@@ -27,6 +29,7 @@ const AdminLayout = lazy(() => import('./pages/Admin/AdminLayout'));
 const AdminLogin = lazy(() => import('./pages/Admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/Admin/AdminDashboard'));
 const AdminOrders = lazy(() => import('./pages/Admin/AdminOrders'));
+const AdminPayments = lazy(() => import('./pages/Admin/AdminPayments'));
 const AdminProducts = lazy(() => import('./pages/Admin/AdminProducts'));
 const AdminInventory = lazy(() => import('./pages/Admin/AdminInventory'));
 const AdminPromotions = lazy(() => import('./pages/Admin/AdminPromotions'));
@@ -78,6 +81,7 @@ export default function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="pedidos" element={<AdminOrders />} />
+          <Route path="pagos" element={<AdminPayments />} />
           <Route path="productos" element={<AdminProducts />} />
           <Route path="inventario" element={<AdminInventory />} />
           <Route path="promociones" element={<AdminPromotions />} />
@@ -107,6 +111,12 @@ function Storefront() {
         </Route>
         <Route path="checkout" element={<CheckoutLayout />}>
           <Route index element={<Checkout />} />
+        </Route>
+        {/* El pago sigue siendo checkout: mismo marco minimo, sin header ni
+            footer que distraigan de lo unico que importa en esas pantallas. */}
+        <Route path="pago" element={<CheckoutLayout />}>
+          <Route path="respuesta" element={<PaymentResult />} />
+          <Route path="simulado" element={<MockCheckout />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

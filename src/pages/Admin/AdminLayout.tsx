@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   ArrowUpRight,
   Boxes,
+  CreditCard,
   LayoutDashboard,
   LogOut,
   Megaphone,
@@ -20,7 +21,7 @@ import type { StockAlert } from '../../lib/admin-types';
 /**
  * Armazón del panel.
  *
- * Pensado para quien atiende la tienda, no para un analista: seis secciones y
+ * Pensado para quien atiende la tienda, no para un analista: siete secciones y
  * ni una más, nombradas con la palabra que usaría ella ("Pedidos", no
  * "Órdenes"; "Inventario", no "Stock"). Todo lo que se hace a diario está a un
  * clic desde cualquier pantalla.
@@ -38,6 +39,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: '/admin', label: 'Resumen', icon: LayoutDashboard, end: true, description: 'Ventas y alertas' },
   { to: '/admin/pedidos', label: 'Pedidos', icon: ShoppingBag, description: 'Qué hay que despachar' },
+  { to: '/admin/pagos', label: 'Pagos', icon: CreditCard, description: 'Cobros y su estado' },
   { to: '/admin/productos', label: 'Productos', icon: Package, description: 'Catálogo y precios' },
   { to: '/admin/inventario', label: 'Inventario', icon: Boxes, description: 'Entradas, salidas y conteos' },
   { to: '/admin/promociones', label: 'Promociones', icon: Megaphone, description: 'Descuentos y anuncios' },
