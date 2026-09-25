@@ -232,14 +232,15 @@ function Brands() {
 }
 
 /**
- * Banda de newsletter. Sustituye a la tarjeta con borde: la foto iba en una
- * columna de 220px sobre una tarjeta a todo el ancho, asi que se leia como
- * una tira pegada al borde y el texto quedaba con un hueco muerto al lado.
+ * Banda de newsletter a sangre.
  *
- * Ahora la foto ocupa una columna real y el formulario se limita a 420px: un
- * campo de correo estirado a 900px no gana nada y desequilibra el bloque.
- * Va sobre el tinte de marca, que rompe la tirada blanca del final de la
- * pagina antes del footer oscuro.
+ * La versión anterior ocupaba 426px para pedir un correo. Esta baja a ~260:
+ * fuera la lista de beneficios y la columna de foto, que era lo que estiraba
+ * el bloque. La foto pasa a fondo a todo el ancho con velo, el mismo recurso
+ * que ya usan los banners promocionales de la landing.
+ *
+ * El velo no es decorativo: es lo único que garantiza contraste del texto
+ * blanco sobre la foto, así que cubre toda la banda y no solo la mitad.
  */
 function Newsletter() {
   const [email, setEmail] = useState('');
@@ -247,75 +248,54 @@ function Newsletter() {
   const [done, setDone] = useState(false);
   const submit = () => (isEmail(email) ? setDone(true) : setError('Escribe un correo válido'));
 
-  const PERKS = [
-    '10% de descuento de bienvenida',
-    'Lanzamientos antes que nadie',
-    'Uno o dos correos al mes, nada más',
-  ];
-
   return (
-    <section className="bg-clay-soft">
-      <div className="container-x section-y">
-        {/* Acotada y centrada: a todo el ancho del contenedor la columna de
-              texto medía 908px para un contenido de ~420 y dejaba un vacío
-              muerto junto a la foto. */}
-        <Reveal className="mx-auto grid w-full max-w-[1100px] items-stretch gap-8 md:grid-cols-2 md:gap-12">
-          <div className="flex flex-col justify-center gap-3">
-            <span className="kicker">Newsletter</span>
-            <h2 className="display text-h3 text-balance">10% en tu primera compra</h2>
-            <p className="max-w-[46ch] text-body text-ash">
-              Lanzamientos antes que nadie, tutoriales de técnica y precios exclusivos para profesionales.
-            </p>
+    <section className="relative isolate overflow-hidden bg-ink">
+      <img
+        src="/images/editorial/newsletter.jpg"
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/25 md:via-ink/70 md:to-ink/10" />
 
-            <ul className="flex flex-col gap-1.5 pt-1">
-              {PERKS.map((perk) => (
-                <li key={perk} className="flex items-center gap-2 text-body text-ash">
-                  <Check size={14} strokeWidth={2.5} className="shrink-0 text-clay" />
-                  {perk}
-                </li>
-              ))}
-            </ul>
+      <Reveal className="container-x relative flex min-h-[260px] flex-col justify-center gap-2.5 py-10">
+        <span className="text-meta font-semibold uppercase tracking-[.12em] text-clay-soft">Newsletter</span>
+        <h2 className="display max-w-[20ch] text-h3 text-white text-balance">10% en tu primera compra</h2>
+        <p className="max-w-[44ch] text-body text-white/70">
+          Lanzamientos antes que nadie y precios de profesional. Uno o dos correos al mes.
+        </p>
 
-            {done ? (
-              <div className="mt-2 flex max-w-[420px] items-center gap-2.5 rounded-lg border border-ok/30 bg-white p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ok text-white"><Check size={16} strokeWidth={2.5} /></span>
-                <span className="flex flex-col">
-                  <span className="text-body font-medium">Ya eres parte de Aurelle</span>
-                  <span className="text-meta text-mist">Revisa tu correo: te enviamos tu código.</span>
-                </span>
-              </div>
-            ) : (
-              <div className="mt-2 flex max-w-[420px] flex-col gap-1.5">
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                    onKeyDown={(e) => e.key === 'Enter' && submit()}
-                    placeholder="tu@correo.com"
-                    aria-label="Correo electrónico"
-                    aria-invalid={!!error}
-                    className={cn(
-                      'h-11 min-w-0 flex-1 rounded border bg-white px-3 text-body outline-none transition-colors',
-                      error ? 'border-danger' : 'border-transparent focus:border-clay',
-                    )}
-                  />
-                  <Button size="lg" className="shrink-0" onClick={submit}>Suscribirme</Button>
-                </div>
-                {error && <span role="alert" className="text-cap text-danger">{error}</span>}
-                <span className="text-meta text-ash/70">Sin spam. Puedes darte de baja cuando quieras.</span>
-              </div>
-            )}
+        {done ? (
+          <div className="mt-1 flex max-w-[420px] items-center gap-2.5 rounded-lg bg-white/10 p-3 ring-1 ring-white/20 backdrop-blur-sm">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ok text-white"><Check size={16} strokeWidth={2.5} /></span>
+            <span className="flex flex-col">
+              <span className="text-body font-medium text-white">Ya eres parte de Aurelle</span>
+              <span className="text-meta text-white/60">Revisa tu correo: te enviamos tu código.</span>
+            </span>
           </div>
-
-          {/* En desktop la foto estira hasta la altura del texto en vez de
-              imponer la suya: con una proporcion fija medía 475px frente a
-              los ~286px del contenido y descuadraba la banda. */}
-          <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-white md:aspect-auto md:h-full md:min-h-[280px]">
-            <Img src={media.heroDetail} alt="" label="Detalle" />
+        ) : (
+          <div className="mt-1 flex max-w-[440px] flex-col gap-1.5">
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                onKeyDown={(e) => e.key === 'Enter' && submit()}
+                placeholder="tu@correo.com"
+                aria-label="Correo electrónico"
+                aria-invalid={!!error}
+                className={cn(
+                  'h-11 min-w-0 flex-1 rounded border bg-white px-3 text-body outline-none transition-colors',
+                  error ? 'border-danger' : 'border-transparent focus:border-clay',
+                )}
+              />
+              <Button size="lg" variant="accent" className="shrink-0" onClick={submit}>Suscribirme</Button>
+            </div>
+            {error && <span role="alert" className="text-cap text-clay-soft">{error}</span>}
+            <span className="text-meta text-white/50">Sin spam. Puedes darte de baja cuando quieras.</span>
           </div>
-        </Reveal>
-      </div>
+        )}
+      </Reveal>
     </section>
   );
 }
