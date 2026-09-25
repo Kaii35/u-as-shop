@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, CreditCard, Headset, ShieldCheck, Star, Truck } from 'lucide-react';
-import { brands, categories, getProduct, media, products } from '../data/catalog';
-import { cn, formatCOP, isEmail } from '../lib/utils';
+import { ArrowRight, Check, CreditCard, Headset, ShieldCheck, Truck } from 'lucide-react';
+import { brands, categories, media, products } from '../data/catalog';
+import { cn, isEmail } from '../lib/utils';
 import { CategoryCard } from '../components/CategoryCard';
 import { ProductGrid } from '../components/ProductCard';
 import { Button } from '../components/ui/Button';
@@ -47,65 +47,58 @@ export default function Home() {
  */
 function Hero() {
   const navigate = useNavigate();
-  const star = getProduct('p1');
 
   return (
-    <div className="container-x">
-      <MinimalistHero
-        className="h-auto min-h-[520px] px-0 py-8 md:min-h-[600px] md:px-0 md:py-10"
-        showHeader={false}
-        showFooter={false}
-        logoText="Aurelle"
-        navLinks={[]}
-        socialLinks={[]}
-        locationText=""
-        mainText="Esmaltes, geles, herramientas y nail art de las marcas que usan las profesionales. Envíos a toda Colombia."
-        readMoreLink="/tienda"
-        imageSrc="/images/editorial/hero-portrait.jpg"
-        imageAlt="Manos con manicura profesional"
-        imageShape="circle"
-        accentClassName="bg-clay-soft"
-        overlayText={{ part1: 'menos', part2: 'es más.' }}
-        actions={
-          <div className="mt-5 flex flex-col items-center gap-5 md:items-start">
-            <div className="flex flex-wrap justify-center gap-2 md:justify-start">
-              <Link to="/tienda"><Button size="lg">Ver catálogo <ArrowRight size={15} strokeWidth={2} /></Button></Link>
-              <Link to="/tienda?oferta=1"><Button size="lg" variant="secondary">Ofertas</Button></Link>
-            </div>
-            {/* Cifras concretas: el bloque pedía algo que sostuviera la columna
-                y de paso dicen qué tan grande es el catálogo. */}
-            <dl className="flex gap-6">
-              {[[`${products.length}`, 'productos'], [`${categories.length}`, 'categorías'], [`${brands.length}`, 'marcas']].map(([n, l]) => (
-                <div key={l} className="flex flex-col">
-                  <dt className="tnum display text-h5 leading-none">{n}</dt>
-                  <dd className="text-meta text-mist">{l}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        }
-        floating={
-          star && (
-            <Link
-              to={`/producto/${star.slug}`}
-              className="absolute -bottom-3 left-1/2 z-20 hidden w-[230px] -translate-x-1/2 items-center gap-2.5 rounded-lg border border-line bg-white/95 p-2 shadow-card backdrop-blur-sm transition-transform hover:-translate-y-0.5 lg:flex"
-            >
-              <span className="h-14 w-11 shrink-0 overflow-hidden rounded border border-line bg-sand">
-                <Img src={star.images[0]} alt="" />
-              </span>
-              <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="flex items-center gap-1 text-meta font-semibold uppercase tracking-[.08em] text-clay">
-                  <Star size={11} strokeWidth={2} fill="currentColor" /> Más vendido
-                </span>
-                <span className="truncate text-cap leading-tight">{star.name}</span>
-                <span className="tnum text-cap font-semibold">{formatCOP(star.price)}</span>
-              </span>
-            </Link>
-          )
-        }
-        onReadMore={() => navigate('/tienda')}
+    <section className="relative isolate overflow-hidden">
+      {/* Fondo en tres capas, todas decorativas y por detras del contenido:
+          un degradado calido que arranca en el tinte de marca, dos halos
+          difusos que dan profundidad, y una reticula de puntos muy tenue
+          con mascara para que se desvanezca por los bordes en vez de
+          cortarse en seco. */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-clay-soft via-sand to-white" />
+      <div className="absolute -left-24 top-0 -z-10 h-[420px] w-[420px] rounded-full bg-clay/20 blur-[130px]" />
+      <div className="absolute -right-20 bottom-0 -z-10 h-[380px] w-[380px] rounded-full bg-clay-soft blur-[110px]" />
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 opacity-[0.07] [background-image:radial-gradient(circle,#141110_1px,transparent_1px)] [background-size:20px_20px] [-webkit-mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)]"
       />
-    </div>
+
+      <div className="container-x">
+        <MinimalistHero
+          className="h-auto min-h-[520px] px-0 py-8 md:min-h-[600px] md:px-0 md:py-10"
+          showHeader={false}
+          showFooter={false}
+          logoText="Aurelle"
+          navLinks={[]}
+          socialLinks={[]}
+          locationText=""
+          mainText="Esmaltes, geles, herramientas y nail art de las marcas que usan las profesionales. Envíos a toda Colombia."
+          readMoreLink="/tienda"
+          imageSrc="/images/editorial/hero-portrait.jpg"
+          imageAlt="Manos con manicura profesional"
+          imageShape="circle"
+          accentClassName="bg-white/70"
+          overlayText={{ part1: 'menos', part2: 'es más.' }}
+          actions={
+            <div className="mt-5 flex flex-col items-center gap-5 md:items-start">
+              <div className="flex flex-wrap justify-center gap-2 md:justify-start">
+                <Link to="/tienda"><Button size="lg">Ver catálogo <ArrowRight size={15} strokeWidth={2} /></Button></Link>
+                <Link to="/tienda?oferta=1"><Button size="lg" variant="secondary">Ofertas</Button></Link>
+              </div>
+              <dl className="flex gap-6">
+                {[[`${products.length}`, 'productos'], [`${categories.length}`, 'categorías'], [`${brands.length}`, 'marcas']].map(([n, l]) => (
+                  <div key={l} className="flex flex-col">
+                    <dt className="tnum display text-h5 leading-none">{n}</dt>
+                    <dd className="text-meta text-mist">{l}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          }
+          onReadMore={() => navigate('/tienda')}
+        />
+      </div>
+    </section>
   );
 }
 

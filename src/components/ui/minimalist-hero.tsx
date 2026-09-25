@@ -43,8 +43,6 @@ interface MinimalistHeroProps {
   onReadMore?: () => void;
   /** Sustituye al enlace "Read More" por botones u otro contenido. */
   actions?: ReactNode;
-  /** Se superpone a la columna de la imagen (ficha de producto, sello…). */
-  floating?: ReactNode;
 }
 
 // Helper component for navigation links
@@ -83,12 +81,13 @@ export const MinimalistHero = ({
   readMoreLabel = 'Read More',
   onReadMore,
   actions,
-  floating,
 }: MinimalistHeroProps) => {
   return (
     <div
       className={cn(
-        'relative flex h-screen w-full flex-col items-center justify-between overflow-hidden bg-background p-8 font-sans md:p-12',
+        // Sin color de fondo propio: lo pone quien lo monta, para poder
+        // dibujar capas decorativas por detras sin pelearse con esta clase.
+        'relative flex h-screen w-full flex-col items-center justify-between overflow-hidden p-8 font-sans md:p-12',
         className
       )}
     >
@@ -171,7 +170,6 @@ export const MinimalistHero = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
           />
-          {floating}
         </div>
 
         {/* Right Text */}

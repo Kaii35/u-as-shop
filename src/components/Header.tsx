@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { ChevronRight, Heart, Home, Menu, Search, ShoppingBag, Store, User } from 'lucide-react';
+import { ChevronRight, Heart, Home, LayoutGrid, Menu, Search, ShoppingBag, Store, User } from 'lucide-react';
 import { categories } from '../data/catalog';
 import { cn } from '../lib/utils';
 import { useStore } from '../store/StoreContext';
@@ -10,14 +10,14 @@ import { Button, IconButton } from './ui/Button';
 import { CloseButton, Sheet } from './ui/Overlays';
 import { Logo } from './ui/Primitives';
 
-export const NAV_ITEMS = [
+export const NAV_ITEMS: Array<{ label: string; to: string; highlight?: boolean }> = [
   { label: 'Novedades', to: '/tienda?orden=new' },
   { label: 'Uñas', to: '/tienda?cat=unas-y-manicura' },
   { label: 'Gel y acrílico', to: '/tienda?cat=gel-acrilico-y-polygel' },
   { label: 'Nail art', to: '/tienda?cat=nail-art-y-decoracion' },
   { label: 'Herramientas', to: '/tienda?cat=herramientas-y-equipos' },
   { label: 'Pestañas', to: '/tienda?cat=pestanas-y-cejas' },
-  { label: 'Ofertas', to: '/tienda?oferta=1' },
+  { label: 'Ofertas', to: '/tienda?oferta=1', highlight: true },
 ];
 
 export function AnnouncementBar() {
@@ -49,7 +49,15 @@ export function Header() {
           <div className="container-x flex items-center gap-6 py-3">
             <Link to="/" aria-label="Aurelle, inicio" className="shrink-0"><Logo /></Link>
             <div className="min-w-0 flex-1"><SearchBar /></div>
-            <div className="flex shrink-0 items-center gap-0.5">
+            <div className="flex shrink-0 items-center gap-1">
+              {/* Acceso directo a todo el catalogo: la navegacion de abajo solo
+                  lleva a categorias sueltas. */}
+              <Link
+                to="/tienda"
+                className="mr-1 hidden h-10 items-center gap-1.5 rounded border border-line px-3 text-body font-medium transition-colors hover:border-ink hover:bg-sand md:flex"
+              >
+                <LayoutGrid size={15} strokeWidth={2} /> Productos
+              </Link>
               {user ? (
                 <Link to="/cuenta" className="mr-1 flex h-10 items-center gap-2 rounded px-2.5 text-body transition-colors hover:bg-sand">
                   <User size={17} strokeWidth={2} /> {user.firstName}
@@ -72,15 +80,25 @@ export function Header() {
             </div>
           </div>
           <nav className="container-x flex items-center gap-1 overflow-x-auto pb-1.5">
-            {NAV_ITEMS.map((n) => (
-              <Link
-                key={n.label}
-                to={n.to}
-                className="whitespace-nowrap rounded px-2.5 py-1.5 text-body text-ash transition-colors hover:bg-sand hover:text-ink"
-              >
-                {n.label}
-              </Link>
-            ))}
+            {NAV_ITEMS.map((n) => {
+              // Marca el enlace activo comparando ruta + query: varios apuntan
+              // a /tienda y solo se distinguen por sus parametros.
+              const active = location.pathname + location.search === n.to;
+              return (
+                <Link
+                  key={n.label}
+                  to={n.to}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'whitespace-nowrap rounded px-2.5 py-1.5 text-body transition-colors hover:bg-sand hover:text-ink',
+                    active ? 'bg-sand font-medium text-ink' : 'text-ash',
+                    n.highlight && !active && 'text-clay hover:text-clay-dark',
+                  )}
+                >
+                  {n.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
@@ -102,6 +120,9 @@ export function Header() {
         <div className="flex items-center justify-between border-b border-line px-4 py-3"><Logo size="sm" /><CloseButton onClick={() => setMenuOpen(false)} /></div>
         <div className="flex-1 overflow-auto">
           <nav className="flex flex-col p-2">
+            <Link to="/tienda" className="mb-1 flex h-11 items-center justify-between rounded bg-sand px-2 text-body font-medium">
+              Todos los productos<ChevronRight size={15} strokeWidth={2} className="text-mist" />
+            </Link>
             {NAV_ITEMS.map((n) => (
               <Link key={n.label} to={n.to} className="flex h-11 items-center justify-between rounded px-2 text-body font-medium hover:bg-sand">
                 {n.label}<ChevronRight size={15} strokeWidth={2} className="text-mist" />
