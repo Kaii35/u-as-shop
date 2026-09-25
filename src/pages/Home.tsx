@@ -218,15 +218,15 @@ function Brands() {
             key={b.slug}
             to={`/tienda?marca=${b.slug}`}
             title={b.name}
-            className="flex h-14 items-center justify-center px-2 text-mist transition-colors duration-300 hover:text-ink"
+            className="flex h-[72px] items-center justify-center px-2 text-mist transition-colors duration-300 hover:text-ink"
           >
-            <BrandLogo name={b.name} />
+            {/* A dos columnas en movil la celda deja ~149px utiles y los
+                wordmarks mas anchos (Solenne, Lumiere) rozan ese limite:
+                se reducen en bloque en vez de arriesgar un recorte. */}
+            <BrandLogo name={b.name} className="scale-[0.78] sm:scale-100" />
           </Link>
         ))}
       </div>
-      <p className="mt-3 text-meta text-mist">
-        Distribuidor autorizado. Todas las marcas incluyen garantía oficial de 12 meses.
-      </p>
     </section>
   );
 }
