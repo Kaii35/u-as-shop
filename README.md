@@ -1,117 +1,173 @@
 # Aurelle · Professional Beauty
 
-Tienda premium de insumos de belleza profesional. React 18 + TypeScript + Vite + Tailwind CSS + Lucide + Framer Motion + React Router.
+Tienda de insumos de belleza profesional con panel administrativo.
 
-## Empezar
+- **Tienda** — React 18 + TypeScript + Vite + Tailwind + React Router.
+- **Panel** — inventario, productos, pedidos, promociones y un resumen de ventas.
+- **API** — Fastify 5 + Prisma 6 sobre PostgreSQL 17 en Docker.
+
+---
+
+## Arrancar
+
+Hace falta **Node 18+** y **Docker Desktop corriendo**.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # typecheck + build de producción
+npm run setup      # base + esquema + datos de ejemplo (tarda ~1 min)
 ```
 
-Requiere Node 18+.
+Luego, en dos terminales:
+
+```bash
+npm run api        # API en http://localhost:4100
+npm run dev        # tienda y panel en http://localhost:5173
+```
+
+- Tienda: <http://localhost:5173>
+- Panel: <http://localhost:5173/admin> · `admin@aurelle.co` / `aurelle-admin`
+
+`npm run setup` levanta Postgres, instala las dependencias del servidor, genera
+el cliente de Prisma, aplica las migraciones y siembra los datos. Es idempotente:
+correrlo otra vez deja exactamente la misma base.
+
+**Sin la API la tienda igual abre.** Si no responde en un segundo y medio,
+arranca con el catálogo de ejemplo de `src/data/catalog.ts`. El panel sí la
+necesita, obviamente.
+
+### Comandos
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Vite, tienda y panel |
+| `npm run api` | API con recarga al guardar |
+| `npm run db:up` / `db:down` | Levanta / apaga Postgres (los datos sobreviven) |
+| `npm run db:reset` | Borra la base **y su volumen** |
+| `npm run db:studio` | Prisma Studio, para mirar las tablas |
+| `npm run api:seed` | Vuelve a sembrar |
+| `npm run api:migrate` | Crea una migración tras tocar el esquema |
+| `npm run typecheck` / `api:typecheck` | TypeScript del front / del servidor |
+
+### Puertos
+
+Postgres en el **5436** y la API en el **4100**, no en los de siempre, para no
+chocar con un Postgres ya instalado ni con otros proyectos. Se cambian en `.env`.
+
+---
+
+## Los datos de ejemplo
+
+El seed inventa **14 meses de historia**: 1.613 pedidos, 3.180 líneas y 3.561
+movimientos de inventario, repartidos entre julio de 2025 y septiembre de 2026.
+No son filas al azar — tienen tendencia creciente, más ventas viernes y sábado,
+y picos en día de la madre, amor y amistad, black friday y diciembre. Sin eso
+las tres gráficas del panel saldrían planas y no habría nada que juzgar.
+
+El generador usa una **semilla fija**, así que dos siembras dan exactamente los
+mismos números. Los ids del catálogo (`c1`…`c9`, `p1`…`p16`) son los mismos que
+traía la tienda estática, para que los carritos guardados en el navegador sigan
+apuntando a algo.
+
+Todo es ficticio: marcas inventadas, correos `@example.com`.
+
+---
+
+## Dos reglas que el código da por hechas
+
+**1. El stock nunca se escribe a mano.** Ninguna parte del servidor hace
+`update({ stock })`. Toda variación entra como `InventoryMovement` dentro de una
+transacción, y el movimiento guarda el stock resultante. Por eso el historial
+explica cada unidad, y por eso `PATCH /api/admin/products/:id` **rechaza** un
+body con `stock` en vez de aceptarlo en silencio.
+
+La resta al vender es un `UPDATE … WHERE stock >= cantidad`, atómico en
+Postgres: dos clientas pueden pedir la última unidad en el mismo milisegundo y
+una de las dos recibe un 409, en vez de quedar el stock en negativo.
+
+**2. El dinero son enteros en pesos.** COP no usa centavos, y los flotantes
+redondean mal justo en el total que ve la clienta.
+
+---
 
 ## Estructura
 
 ```
+docker-compose.yml        Postgres (y la API, con el perfil `full`)
+docs/api.md               CONTRATO de la API. Manda sobre el código.
+
+server/
+  prisma/schema.prisma    Catálogo, inventario, pedidos, promociones, panel
+  prisma/seed.ts          Los 14 meses de historia
+  src/
+    index.ts              Arranque, CORS, manejo de errores
+    env.ts db.ts auth.ts  Configuración, Prisma, tokens del panel
+    inventory.ts          Servicio de stock. Todo cambio pasa por aquí
+    promotions.ts         Motor de reglas de descuento (funciones puras)
+    sales.ts              Qué cuenta como venta, margen, variación %
+    serializers.ts        Formas pública y de panel de un producto
+    settings-defaults.ts  Los parámetros que la dueña puede cambiar
+    routes/               catalog · auth · dashboard · products · inventory
+                          orders · promotions · settings
+
 src/
-  App.tsx                 Rutas
-  types.ts                Tipos de dominio (Product, CartLine, Order…)
-  data/catalog.ts         Datos de demo: categorías, marcas, productos, pedidos, media
-  lib/utils.ts            Formato COP, totales, envío, validaciones, hooks
-  store/StoreContext.tsx  Carrito, favoritos, sesión, toasts, drawer y quick view
+  App.tsx                 Rutas de la tienda y del panel
+  data/catalog.ts         Catálogo de ejemplo + hidratación desde la API
+  lib/
+    api.ts                Cliente HTTP: token, errores, base de la URL
+    admin-types.ts        Los tipos del contrato, en un solo sitio
+    useResource.ts        Carga, acciones y `debounce` de las pantallas
+    utils.ts              Formato COP, totales, envío, validaciones, hooks
   components/
-    ui/                   Button, Input/Select/Textarea/Checkbox, Badge, RatingStars,
-                          PriceDisplay, QuantitySelector, Img, Modal, Sheet, Reveal, Toast
-    Header.tsx            Header sticky, menú móvil, barra inferior móvil
-    SearchBar.tsx         Búsqueda con panel de sugerencias (inline y overlay móvil)
-    Footer.tsx
-    ProductCard.tsx       ProductCard (grid / lista) + ProductGrid
-    CategoryCard.tsx
-    ProductFilters.tsx
-    ProductGallery.tsx    Galería con zoom al hover y modal
-    CartDrawer.tsx        Drawer lateral + CouponField
-    CheckoutSummary.tsx
-    QuickView.tsx
-    layout/               StoreLayout, CheckoutLayout, ScrollManager
-  pages/                  Home, Shop, ProductDetail, Checkout, Login, Register, Account, Favorites
+    admin/Primitives.tsx  Tarjetas, tablas, diálogos, estados del panel
+    admin/Charts.tsx      Gráficas en SVG propio
+    PromoPopup.tsx        El anuncio de promoción en la portada
+    ui/ …                 Botones, campos, overlays de la tienda
+  pages/
+    Admin/                Login, Resumen, Pedidos, Productos, Inventario,
+                          Promociones, Ajustes
+    …                     Home, Shop, ProductDetail, Checkout, Cuenta
+  store/
+    StoreContext.tsx      Carrito, favoritos, sesión de clienta
+    AdminAuth.tsx         Sesión del panel
 ```
 
-## Rutas
+---
 
-| Ruta | Página |
-| --- | --- |
-| `/` | Landing |
-| `/tienda?cat=&marca=&q=&oferta=1` | Catálogo (filtros en la URL, combinables con comas) |
-| `/producto/:slug` | Detalle |
-| `/checkout` | Checkout en 5 pasos |
-| `/ingresar`, `/registro` | Autenticación |
-| `/cuenta?tab=pedidos` | Panel de usuario (protegido) |
-| `/favoritos` | Lista de deseos |
+## De dónde salen los datos de la tienda
 
-## Imágenes
+La tienda seguía leyendo `src/data/catalog.ts` de forma síncrona desde
+diecisiete pantallas. En vez de convertirlas todas a asíncronas, `main.tsx`
+pide el catálogo a la API **antes de montar React** y rellena esos mismos
+arreglos en el sitio, sin cambiar su identidad. Todas las pantallas siguen
+haciendo `import { products }` y ven los datos reales.
 
-Dos tipos, a propósito:
+Es deliberado, y tiene un límite claro: los cambios del panel se ven al
+**recargar** la tienda, no al instante. Para esta demo es el cambio correcto;
+una tienda de verdad querría consultas por página con su propia caché.
 
-| Carpeta | Qué es | Se usa en |
-| --- | --- | --- |
-| `public/images/editorial/` | Fotografía real (licencia Unsplash: uso comercial libre, sin atribución obligatoria) | objeto `media` |
-| `public/images/categories/` | Fotografía real, una por categoría | propiedad `image` de la categoría |
-| `public/images/products/` | Packshots vectoriales generados en la paleta de la marca, `pN-a.svg` + `pN-b.svg` (la `-b` es la vista al hover) | `images` de cada producto |
+---
 
-Los productos siguen siendo ilustraciones porque el stock libre no tiene packshots de
-insumos profesionales (builder gel, polygel, torno, lash lift, foils cromados): una foto
-aproximada mostraría el producto equivocado. Al ser todos iguales, la grilla se ve
-consistente. Sustitúyelos por tus fotos de producto cuando las tengas.
+## Seguridad
 
-**Proporciones.** Cada recorte está hecho a la medida de su contenedor, no a un 4:5
-genérico: la grilla de categorías es un bento con tarjetas apaisadas de distinta relación
-(6×2, 3×1, 6×1, 4×2, 4×1) y el hero es apaisado con el sujeto desplazado a la derecha,
-porque su mitad izquierda queda bajo el degradado y el titular. Si cambias una imagen,
-respeta la proporción de la que reemplazas o el `object-cover` volverá a recortar de más.
+Lo que protege los datos es que **cada ruta de `/api/admin/` exige un token
+firmado**. `RequireAdmin` en el frontend es comodidad: esconde pantallas, no
+defiende nada, y cualquiera puede saltárselo desde la consola del navegador.
 
-Para regenerar los packshots de producto: `node scripts/generate-placeholders.mjs public/images`.
+`JWT_SECRET` tiene que ser un secreto propio de 32+ caracteres en producción o
+el servidor se niega a arrancar. `server/.env` no se versiona.
 
-## Siguiente paso: conectar backend
-
-- **Catálogo**: reemplaza `data/catalog.ts` por llamadas a tu API/CMS (Shopify Storefront, Medusa, WooCommerce, Strapi…). Los componentes solo dependen de `types.ts`.
-- **Auth**: `login()` en `StoreContext` es un mock. Sustitúyelo por tu proveedor (Supabase, Firebase, Auth0) incluido Google OAuth.
-- **Pagos**: el punto de integración está en `pages/Checkout.tsx → place()`. Pasarelas habituales en Colombia: Wompi, PayU, Mercado Pago, ePayco (tarjeta, PSE, Nequi, Daviplata).
-- **Persistencia**: carrito, favoritos y sesión se guardan en `localStorage` (`aurelle.*`).
+---
 
 ## Sistema de diseño
 
-Definido en `tailwind.config.ts` y `src/index.css`. Tres reglas que el código respeta:
-ningún componente escribe un hex ni un tamaño de fuente arbitrario, la escala
-tipográfica tiene 9 pasos y el mayor es 44px, y el espaciado es múltiplo de 4.
+Todo sale de `tailwind.config.ts`: la paleta (neutros cálidos + terracota), una
+escala tipográfica de 9 pasos que **termina en 44 px**, espaciado múltiplo de 4.
+Ningún componente escribe un hex ni un tamaño de fuente arbitrario.
 
-**Color.** Neutros cálidos, porque la fotografía del sitio es cálida y los grises
-fríos la ensucian. Un solo color saturado, que por eso significa siempre precio,
-oferta o acción.
+El panel es más denso que la tienda —son tablas, no escaparate— pero usa los
+mismos colores, la misma escala y los mismos radios.
 
-| Token | Hex | Uso |
-| --- | --- | --- |
-| `ink` | `#141110` | Texto principal, botón primario |
-| `ash` | `#5C554F` | Texto secundario |
-| `mist` | `#8A827B` | Metadatos |
-| `line` | `#E7E2DC` | Bordes y separadores |
-| `sand` | `#F6F3EF` | Superficie alterna |
-| `clay` | `#A8432A` | Acento (`clay-dark`, `clay-soft`) |
-| `ok` / `warn` / `danger` | `#2F6B4F` / `#9A6B1F` / `#B3261E` | Estados |
-
-**Tipografía.** `font-display` Archivo (titulares) · `font-sans` Inter (todo lo demás).
-
-| Paso | px | Paso | px |
-| --- | --- | --- | --- |
-| `text-meta` | 11 | `text-h5` | 18 |
-| `text-cap` | 12 | `text-h4` | 22 |
-| `text-body` | 14 | `text-h3` | 28 |
-| `text-lead` | 16 | `text-h2` | 36 |
-| | | `text-h1` | 44 |
-
-**Utilidades propias** (`index.css`): `.container-x`, `.section-y`, `.display`,
-`.kicker`, `.label-xs`, `.card`, `.row-kv`, `.link-arrow`, `.link-quiet`, `.tnum`
-(cifras de ancho fijo, para que los precios no bailen al cambiar).
-
-Cupón de demo: **PRO10** (10%). Envío gratis desde $250.000.
+Las gráficas son SVG propio, no una librería. Pintan **una serie a la vez**: el
+selector de medida cambia lo que se mira en vez de amontonar cuatro líneas de
+escalas distintas en un mismo eje. El periodo anterior va en gris y discontinuo
+porque es una referencia, no una segunda serie con identidad propia.

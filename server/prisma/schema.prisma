@@ -1,0 +1,413 @@
+// Esquema de Aurelle: catálogo, inventario, pedidos, promociones y panel.
+//
+// Dos reglas de oro que el resto del código da por hechas:
+//
+//   1. El stock NUNCA se escribe a mano en Product. Toda variación entra como
+//      InventoryMovement dentro de una transacción, y el movimiento guarda el
+//      stock resultante. Así el historial explica cada unidad que hay o falta.
+//
+//   2. El dinero son enteros en pesos. COP no usa centavos, y los flotantes
+//      redondean mal justo donde más duele: en el total que ve el cliente.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Catálogo
+// ---------------------------------------------------------------------------
+
+model Category {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String
+  image       String?
+  /// Orden en que se pintan en la tienda. Menor primero.
+  order       Int     @default(0)
+  active      Boolean @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Brand {
+  id     String  @id @default(cuid())
+  slug   String  @unique
+  name   String
+  /// Marca destacada en el muro de marcas de la portada.
+  featured Boolean @default(true)
+  order  Int     @default(0)
+  active Boolean @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("brands")
+}
+
+model Product {
+  id   String @id @default(cuid())
+  /// Referencia interna. Es lo que la dueña busca en el panel y lo que va en
+  /// la etiqueta del estante, así que es único y obligatorio.
+  sku  String @unique
+  slug String @unique
+  name String
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  brandId    String
+  brand      Brand    @relation(fields: [brandId], references: [id])
+
+  /// Precio de venta al público, con IVA, en pesos enteros.
+  price          Int
+  /// Precio tachado. Null si el producto no está en oferta permanente.
+  compareAtPrice Int?
+  /// Lo que le costó a la tienda. Sin esto el panel no puede decir margen,
+  /// que es el número que de verdad le importa a quien vende.
+  cost           Int     @default(0)
+  /// 0.19 = IVA general colombiano. 0 para excluidos.
+  taxRate        Decimal @default(0.19) @db.Decimal(5, 4)
+
+  /// Unidades físicas en bodega.
+  stock    Int @default(0)
+  /// Comprometidas por pedidos aún no despachados. stock - reserved = vendible.
+  reserved Int @default(0)
+  /// Umbral propio de cada referencia para la alerta de stock bajo. Un torno
+  /// de 390.000 no se repone igual que un esmalte de 32.000.
+  minStock Int @default(5)
+
+  active   Boolean @default(true)
+  /// Aparece en "Más vendidos" de la portada aunque no lidere las ventas.
+  featured Boolean @default(false)
+
+  /// 'best' | 'new' | 'pro'. Son las etiquetas que ya pinta la tienda.
+  tags String[] @default([])
+
+  /// Presentación: "15 ml", "4 × 30 g", "1 unidad + 6 fresas".
+  content     String  @default("")
+  description String  @default("")
+  usage       String  @default("")
+
+  /// Rutas públicas. La [1] es la que se muestra al pasar el cursor.
+  images String[] @default([])
+  /// [{ name, hex }]. Json y no tabla aparte porque un tono no existe fuera
+  /// de su producto y nunca se consulta por sí solo.
+  shades Json?
+  /// [{ label, price? }]. El price opcional reemplaza al del producto.
+  sizes  Json?
+
+  /// Valoración mostrada en la ficha. Se recalcula cuando haya reseñas reales.
+  rating      Decimal @default(0) @db.Decimal(2, 1)
+  reviewCount Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movements  InventoryMovement[]
+  orderItems OrderItem[]
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([active])
+  @@index([stock])
+  @@map("products")
+}
+
+// ---------------------------------------------------------------------------
+// Inventario
+// ---------------------------------------------------------------------------
+
+enum MovementType {
+  /// Entrada por compra al proveedor.
+  PURCHASE
+  /// Salida por venta pagada.
+  SALE
+  /// Corrección manual desde el panel: conteo físico, avería, pérdida, robo.
+  ADJUSTMENT
+  /// Devolución del cliente. La unidad vuelve a bodega.
+  RETURN
+  /// Carga inicial del catálogo.
+  INITIAL
+}
+
+model InventoryMovement {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  type MovementType
+  /// Positivo entra, negativo sale. Nunca cero: un movimiento de cero no
+  /// cuenta nada y solo ensucia el historial.
+  quantity   Int
+  /// Stock del producto justo después de aplicar este movimiento. Guardarlo
+  /// evita tener que sumar toda la historia para saber cómo se llegó aquí.
+  stockAfter Int
+  /// Costo unitario de esta entrada. Solo en PURCHASE / INITIAL.
+  unitCost   Int?
+  reason     String?
+
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id])
+
+  /// Quién lo hizo, si fue manual desde el panel.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([productId, createdAt])
+  @@index([type, createdAt])
+  @@index([createdAt])
+  @@map("inventory_movements")
+}
+
+// ---------------------------------------------------------------------------
+// Pedidos
+// ---------------------------------------------------------------------------
+
+enum OrderStatus {
+  /// Creado, esperando confirmación de pago.
+  PENDING
+  /// Pago aprobado: el stock ya se descontó.
+  PAID
+  /// Alistando en bodega.
+  PREPARING
+  /// Despachado al cliente.
+  SHIPPED
+  /// En manos del cliente. Es el estado que cierra la venta.
+  DELIVERED
+  /// Anulado antes de despachar. El stock se devuelve.
+  CANCELLED
+  /// Devuelto después de entregado. El stock se devuelve.
+  REFUNDED
+}
+
+enum SalesChannel {
+  /// Tienda en línea.
+  ONLINE
+  /// Venta de mostrador registrada a mano en el panel.
+  COUNTER
+  /// Pedido por WhatsApp o Instagram.
+  SOCIAL
+}
+
+model Order {
+  id     String      @id @default(cuid())
+  /// Consecutivo legible: AU-10482. Es lo que se le dice al cliente.
+  number String      @unique
+  status OrderStatus @default(PENDING)
+  channel SalesChannel @default(ONLINE)
+
+  customerName  String
+  customerEmail String
+  customerPhone String @default("")
+  customerCity  String @default("")
+
+  /// Todos los montos congelados al comprar, en pesos enteros.
+  subtotal Int
+  discount Int @default(0)
+  shipping Int @default(0)
+  total    Int
+  /// Costo de la mercancía vendida. Copiado al cerrar, para que el margen
+  /// histórico no cambie si mañana sube el costo del proveedor.
+  cost     Int @default(0)
+
+  /// Promoción aplicada, si la hubo. Es lo que permite medir si sirvió.
+  promotionId String?
+  promotion   Promotion? @relation(fields: [promotionId], references: [id])
+  couponCode  String?
+
+  paymentMethod String?
+  notes         String?
+
+  items     OrderItem[]
+  movements InventoryMovement[]
+
+  /// Fecha de la venta. Se puede fijar al sembrar historia, por eso no es
+  /// solo `now()` en la práctica: todas las series del panel se agrupan por aquí.
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@index([customerEmail])
+  @@index([promotionId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  /// Copias del producto al momento de la venta: si mañana cambia el precio o
+  /// el nombre, el pedido histórico sigue diciendo lo que el cliente compró.
+  sku       String
+  name      String
+  variant   String?
+  unitPrice Int
+  unitCost  Int    @default(0)
+  quantity  Int
+  lineTotal Int
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// ---------------------------------------------------------------------------
+// Promociones
+// ---------------------------------------------------------------------------
+
+enum PromotionType {
+  /// Porcentaje de descuento. `value` va en puntos: 15 = 15 %.
+  PERCENTAGE
+  /// Monto fijo en pesos.
+  FIXED_AMOUNT
+  /// Envío gratis. `value` se ignora.
+  FREE_SHIPPING
+}
+
+enum PromotionScope {
+  /// Todo el catálogo.
+  ALL
+  /// Solo las categorías listadas en `targetIds`.
+  CATEGORY
+  /// Solo las marcas listadas en `targetIds`.
+  BRAND
+  /// Solo los productos listados en `targetIds`.
+  PRODUCT
+}
+
+/// Cada cuánto vuelve a salir el pop-up a una misma persona.
+enum PopupFrequency {
+  /// Una sola vez por navegador. Es lo menos molesto.
+  ONCE
+  /// Una vez por sesión: vuelve a salir si cierra y abre el navegador.
+  SESSION
+  /// Una vez al día.
+  DAILY
+  /// En cada carga. Solo para probar; en producción espanta.
+  ALWAYS
+}
+
+/// Una promoción es dos cosas a la vez y por eso vive en una sola tabla: la
+/// REGLA que descuenta (type, value, scope) y el ANUNCIO que la comunica
+/// (los campos popup*). Separarlas obligaría a la dueña a crear dos cosas y
+/// mantenerlas en sincronía a mano.
+model Promotion {
+  id   String @id @default(cuid())
+  /// Nombre interno, el que se ve en la lista del panel.
+  name String
+  /// Cupón que escribe el cliente. Null = se aplica sola.
+  code String? @unique
+
+  type   PromotionType  @default(PERCENTAGE)
+  scope  PromotionScope @default(ALL)
+  /// Ids de categoría, marca o producto según `scope`. Vacío si scope = ALL.
+  targetIds String[]    @default([])
+
+  /// Porcentaje (15 = 15 %) o pesos, según `type`.
+  value Int @default(0)
+  /// Tope del descuento en pesos, para que un 50 % no regale un torno.
+  maxDiscount Int?
+  /// Compra mínima en pesos para que aplique.
+  minPurchase Int @default(0)
+
+  startsAt DateTime  @default(now())
+  /// Null = sin fecha de fin.
+  endsAt   DateTime?
+  active   Boolean   @default(true)
+  /// Desempata cuando dos promociones podrían aplicar. Mayor gana.
+  priority Int       @default(0)
+
+  /// Null = ilimitada.
+  usageLimit Int?
+  usageCount Int  @default(0)
+
+  // ---- El anuncio ----
+  /// Si es false la promoción descuenta pero no se anuncia en la portada.
+  showPopup      Boolean        @default(false)
+  popupTitle     String?
+  popupSubtitle  String?
+  popupBadge     String?
+  popupImage     String?
+  popupCtaLabel  String?
+  popupCtaUrl    String?
+  popupFrequency PopupFrequency @default(SESSION)
+  /// Milisegundos antes de aparecer. Salir de golpe se siente a trampa.
+  popupDelayMs   Int            @default(1200)
+
+  /// Contadores del anuncio. Van como columnas y no como tabla de eventos a
+  /// propósito: una tienda de este tamaño no necesita el detalle por visita,
+  /// y una fila por carga de portada crece sin freno.
+  popupViews     Int @default(0)
+  popupClicks    Int @default(0)
+  popupDismissed Int @default(0)
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, startsAt, endsAt])
+  @@index([showPopup])
+  @@map("promotions")
+}
+
+// ---------------------------------------------------------------------------
+// Panel
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  /// Puede todo, incluido crear usuarios y tocar la configuración.
+  ADMIN
+  /// Día a día: inventario, pedidos, productos. No toca usuarios ni ajustes.
+  STAFF
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole @default(STAFF)
+  active       Boolean  @default(true)
+  lastLoginAt  DateTime?
+
+  movements InventoryMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+/// Parámetros que la dueña cambia sin tocar código: umbral de envío gratis,
+/// costo del envío, moneda, datos de la tienda. Clave-valor porque la lista
+/// crece con el tiempo y no vale la pena una migración por cada ajuste nuevo.
+model Setting {
+  key       String   @id
+  value     Json
+  /// Texto que ve la dueña en el panel. El `key` es para el código.
+  label     String
+  group     String   @default("general")
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}

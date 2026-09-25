@@ -1,3 +1,4 @@
+import { api } from '../lib/api';
 import type { Address, Brand, Category, Order, Product, ProductTag, Review, Shade, SizeOption } from '../types';
 
 export const normalize = (s: string) =>
@@ -129,3 +130,49 @@ export const addresses: Address[] = [
 export const departments = ['Antioquia', 'Atlántico', 'Bogotá D.C.', 'Bolívar', 'Boyacá', 'Caldas', 'Cundinamarca', 'Huila', 'Meta', 'Nariño', 'Norte de Santander', 'Quindío', 'Risaralda', 'Santander', 'Tolima', 'Valle del Cauca'];
 export const banks = ['Bancolombia', 'Banco de Bogotá', 'Davivienda', 'BBVA Colombia', 'Banco de Occidente', 'Banco Popular', 'Scotiabank Colpatria', 'Banco Caja Social'];
 export const trendingSearches = ['Rubber base', 'Polygel', 'Foils', 'Lash lift', 'Lámpara LED'];
+
+// ---------------------------------------------------------------------------
+// Hidratación desde la API
+// ---------------------------------------------------------------------------
+
+/**
+ * Sustituye el contenido de un arreglo exportado SIN cambiar su identidad.
+ *
+ * Es el truco que permite que la tienda pasara de datos estáticos a la base de
+ * datos sin tocar ni una de las diecisiete pantallas que hacen
+ * `import { products }`: todas siguen apuntando al mismo arreglo, y al
+ * rellenarlo antes del primer render ven los datos reales. Reasignar
+ * `products = […]` no serviría: cada módulo se quedaría con la referencia vieja.
+ */
+const refill = <T>(target: T[], next: T[]): void => {
+  target.length = 0;
+  target.push(...next);
+};
+
+/**
+ * Trae el catálogo real de la API. Devuelve `false` si no se pudo.
+ *
+ * Que falle NO es un error fatal: la tienda se queda con el catálogo de
+ * ejemplo de este archivo y se puede ver igual. Es a propósito, para que la
+ * demo abra aunque no esté levantado ni Docker ni la API.
+ */
+export async function hydrateCatalog(signal?: AbortSignal): Promise<boolean> {
+  try {
+    const data = await api.publicGet<{
+      categories: Category[];
+      brands: Brand[];
+      products: Product[];
+    }>('/api/catalog', signal);
+
+    // Un catálogo vacío es peor que el de ejemplo: dejaría la tienda sin nada
+    // que mostrar. Si la base está recién creada y sin sembrar, no se aplica.
+    if (!data?.products?.length) return false;
+
+    refill(categories, data.categories);
+    refill(brands, data.brands);
+    refill(products, data.products);
+    return true;
+  } catch {
+    return false;
+  }
+}

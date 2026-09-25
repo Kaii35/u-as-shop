@@ -1,0 +1,53 @@
+# Base de datos de Aurelle.
+#
+#   npm run db:up      → levanta solo Postgres (lo normal en desarrollo)
+#   npm run db:down    → lo apaga (los datos sobreviven en el volumen)
+#   npm run db:reset   → lo borra TODO, volumen incluido
+#
+# Las credenciales salen de .env en la raíz. Si no existe, los valores por
+# defecto de abajo bastan para desarrollo local.
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: aurelle-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aurelle}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aurelle_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-aurelle}
+    ports:
+      # 5436 y no 5432 para no pelearse con un Postgres ya instalado en la
+      # máquina ni con el de otros proyectos.
+      - '${POSTGRES_PORT:-5436}:5432'
+    volumes:
+      - aurelle-db-data:/var/lib/postgresql/data
+    healthcheck:
+      # La API espera a que responda de verdad antes de migrar: un contenedor
+      # "running" todavía puede estar arrancando el motor.
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-aurelle} -d ${POSTGRES_DB:-aurelle}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Solo para probar el despliegue completo en contenedores. En el día a día
+  # la API se corre con `npm run api`, que recarga al guardar.
+  api:
+    profiles: ['full']
+    build:
+      context: ./server
+    container_name: aurelle-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aurelle}:${POSTGRES_PASSWORD:-aurelle_dev}@db:5432/${POSTGRES_DB:-aurelle}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-cambiar-en-produccion}
+      PORT: '4100'
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+    ports:
+      - '${API_PORT:-4100}:4100'
+
+volumes:
+  aurelle-db-data:

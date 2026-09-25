@@ -7,7 +7,18 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f db",
+    "db:reset": "docker compose down -v && docker compose up -d db",
+    "db:studio": "npm --prefix server run prisma:studio",
+    "api": "npm --prefix server run dev",
+    "api:install": "npm --prefix server install",
+    "api:migrate": "npm --prefix server run prisma:migrate",
+    "api:seed": "npm --prefix server run seed",
+    "api:typecheck": "npm --prefix server run typecheck",
+    "setup": "npm run db:up && npm run api:install && npm --prefix server run prisma:generate && npm --prefix server run prisma:deploy && npm run api:seed"
   },
   "dependencies": {
     "framer-motion": "^11.11.0",
