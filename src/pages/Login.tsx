@@ -48,15 +48,17 @@ export default function Login() {
     <AuthLayout
       image={media.login}
       aside={
-        <div className="rounded-lg bg-clay/95 px-7 py-[26px] text-white">
-          <p className="mb-3 display text-h4 leading-tight">“Cada set que entrego empieza con un buen producto.”</p>
-          <span className="text-meta font-medium uppercase tracking-[.2em] text-clay">Comunidad Aurelle Pro</span>
+        <div className="text-white">
+          <p className="display text-h5 leading-snug text-balance">“Cada set que entrego empieza con un buen producto.”</p>
+          <span className="mt-1.5 block text-meta font-semibold uppercase tracking-[.12em] text-white/60">Comunidad Aurelle Pro</span>
         </div>
       }
     >
-      <form onSubmit={submit} noValidate className="flex flex-col gap-5">
-        <span className="kicker">Mi cuenta</span>
-        <h1 className="display text-h3">Bienvenida <em className="text-clay">de nuevo</em></h1>
+      <form onSubmit={submit} noValidate className="flex flex-col gap-3">
+        <div className="mb-1 flex flex-col gap-1">
+          <h1 className="display text-h3">Bienvenida de nuevo</h1>
+          <p className="text-body text-ash">Entra con tu cuenta para ver tus pedidos y favoritos.</p>
+        </div>
         <GoogleButton loading={loading} onClick={() => { setLoading(true); window.setTimeout(() => { setLoading(false); finish('valentina.rios@gmail.com'); }, 1000); }}>Continuar con Google</GoogleButton>
         <Divider>o con tu correo</Divider>
         <Input label="Correo electrónico" type="email" autoComplete="email" placeholder="tu@correo.com" value={email} onChange={(e) => { setEmail(e.target.value); setErrors({}); }} error={errors.email} />
@@ -69,18 +71,18 @@ export default function Login() {
           onChange={(e) => { setPass(e.target.value); setErrors({}); }}
           error={errors.pass}
           trailing={
-            <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'} className="flex h-10 w-10 items-center justify-center text-mist">
-              {show ? <EyeOff size={20} strokeWidth={1.5} /> : <Eye size={20} strokeWidth={1.5} />}
+            <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded text-mist transition-colors hover:text-ink">
+              {show ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
             </button>
           }
         />
-        <div className="-mt-1.5 flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <Checkbox checked={remember} onChange={setRemember}>Recordarme</Checkbox>
-          <button type="button" onClick={forgot} className="text-body text-clay underline">¿Olvidaste tu contraseña?</button>
+          <button type="button" onClick={forgot} className="cursor-pointer text-cap text-clay underline underline-offset-4">¿Olvidaste tu contraseña?</button>
         </div>
-        {sent && <div role="status" className="flex items-center gap-2.5 rounded bg-sand px-4 py-3.5 text-body text-clay"><Mail size={16} strokeWidth={1.5} /> Te enviamos un enlace para restablecer tu contraseña.</div>}
+        {sent && <div role="status" className="flex items-center gap-2 rounded bg-sand px-3 py-2.5 text-cap text-clay"><Mail size={14} strokeWidth={2} /> Te enviamos un enlace para restablecer tu contraseña.</div>}
         <Button type="submit" size="lg" loading={loading}>{loading ? 'Iniciando sesión…' : 'Iniciar sesión'}</Button>
-        <p className="text-center text-body">¿Aún no tienes cuenta? <Link to="/registro" className="font-medium text-clay underline">Crear cuenta</Link></p>
+        <p className="text-center text-cap text-mist">¿Aún no tienes cuenta? <Link to="/registro" className="font-medium text-clay underline underline-offset-4">Crear cuenta</Link></p>
       </form>
     </AuthLayout>
   );

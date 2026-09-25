@@ -46,8 +46,8 @@ export default function Register() {
   };
 
   const eye = (
-    <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'} className="flex h-10 w-10 items-center justify-center text-mist">
-      {show ? <EyeOff size={20} strokeWidth={1.5} /> : <Eye size={20} strokeWidth={1.5} />}
+    <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded text-mist transition-colors hover:text-ink">
+      {show ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
     </button>
   );
 
@@ -56,43 +56,47 @@ export default function Register() {
       reverse
       image={media.register}
       aside={
-        <div className="flex flex-col gap-3 rounded-lg bg-white/95 px-7 py-[26px]">
-          <span className="text-meta font-medium uppercase tracking-[.2em] text-clay">Beneficios de tu cuenta</span>
+        <div className="flex flex-col gap-1.5 text-white">
+          <span className="text-meta font-semibold uppercase tracking-[.12em] text-white/60">Beneficios de tu cuenta</span>
           {['10% en tu primera compra', 'Seguimiento de pedidos en tiempo real', 'Favoritos y direcciones guardadas'].map((b) => (
-            <span key={b} className="flex items-center gap-2.5 text-body"><Check size={16} strokeWidth={1.5} className="text-clay" />{b}</span>
+            <span key={b} className="flex items-center gap-2 text-cap"><Check size={14} strokeWidth={2.5} className="shrink-0 text-clay-soft" />{b}</span>
           ))}
         </div>
       }
     >
-      <form onSubmit={submit} noValidate className="flex flex-col gap-5">
-        <span className="kicker">Nueva cuenta</span>
-        <h1 className="display text-h3">Únete a <em className="text-clay">Aurelle</em></h1>
+      <form onSubmit={submit} noValidate className="flex flex-col gap-3">
+        <div className="mb-1 flex flex-col gap-1">
+          <h1 className="display text-h3">Crea tu cuenta</h1>
+          <p className="text-body text-ash">Tarda menos de un minuto.</p>
+        </div>
         <GoogleButton loading={loading} onClick={() => done('Valentina', 'Ríos', 'valentina.rios@gmail.com')}>Registrarme con Google</GoogleButton>
         <Divider>o con tu correo</Divider>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2.5">
           <Input label="Nombre" autoComplete="given-name" {...bind('first')} />
           <Input label="Apellido" autoComplete="family-name" {...bind('last')} />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input label="Correo electrónico" type="email" autoComplete="email" placeholder="tu@correo.com" {...bind('email')} />
+        <div className="grid grid-cols-2 gap-2.5">
+          <Input label="Correo" type="email" autoComplete="email" placeholder="tu@correo.com" {...bind('email')} />
           <Input label="Teléfono" hint="Opcional" type="tel" autoComplete="tel" placeholder="300 000 0000" {...bind('phone')} />
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           <Input label="Contraseña" type={show ? 'text' : 'password'} autoComplete="new-password" trailing={eye} {...bind('pass')} />
-          <div className="flex gap-1" aria-hidden="true">
-            {[0, 1, 2, 3].map((i) => <span key={i} className={cn('h-[3px] flex-1 rounded-full transition-colors', i < score ? STRENGTH_COLOR[score - 1] : 'bg-ink/10')} />)}
-          </div>
-          <span className="text-cap text-mist">{f.pass ? STRENGTH[score] : 'Mínimo 8 caracteres, una mayúscula y un número'}</span>
+          <Input label="Confirmar" type={show ? 'text' : 'password'} autoComplete="new-password" {...bind('pass2')} />
         </div>
-        <Input label="Confirmar contraseña" type={show ? 'text' : 'password'} autoComplete="new-password" {...bind('pass2')} />
-        <div className="flex flex-col gap-1.5">
-          <Checkbox checked={terms} onChange={(v) => { setTerms(v); setErrors((x) => ({ ...x, terms: undefined })); }}>
-            Acepto los términos y condiciones y la política de tratamiento de datos.
+        <div className="-mt-1 flex flex-col gap-1">
+          <div className="flex gap-1" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => <span key={i} className={cn('h-[3px] flex-1 rounded-full transition-colors', i < score ? STRENGTH_COLOR[score - 1] : 'bg-line')} />)}
+          </div>
+          <span className="text-meta text-mist">{f.pass ? STRENGTH[score] : 'Mínimo 8 caracteres, una mayúscula y un número'}</span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <Checkbox checked={terms} onChange={(v) => { setTerms(v); setErrors((x) => ({ ...x, terms: undefined })); }} className="text-cap">
+            Acepto los términos y la política de tratamiento de datos.
           </Checkbox>
-          {errors.terms && <span role="alert" className="text-cap text-danger">{errors.terms}</span>}
+          {errors.terms && <span role="alert" className="text-meta text-danger">{errors.terms}</span>}
         </div>
         <Button type="submit" size="lg" loading={loading}>{loading ? 'Creando tu cuenta…' : 'Crear cuenta'}</Button>
-        <p className="text-center text-body">¿Ya tienes cuenta? <Link to="/ingresar" className="font-medium text-clay underline">Iniciar sesión</Link></p>
+        <p className="text-center text-cap text-mist">¿Ya tienes cuenta? <Link to="/ingresar" className="font-medium text-clay underline underline-offset-4">Iniciar sesión</Link></p>
       </form>
     </AuthLayout>
   );

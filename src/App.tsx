@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { StoreProvider } from './store/StoreContext';
-import { StoreLayout, CheckoutLayout } from './components/layout/Layouts';
+import { StoreLayout, CheckoutLayout, AuthShell } from './components/layout/Layouts';
 import { ScrollManager } from './components/layout/ScrollManager';
 import { CartDrawer } from './components/CartDrawer';
 import { QuickView } from './components/QuickView';
@@ -25,6 +25,8 @@ export default function App() {
           <Route path="producto/:slug" element={<ProductPage />} />
           <Route path="favoritos" element={<Favorites />} />
           <Route path="cuenta" element={<Account />} />
+        </Route>
+        <Route element={<AuthShell />}>
           <Route path="ingresar" element={<Login />} />
           <Route path="registro" element={<Register />} />
         </Route>
