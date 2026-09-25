@@ -6,30 +6,59 @@
 <radialGradient id="v86" cx=".5" cy=".42" r=".72">
 <stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#141110" stop-opacity=".07"/>
 </radialGradient>
+<filter id="blurWide" x="-60%" y="-200%" width="220%" height="500%"><feGaussianBlur stdDeviation="13"/></filter>
+<filter id="blurTight" x="-60%" y="-300%" width="220%" height="700%"><feGaussianBlur stdDeviation="4"/></filter>
+<linearGradient id="reflGrad" x1="0" y1="205" x2="0" y2="335" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#fff" stop-opacity=".5"/>
+<stop offset="1" stop-color="#fff" stop-opacity="0"/>
+</linearGradient>
+<mask id="reflFade" maskUnits="userSpaceOnUse" x="-260" y="205" width="520" height="130">
+<rect x="-260" y="205" width="520" height="130" fill="url(#reflGrad)"/>
+</mask>
 <linearGradient id="g83" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0" stop-color="#bd9c9f"/>
-<stop offset=".18" stop-color="#EBC3C6"/>
-<stop offset=".42" stop-color="#f6e4e5"/>
-<stop offset=".58" stop-color="#EBC3C6"/>
-<stop offset="1" stop-color="#a88a8d"/>
+<stop offset="0" stop-color="#a48689"/>
+<stop offset=".07" stop-color="#ceaaad"/>
+<stop offset=".26" stop-color="#EBC3C6"/>
+<stop offset=".37" stop-color="#f9eeef"/>
+<stop offset=".44" stop-color="#f3dadc"/>
+<stop offset=".64" stop-color="#EBC3C6"/>
+<stop offset=".88" stop-color="#ac8e91"/>
+<stop offset="1" stop-color="#d2aeb1"/>
 </linearGradient><linearGradient id="g84" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0" stop-color="#945f58"/>
-<stop offset=".18" stop-color="#b6756b"/>
-<stop offset=".42" stop-color="#dec1bc"/>
-<stop offset=".58" stop-color="#b6756b"/>
-<stop offset="1" stop-color="#84554f"/>
+<stop offset="0" stop-color="#81534d"/>
+<stop offset=".07" stop-color="#a0675f"/>
+<stop offset=".26" stop-color="#b6756b"/>
+<stop offset=".37" stop-color="#ebd8d6"/>
+<stop offset=".44" stop-color="#d2a9a3"/>
+<stop offset=".64" stop-color="#b6756b"/>
+<stop offset=".88" stop-color="#875751"/>
+<stop offset="1" stop-color="#a36961"/>
 </linearGradient>
 </defs>
 <rect width="800" height="1000" fill="url(#bg85)"/>
 <circle cx="400" cy="470" r="300" fill="#fff" opacity=".5"/>
 <path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="#EFE7E0" opacity=".45"/>
-<g transform="translate(400,520) rotate(0) scale(1)"><ellipse cx="0" cy="200" rx="120" ry="19.2" fill="#A8432A" opacity=".13"/>
+<g transform="translate(400,520) rotate(0) scale(1)">
+<g mask="url(#reflFade)" opacity=".5">
+<g transform="translate(0,412) scale(1,-1)">
+<ellipse cx="8.4" cy="202" rx="120" ry="19.2" fill="#4A372F" opacity=".22" filter="url(#blurWide)"/>
+<ellipse cx="0" cy="200" rx="69.6" ry="8.064" fill="#3A2A24" opacity=".3" filter="url(#blurTight)"/>
 <rect x="-78" y="10" width="156" height="185" rx="26" fill="url(#g83)"/>
 <rect x="-52" y="32" width="16" height="140" rx="8" fill="#fff" opacity=".4"/>
 <rect x="-26" y="-14" width="52" height="30" fill="#b7979a"/>
 <rect x="-42" y="-160" width="84" height="150" rx="14" fill="url(#g84)"/>
 <rect x="-26" y="-142" width="11" height="110" rx="5.5" fill="#fff" opacity=".4"/>
 <rect x="-78" y="120" width="156" height="34" fill="#fff" opacity=".85"/></g>
+</g>
+<ellipse cx="8.4" cy="202" rx="120" ry="19.2" fill="#4A372F" opacity=".22" filter="url(#blurWide)"/>
+<ellipse cx="0" cy="200" rx="69.6" ry="8.064" fill="#3A2A24" opacity=".3" filter="url(#blurTight)"/>
+<rect x="-78" y="10" width="156" height="185" rx="26" fill="url(#g83)"/>
+<rect x="-52" y="32" width="16" height="140" rx="8" fill="#fff" opacity=".4"/>
+<rect x="-26" y="-14" width="52" height="30" fill="#b7979a"/>
+<rect x="-42" y="-160" width="84" height="150" rx="14" fill="url(#g84)"/>
+<rect x="-26" y="-142" width="11" height="110" rx="5.5" fill="#fff" opacity=".4"/>
+<rect x="-78" y="120" width="156" height="34" fill="#fff" opacity=".85"/>
+</g>
 <circle cx="112" cy="908" r="19" fill="#EBC3C6" stroke="#fff" stroke-width="3"/><circle cx="164" cy="908" r="19" fill="#F4F1EE" stroke="#fff" stroke-width="3"/><circle cx="216" cy="908" r="19" fill="#F5EFE8" stroke="#fff" stroke-width="3"/><circle cx="268" cy="908" r="19" fill="#EDBBA6" stroke="#fff" stroke-width="3"/>
 <rect width="800" height="1000" fill="url(#v86)"/>
 </svg>

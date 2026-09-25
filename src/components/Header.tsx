@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { ChevronRight, Heart, Home, LayoutGrid, Menu, Search, ShoppingBag, Store, User } from 'lucide-react';
@@ -33,9 +33,31 @@ export function Header() {
   const count = totals().count;
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
   const location = useLocation();
 
-  useEffect(() => { setMenuOpen(false); setSearchOpen(false); }, [location.pathname, location.search]);
+  useEffect(() => { setMenuOpen(false); setSearchOpen(false); setHidden(false); }, [location.pathname, location.search]);
+
+  /**
+   * Se oculta al bajar y reaparece al subir.
+   *
+   * El umbral de 6px descarta el temblor del trackpad y el rebote elastico de
+   * iOS, que si no lo hacen parpadear. Por encima del inicio de la pagina
+   * nunca se oculta: ahi el header no estorba y esconderlo solo confunde.
+   */
+  useEffect(() => {
+    lastY.current = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const diff = y - lastY.current;
+      if (Math.abs(diff) < 6) return;
+      setHidden(y > 120 && diff > 0);
+      lastY.current = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const accountTo = user ? '/cuenta' : '/ingresar';
 
@@ -43,7 +65,15 @@ export function Header() {
     <>
       {/* Altura fija: el header que encogía al hacer scroll movía el contenido
           y obligaba a reservar espacio de más arriba de todo. */}
-      <header className="sticky top-0 z-[60] border-b border-line bg-white/95 backdrop-blur-md">
+      <header
+        // Si alguien llega con el tabulador mientras esta oculto, vuelve: si no,
+        // el foco entraria en enlaces invisibles fuera de pantalla.
+        onFocusCapture={() => setHidden(false)}
+        className={cn(
+          'sticky top-0 z-[60] border-b border-line bg-white/95 backdrop-blur-md transition-transform duration-300 ease-soft',
+          hidden && '-translate-y-full',
+        )}
+      >
         {/* Desktop */}
         <div className="hidden md:block">
           <div className="container-x flex items-center gap-6 py-3">

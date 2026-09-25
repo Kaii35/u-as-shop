@@ -6,30 +6,52 @@
 <radialGradient id="v69" cx=".5" cy=".42" r=".72">
 <stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#141110" stop-opacity=".07"/>
 </radialGradient>
+<filter id="blurWide" x="-60%" y="-200%" width="220%" height="500%"><feGaussianBlur stdDeviation="13"/></filter>
+<filter id="blurTight" x="-60%" y="-300%" width="220%" height="700%"><feGaussianBlur stdDeviation="4"/></filter>
+<linearGradient id="reflGrad" x1="0" y1="205" x2="0" y2="335" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#fff" stop-opacity=".5"/>
+<stop offset="1" stop-color="#fff" stop-opacity="0"/>
+</linearGradient>
+<mask id="reflFade" maskUnits="userSpaceOnUse" x="-260" y="205" width="520" height="130">
+<rect x="-260" y="205" width="520" height="130" fill="url(#reflGrad)"/>
+</mask>
 <linearGradient id="g65" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0" stop-color="#a3a2a7"/>
-<stop offset=".18" stop-color="#C9CBD0"/>
-<stop offset=".42" stop-color="#e7e8ea"/>
-<stop offset=".58" stop-color="#C9CBD0"/>
-<stop offset="1" stop-color="#918f94"/>
+<stop offset="0" stop-color="#8e8c90"/>
+<stop offset=".07" stop-color="#b1b1b6"/>
+<stop offset=".26" stop-color="#C9CBD0"/>
+<stop offset=".37" stop-color="#f0f0f2"/>
+<stop offset=".44" stop-color="#dedfe2"/>
+<stop offset=".64" stop-color="#C9CBD0"/>
+<stop offset=".88" stop-color="#959398"/>
+<stop offset="1" stop-color="#b4b5b9"/>
 </linearGradient><linearGradient id="g66" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0" stop-color="#ab8173"/>
-<stop offset=".18" stop-color="#D4A08E"/>
-<stop offset=".42" stop-color="#ecd4cc"/>
-<stop offset=".58" stop-color="#D4A08E"/>
-<stop offset="1" stop-color="#987267"/>
+<stop offset="0" stop-color="#956f65"/>
+<stop offset=".07" stop-color="#ba8c7d"/>
+<stop offset=".26" stop-color="#D4A08E"/>
+<stop offset=".37" stop-color="#f3e4df"/>
+<stop offset=".44" stop-color="#e4c4b9"/>
+<stop offset=".64" stop-color="#D4A08E"/>
+<stop offset=".88" stop-color="#9c7569"/>
+<stop offset="1" stop-color="#be8f7f"/>
 </linearGradient><linearGradient id="g67" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0" stop-color="#a193b3"/>
-<stop offset=".18" stop-color="#C7B8E0"/>
-<stop offset=".42" stop-color="#e6dff1"/>
-<stop offset=".58" stop-color="#C7B8E0"/>
-<stop offset="1" stop-color="#90839f"/>
+<stop offset="0" stop-color="#8c7f9b"/>
+<stop offset=".07" stop-color="#afa1c3"/>
+<stop offset=".26" stop-color="#C7B8E0"/>
+<stop offset=".37" stop-color="#efebf6"/>
+<stop offset=".44" stop-color="#dcd3ec"/>
+<stop offset=".64" stop-color="#C7B8E0"/>
+<stop offset=".88" stop-color="#9386a3"/>
+<stop offset="1" stop-color="#b2a4c8"/>
 </linearGradient>
 </defs>
 <rect width="800" height="1000" fill="url(#bg68)"/>
 <circle cx="400" cy="470" r="300" fill="#fff" opacity=".5"/>
 <path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="#EFE7E0" opacity=".45"/>
-<g transform="translate(400,520) rotate(0) scale(1)"><ellipse cx="0" cy="200" rx="150" ry="24" fill="#A8432A" opacity=".13"/><g transform="translate(-24,-70)">
+<g transform="translate(400,520) rotate(0) scale(1)">
+<g mask="url(#reflFade)" opacity=".5">
+<g transform="translate(0,412) scale(1,-1)">
+<ellipse cx="10.500000000000002" cy="202" rx="150" ry="24" fill="#4A372F" opacity=".22" filter="url(#blurWide)"/>
+<ellipse cx="0" cy="200" rx="87" ry="10.08" fill="#3A2A24" opacity=".3" filter="url(#blurTight)"/><g transform="translate(-24,-70)">
 <rect x="-120" y="-38" width="240" height="76" rx="38" fill="url(#g65)"/>
 <ellipse cx="-120" cy="0" rx="17" ry="38" fill="#e9eaec"/>
 <ellipse cx="-120" cy="0" rx="8" ry="19" fill="#8c8a8e"/>
@@ -42,6 +64,22 @@
 <ellipse cx="-120" cy="0" rx="17" ry="38" fill="#e9e3f3"/>
 <ellipse cx="-120" cy="0" rx="8" ry="19" fill="#8a7e99"/>
 <rect x="-70" y="-22" width="150" height="7" rx="3.5" fill="#fff" opacity=".5"/></g></g>
+</g>
+<ellipse cx="10.500000000000002" cy="202" rx="150" ry="24" fill="#4A372F" opacity=".22" filter="url(#blurWide)"/>
+<ellipse cx="0" cy="200" rx="87" ry="10.08" fill="#3A2A24" opacity=".3" filter="url(#blurTight)"/><g transform="translate(-24,-70)">
+<rect x="-120" y="-38" width="240" height="76" rx="38" fill="url(#g65)"/>
+<ellipse cx="-120" cy="0" rx="17" ry="38" fill="#e9eaec"/>
+<ellipse cx="-120" cy="0" rx="8" ry="19" fill="#8c8a8e"/>
+<rect x="-70" y="-22" width="150" height="7" rx="3.5" fill="#fff" opacity=".5"/></g><g transform="translate(24,28)">
+<rect x="-120" y="-38" width="240" height="76" rx="38" fill="url(#g66)"/>
+<ellipse cx="-120" cy="0" rx="17" ry="38" fill="#eed9d2"/>
+<ellipse cx="-120" cy="0" rx="8" ry="19" fill="#936e63"/>
+<rect x="-70" y="-22" width="150" height="7" rx="3.5" fill="#fff" opacity=".5"/></g><g transform="translate(-24,126)">
+<rect x="-120" y="-38" width="240" height="76" rx="38" fill="url(#g67)"/>
+<ellipse cx="-120" cy="0" rx="17" ry="38" fill="#e9e3f3"/>
+<ellipse cx="-120" cy="0" rx="8" ry="19" fill="#8a7e99"/>
+<rect x="-70" y="-22" width="150" height="7" rx="3.5" fill="#fff" opacity=".5"/></g>
+</g>
 <circle cx="112" cy="908" r="19" fill="#C9CBD0" stroke="#fff" stroke-width="3"/><circle cx="164" cy="908" r="19" fill="#D4A08E" stroke="#fff" stroke-width="3"/><circle cx="216" cy="908" r="19" fill="#C7B8E0" stroke="#fff" stroke-width="3"/>
 <rect width="800" height="1000" fill="url(#v69)"/>
 </svg>

@@ -6,21 +6,45 @@
 <radialGradient id="v114" cx=".5" cy=".42" r=".72">
 <stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#141110" stop-opacity=".07"/>
 </radialGradient>
+<filter id="blurWide" x="-60%" y="-200%" width="220%" height="500%"><feGaussianBlur stdDeviation="13"/></filter>
+<filter id="blurTight" x="-60%" y="-300%" width="220%" height="700%"><feGaussianBlur stdDeviation="4"/></filter>
+<linearGradient id="reflGrad" x1="0" y1="205" x2="0" y2="335" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#fff" stop-opacity=".5"/>
+<stop offset="1" stop-color="#fff" stop-opacity="0"/>
+</linearGradient>
+<mask id="reflFade" maskUnits="userSpaceOnUse" x="-260" y="205" width="520" height="130">
+<rect x="-260" y="205" width="520" height="130" fill="url(#reflGrad)"/>
+</mask>
 <linearGradient id="g112" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0" stop-color="#893825"/>
-<stop offset=".18" stop-color="#A8432A"/>
-<stop offset=".42" stop-color="#d8aa9f"/>
-<stop offset=".58" stop-color="#A8432A"/>
-<stop offset="1" stop-color="#7b3323"/>
+<stop offset="0" stop-color="#783223"/>
+<stop offset=".07" stop-color="#943c27"/>
+<stop offset=".26" stop-color="#A8432A"/>
+<stop offset=".37" stop-color="#e7cac3"/>
+<stop offset=".44" stop-color="#c98a7b"/>
+<stop offset=".64" stop-color="#A8432A"/>
+<stop offset=".88" stop-color="#7d3423"/>
+<stop offset="1" stop-color="#973d27"/>
 </linearGradient>
 </defs>
 <rect width="800" height="1000" fill="url(#bg113)"/>
 <circle cx="400" cy="430" r="250" fill="#fff" opacity=".34"/>
 <path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="#EFE7E0" opacity=".45"/>
-<g transform="translate(400,545) rotate(-14) scale(1.34)"><ellipse cx="0" cy="205" rx="160" ry="25.6" fill="#A8432A" opacity=".13"/>
+<g transform="translate(400,545) rotate(-14) scale(1.34)">
+<g mask="url(#reflFade)" opacity=".5">
+<g transform="translate(0,412) scale(1,-1)">
+<ellipse cx="11.200000000000001" cy="207" rx="160" ry="25.6" fill="#4A372F" opacity=".22" filter="url(#blurWide)"/>
+<ellipse cx="0" cy="205" rx="92.8" ry="10.752" fill="#3A2A24" opacity=".3" filter="url(#blurTight)"/>
 <rect x="-165" y="-60" width="330" height="245" rx="16" fill="url(#g112)"/>
 <rect x="-150" y="-46" width="300" height="200" rx="10" fill="#F6F3EF"/>
 <g transform="translate(-96,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#D9A5AE"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g><g transform="translate(-32,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#FFFFFF"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g><g transform="translate(32,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#E3C1B3"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g><g transform="translate(96,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#7A5347"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g>
 <rect x="-90" y="-116" width="180" height="46" rx="10" fill="#8A3621"/></g>
+</g>
+<ellipse cx="11.200000000000001" cy="207" rx="160" ry="25.6" fill="#4A372F" opacity=".22" filter="url(#blurWide)"/>
+<ellipse cx="0" cy="205" rx="92.8" ry="10.752" fill="#3A2A24" opacity=".3" filter="url(#blurTight)"/>
+<rect x="-165" y="-60" width="330" height="245" rx="16" fill="url(#g112)"/>
+<rect x="-150" y="-46" width="300" height="200" rx="10" fill="#F6F3EF"/>
+<g transform="translate(-96,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#D9A5AE"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g><g transform="translate(-32,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#FFFFFF"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g><g transform="translate(32,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#E3C1B3"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g><g transform="translate(96,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#7A5347"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g>
+<rect x="-90" y="-116" width="180" height="46" rx="10" fill="#8A3621"/>
+</g>
 <rect width="800" height="1000" fill="url(#v114)"/>
 </svg>

@@ -27,15 +27,28 @@ const id = (p) => `${p}${++uid}`;
 /** Degradado horizontal tipo vidrio con reflejo lateral. */
 function glass(color) {
   const g = id('g');
+  // Cinco paradas no bastaban para leer como vidrio: el cuerpo necesita un
+  // borde oscuro (refraccion), una franja especular estrecha y muy clara, y
+  // un rebote de luz tenue en el canto opuesto.
   return [g, `<linearGradient id="${g}" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0" stop-color="${dark(color, 0.22)}"/>
-    <stop offset=".18" stop-color="${color}"/>
-    <stop offset=".42" stop-color="${light(color, 0.55)}"/>
-    <stop offset=".58" stop-color="${color}"/>
-    <stop offset="1" stop-color="${dark(color, 0.32)}"/>
+    <stop offset="0" stop-color="${dark(color, 0.34)}"/>
+    <stop offset=".07" stop-color="${dark(color, 0.14)}"/>
+    <stop offset=".26" stop-color="${color}"/>
+    <stop offset=".37" stop-color="${light(color, 0.72)}"/>
+    <stop offset=".44" stop-color="${light(color, 0.38)}"/>
+    <stop offset=".64" stop-color="${color}"/>
+    <stop offset=".88" stop-color="${dark(color, 0.3)}"/>
+    <stop offset="1" stop-color="${dark(color, 0.12)}"/>
   </linearGradient>`];
 }
-const shadow = (cy, rx, ry = rx * 0.16) => `<ellipse cx="0" cy="${cy}" rx="${rx}" ry="${ry}" fill="${P.wine}" opacity=".13"/>`;
+/**
+ * Sombra en dos partes, como en un set real: una proyectada, ancha y muy
+ * desenfocada, y una de contacto, estrecha y mas oscura, justo bajo la base.
+ * Una sola elipse plana era lo que hacia que los objetos flotaran.
+ */
+const shadow = (cy, rx, ry = rx * 0.16) => `
+  <ellipse cx="${rx * 0.07}" cy="${cy + 2}" rx="${rx}" ry="${ry}" fill="#4A372F" opacity=".22" filter="url(#blurWide)"/>
+  <ellipse cx="0" cy="${cy}" rx="${rx * 0.58}" ry="${Math.max(4, ry * 0.42)}" fill="#3A2A24" opacity=".3" filter="url(#blurTight)"/>`;
 const gloss = (x, y, w, h, r = w / 2) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="#fff" opacity=".4"/>`;
 /** Silueta de una almendrada (alto ~130, ancho ~62). */
 const nail = (fill, op = 1) => `<path d="M-31 62 C-33 -8 -25 -54 0 -60 C25 -54 33 -8 31 62 C21 72 -21 72 -31 62 Z" fill="${fill}" opacity="${op}"/>`;
@@ -228,6 +241,15 @@ function canvas(w, h, inner, { a = '#FFFFFF', b = P.nude, c = P.blush } = {}) {
     <radialGradient id="${vg}" cx=".5" cy=".42" r=".72">
       <stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="${P.ink}" stop-opacity=".07"/>
     </radialGradient>
+    <filter id="blurWide" x="-60%" y="-200%" width="220%" height="500%"><feGaussianBlur stdDeviation="13"/></filter>
+    <filter id="blurTight" x="-60%" y="-300%" width="220%" height="700%"><feGaussianBlur stdDeviation="4"/></filter>
+    <linearGradient id="reflGrad" x1="0" y1="205" x2="0" y2="335" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="reflFade" maskUnits="userSpaceOnUse" x="-260" y="205" width="520" height="130">
+      <rect x="-260" y="205" width="520" height="130" fill="url(#reflGrad)"/>
+    </mask>
     ${inner.defs ?? ''}
   </defs>
   <rect width="${w}" height="${h}" fill="url(#${bg})"/>
@@ -243,10 +265,18 @@ function packshot(obj, shades, variant) {
   const isB = variant === 'b';
   const swatches = (shades ?? []).slice(0, 5)
     .map((c, i) => `<circle cx="${112 + i * 52}" cy="${H - 92}" r="19" fill="${c}" stroke="#fff" stroke-width="3"/>`).join('');
+  const cy = isB ? 545 : 520;
+  const rot = isB ? -14 : 0;
+  const sc = isB ? 1.34 : 1;
   const body = `
     <circle cx="${W / 2}" cy="${isB ? 430 : 470}" r="${isB ? 250 : 300}" fill="#fff" opacity="${isB ? '.34' : '.5'}"/>
     <path d="M0 ${H} L0 ${H - 210} Q ${W / 2} ${H - 330} ${W} ${H - 210} L${W} ${H} Z" fill="${P.blush}" opacity=".45"/>
-    <g transform="translate(${W / 2},${isB ? 545 : 520}) rotate(${isB ? -14 : 0}) scale(${isB ? 1.34 : 1})">${obj.body}</g>
+    <g transform="translate(${W / 2},${cy}) rotate(${rot}) scale(${sc})">
+      <g mask="url(#reflFade)" opacity=".5">
+        <g transform="translate(0,412) scale(1,-1)">${obj.body}</g>
+      </g>
+      ${obj.body}
+    </g>
     ${swatches}`;
   const tint = isB ? { a: P.nude, b: P.blush, c: mix(P.blush, P.wine, 0.12) } : {};
   return canvas(W, H, { defs: obj.defs, body }, tint);
