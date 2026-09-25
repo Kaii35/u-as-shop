@@ -211,22 +211,18 @@ function Brands() {
         title="Marcas que distribuimos"
         action={<Link to="/tienda" className="link-arrow">Ver todas <ArrowRight size={14} strokeWidth={2} /></Link>}
       />
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3 lg:grid-cols-4">
-        {brands.map((b) => {
-          const n = products.filter((p) => p.brand === b.name).length;
-          return (
-            <Link
-              key={b.slug}
-              to={`/tienda?marca=${b.slug}`}
-              className="group relative flex h-28 flex-col items-center justify-center gap-2 bg-white px-5 transition-colors hover:bg-sand"
-            >
-              <BrandLogo name={b.name} className="h-9 max-w-full text-mist transition-colors duration-300 group-hover:text-ink" />
-              <span className="tnum text-meta text-mist transition-colors group-hover:text-clay">
-                {n} {n === 1 ? 'producto' : 'productos'}
-              </span>
-            </Link>
-          );
-        })}
+      {/* Sin cuadrícula ni recuentos: solo los wordmarks, centrados en su celda. */}
+      <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-4">
+        {brands.map((b) => (
+          <Link
+            key={b.slug}
+            to={`/tienda?marca=${b.slug}`}
+            title={b.name}
+            className="flex h-14 items-center justify-center px-2 text-mist transition-colors duration-300 hover:text-ink"
+          >
+            <BrandLogo name={b.name} />
+          </Link>
+        ))}
       </div>
       <p className="mt-3 text-meta text-mist">
         Distribuidor autorizado. Todas las marcas incluyen garantía oficial de 12 meses.
