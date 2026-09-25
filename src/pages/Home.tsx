@@ -24,9 +24,9 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <Promises />
-      <Categories />
       <Collections />
+      <Categories />
+      <Promises />
       <Featured />
       <Promos />
       <Brands />
