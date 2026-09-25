@@ -11,6 +11,7 @@ import { Img, SectionHeading } from '../components/ui/Primitives';
 import { MinimalistHero } from '@/components/ui/minimalist-hero';
 import { Component as StackInteractor } from '@/components/ui/connoisseur-stack-interactor';
 import { FeatureCards } from '@/components/ui/feature-cards';
+import { BrandLogo } from '../components/ui/BrandLogo';
 import type { ProductTag } from '../types';
 
 const PROMISES = [
@@ -198,6 +199,10 @@ function Promos() {
   );
 }
 
+/**
+ * Muro de logos. Los wordmarks viven en BrandLogo y van en currentColor, así
+ * que el estado de reposo (gris) y el de foco (tinta) son una sola clase.
+ */
 function Brands() {
   return (
     <section id="marcas" className="container-x pb-section scroll-mt-24 md:pb-section-lg">
@@ -206,18 +211,26 @@ function Brands() {
         title="Marcas que distribuimos"
         action={<Link to="/tienda" className="link-arrow">Ver todas <ArrowRight size={14} strokeWidth={2} /></Link>}
       />
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded border border-line bg-line sm:grid-cols-4">
-        {brands.map((b) => (
-          <Link
-            key={b.slug}
-            to={`/tienda?marca=${b.slug}`}
-            className="flex h-20 flex-col items-center justify-center gap-0.5 bg-white transition-colors hover:bg-sand"
-          >
-            <span className="display text-body">{b.name}</span>
-            <span className="tnum text-meta text-mist">{products.filter((p) => p.brand === b.name).length} productos</span>
-          </Link>
-        ))}
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3 lg:grid-cols-4">
+        {brands.map((b) => {
+          const n = products.filter((p) => p.brand === b.name).length;
+          return (
+            <Link
+              key={b.slug}
+              to={`/tienda?marca=${b.slug}`}
+              className="group relative flex h-28 flex-col items-center justify-center gap-2 bg-white px-5 transition-colors hover:bg-sand"
+            >
+              <BrandLogo name={b.name} className="h-9 max-w-full text-mist transition-colors duration-300 group-hover:text-ink" />
+              <span className="tnum text-meta text-mist transition-colors group-hover:text-clay">
+                {n} {n === 1 ? 'producto' : 'productos'}
+              </span>
+            </Link>
+          );
+        })}
       </div>
+      <p className="mt-3 text-meta text-mist">
+        Distribuidor autorizado. Todas las marcas incluyen garantía oficial de 12 meses.
+      </p>
     </section>
   );
 }
