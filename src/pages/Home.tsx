@@ -231,55 +231,91 @@ function Brands() {
   );
 }
 
+/**
+ * Banda de newsletter. Sustituye a la tarjeta con borde: la foto iba en una
+ * columna de 220px sobre una tarjeta a todo el ancho, asi que se leia como
+ * una tira pegada al borde y el texto quedaba con un hueco muerto al lado.
+ *
+ * Ahora la foto ocupa una columna real y el formulario se limita a 420px: un
+ * campo de correo estirado a 900px no gana nada y desequilibra el bloque.
+ * Va sobre el tinte de marca, que rompe la tirada blanca del final de la
+ * pagina antes del footer oscuro.
+ */
 function Newsletter() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const submit = () => (isEmail(email) ? setDone(true) : setError('Escribe un correo válido'));
+
+  const PERKS = [
+    '10% de descuento de bienvenida',
+    'Lanzamientos antes que nadie',
+    'Uno o dos correos al mes, nada más',
+  ];
+
   return (
-    <section className="container-x pb-section md:pb-section-lg">
-      <Reveal className="grid items-center overflow-hidden rounded-lg border border-line md:grid-cols-[1fr_220px]">
-        <div className="flex flex-col gap-2.5 p-5 md:p-8">
-          <span className="kicker">Newsletter</span>
-          <h2 className="display text-h4 text-balance">10% en tu primera compra</h2>
-          <p className="max-w-[52ch] text-body text-ash">
-            Lanzamientos antes que nadie, tutoriales de técnica y precios exclusivos para profesionales.
-          </p>
-          {done ? (
-            <div className="mt-1 flex items-center gap-2.5 rounded border border-ok/25 bg-ok/5 p-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ok text-white"><Check size={15} strokeWidth={2.5} /></span>
-              <span className="flex flex-col">
-                <span className="text-body font-medium">Ya eres parte de Aurelle</span>
-                <span className="text-meta text-mist">Revisa tu correo: te enviamos tu código.</span>
-              </span>
-            </div>
-          ) : (
-            <div className="mt-1 flex flex-col gap-1.5">
-              <div className="flex flex-wrap gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                  onKeyDown={(e) => e.key === 'Enter' && submit()}
-                  placeholder="tu@correo.com"
-                  aria-label="Correo electrónico"
-                  aria-invalid={!!error}
-                  className={cn(
-                    'h-11 min-w-[200px] flex-1 rounded border bg-white px-3 text-body outline-none transition-colors',
-                    error ? 'border-danger' : 'border-line focus:border-clay',
-                  )}
-                />
-                <Button size="lg" onClick={submit}>Suscribirme</Button>
+    <section className="bg-clay-soft">
+      <div className="container-x section-y">
+        {/* Acotada y centrada: a todo el ancho del contenedor la columna de
+              texto medía 908px para un contenido de ~420 y dejaba un vacío
+              muerto junto a la foto. */}
+        <Reveal className="mx-auto grid w-full max-w-[1100px] items-stretch gap-8 md:grid-cols-2 md:gap-12">
+          <div className="flex flex-col justify-center gap-3">
+            <span className="kicker">Newsletter</span>
+            <h2 className="display text-h3 text-balance">10% en tu primera compra</h2>
+            <p className="max-w-[46ch] text-body text-ash">
+              Lanzamientos antes que nadie, tutoriales de técnica y precios exclusivos para profesionales.
+            </p>
+
+            <ul className="flex flex-col gap-1.5 pt-1">
+              {PERKS.map((perk) => (
+                <li key={perk} className="flex items-center gap-2 text-body text-ash">
+                  <Check size={14} strokeWidth={2.5} className="shrink-0 text-clay" />
+                  {perk}
+                </li>
+              ))}
+            </ul>
+
+            {done ? (
+              <div className="mt-2 flex max-w-[420px] items-center gap-2.5 rounded-lg border border-ok/30 bg-white p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ok text-white"><Check size={16} strokeWidth={2.5} /></span>
+                <span className="flex flex-col">
+                  <span className="text-body font-medium">Ya eres parte de Aurelle</span>
+                  <span className="text-meta text-mist">Revisa tu correo: te enviamos tu código.</span>
+                </span>
               </div>
-              {error && <span role="alert" className="text-cap text-danger">{error}</span>}
-              <span className="text-meta text-mist">Sin spam. Puedes darte de baja cuando quieras.</span>
-            </div>
-          )}
-        </div>
-        <div className="relative hidden h-full min-h-[200px] bg-sand md:block">
-          <Img src={media.heroDetail} alt="" label="Detalle" />
-        </div>
-      </Reveal>
+            ) : (
+              <div className="mt-2 flex max-w-[420px] flex-col gap-1.5">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                    onKeyDown={(e) => e.key === 'Enter' && submit()}
+                    placeholder="tu@correo.com"
+                    aria-label="Correo electrónico"
+                    aria-invalid={!!error}
+                    className={cn(
+                      'h-11 min-w-0 flex-1 rounded border bg-white px-3 text-body outline-none transition-colors',
+                      error ? 'border-danger' : 'border-transparent focus:border-clay',
+                    )}
+                  />
+                  <Button size="lg" className="shrink-0" onClick={submit}>Suscribirme</Button>
+                </div>
+                {error && <span role="alert" className="text-cap text-danger">{error}</span>}
+                <span className="text-meta text-ash/70">Sin spam. Puedes darte de baja cuando quieras.</span>
+              </div>
+            )}
+          </div>
+
+          {/* En desktop la foto estira hasta la altura del texto en vez de
+              imponer la suya: con una proporcion fija medía 475px frente a
+              los ~286px del contenido y descuadraba la banda. */}
+          <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-white md:aspect-auto md:h-full md:min-h-[280px]">
+            <Img src={media.heroDetail} alt="" label="Detalle" />
+          </div>
+        </Reveal>
+      </div>
     </section>
   );
 }
