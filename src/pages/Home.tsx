@@ -13,13 +13,6 @@ import { Component as StackInteractor } from '@/components/ui/connoisseur-stack-
 import { FeatureCards } from '@/components/ui/feature-cards';
 import type { ProductTag } from '../types';
 
-const TABS: Array<{ id: string; label: string; test: (p: (typeof products)[number]) => boolean }> = [
-  { id: 'best', label: 'Más vendidos', test: (p) => p.tags.includes('best' as ProductTag) },
-  { id: 'new', label: 'Novedades', test: (p) => p.tags.includes('new') },
-  { id: 'pro', label: 'Uso profesional', test: (p) => p.tags.includes('pro') },
-  { id: 'sale', label: 'En oferta', test: (p) => !!p.oldPrice },
-];
-
 const PROMISES = [
   { kicker: 'Envíos', title: 'Gratis desde $250.000', detail: 'A toda Colombia · Express en ciudades principales', image: '/images/promesas/envios.jpg', Icon: Truck },
   { kicker: 'Pagos', title: 'Paga como prefieras', detail: 'Tarjeta, PSE, Nequi, Daviplata o contra entrega', image: '/images/promesas/pagos.jpg', Icon: CreditCard },
@@ -156,32 +149,21 @@ function Collections() {
   );
 }
 
+/**
+ * Solo los más vendidos y como mucho cuatro: una fila exacta en la retícula
+ * de escritorio. Se quitan las pestañas (novedades, uso profesional, oferta)
+ * porque ya hay accesos a esos filtros en el menú y en los banners.
+ */
 function Featured() {
-  const [tab, setTab] = useState(TABS[0].id);
-  const list = products.filter(TABS.find((t) => t.id === tab)!.test).slice(0, 8);
+  const list = products.filter((p) => p.tags.includes('best' as ProductTag)).slice(0, 4);
   return (
-    <section className="container-x section-y pt-0">
-      <SectionHeading eyebrow="Selección" title="Lo más pedido" />
-      <div role="tablist" className="mb-5 flex gap-1.5 overflow-x-auto border-b border-line pb-px">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              'shrink-0 cursor-pointer whitespace-nowrap border-b-2 px-3 pb-2 text-body transition-colors',
-              tab === t.id ? 'border-clay font-medium text-ink' : 'border-transparent text-mist hover:text-ink',
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+    <section className="container-x section-y">
+      <SectionHeading
+        eyebrow="Selección"
+        title="Lo más vendido"
+        action={<Link to="/tienda" className="link-arrow">Ver todos los productos <ArrowRight size={14} strokeWidth={2} /></Link>}
+      />
       <ProductGrid products={list} />
-      <div className="mt-6 flex justify-center">
-        <Link to="/tienda"><Button variant="secondary">Ver todos los productos</Button></Link>
-      </div>
     </section>
   );
 }
