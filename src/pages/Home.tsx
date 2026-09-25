@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, CreditCard, Headset, ShieldCheck, Truck } from 'lucide-react';
-import { brands, categories, media, products } from '../data/catalog';
-import { cn, isEmail } from '../lib/utils';
+import { ArrowRight, Check, CreditCard, Headset, ShieldCheck, Star, Truck } from 'lucide-react';
+import { brands, categories, getProduct, media, products } from '../data/catalog';
+import { cn, formatCOP, isEmail } from '../lib/utils';
 import { CategoryCard } from '../components/CategoryCard';
 import { ProductGrid } from '../components/ProductCard';
 import { Button } from '../components/ui/Button';
@@ -47,6 +47,8 @@ export default function Home() {
  */
 function Hero() {
   const navigate = useNavigate();
+  const star = getProduct('p1');
+
   return (
     <div className="container-x">
       <MinimalistHero
@@ -59,13 +61,49 @@ function Hero() {
         locationText=""
         mainText="Esmaltes, geles, herramientas y nail art de las marcas que usan las profesionales. Envíos a toda Colombia."
         readMoreLink="/tienda"
-        readMoreLabel="Ver catálogo"
-        onReadMore={() => navigate('/tienda')}
         imageSrc="/images/editorial/hero-portrait.jpg"
         imageAlt="Manos con manicura profesional"
         imageShape="circle"
         accentClassName="bg-clay-soft"
         overlayText={{ part1: 'menos', part2: 'es más.' }}
+        actions={
+          <div className="mt-5 flex flex-col items-center gap-5 md:items-start">
+            <div className="flex flex-wrap justify-center gap-2 md:justify-start">
+              <Link to="/tienda"><Button size="lg">Ver catálogo <ArrowRight size={15} strokeWidth={2} /></Button></Link>
+              <Link to="/tienda?oferta=1"><Button size="lg" variant="secondary">Ofertas</Button></Link>
+            </div>
+            {/* Cifras concretas: el bloque pedía algo que sostuviera la columna
+                y de paso dicen qué tan grande es el catálogo. */}
+            <dl className="flex gap-6">
+              {[[`${products.length}`, 'productos'], [`${categories.length}`, 'categorías'], [`${brands.length}`, 'marcas']].map(([n, l]) => (
+                <div key={l} className="flex flex-col">
+                  <dt className="tnum display text-h5 leading-none">{n}</dt>
+                  <dd className="text-meta text-mist">{l}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        }
+        floating={
+          star && (
+            <Link
+              to={`/producto/${star.slug}`}
+              className="absolute -bottom-3 left-1/2 z-20 hidden w-[230px] -translate-x-1/2 items-center gap-2.5 rounded-lg border border-line bg-white/95 p-2 shadow-card backdrop-blur-sm transition-transform hover:-translate-y-0.5 lg:flex"
+            >
+              <span className="h-14 w-11 shrink-0 overflow-hidden rounded border border-line bg-sand">
+                <Img src={star.images[0]} alt="" />
+              </span>
+              <span className="flex min-w-0 flex-col gap-0.5">
+                <span className="flex items-center gap-1 text-meta font-semibold uppercase tracking-[.08em] text-clay">
+                  <Star size={11} strokeWidth={2} fill="currentColor" /> Más vendido
+                </span>
+                <span className="truncate text-cap leading-tight">{star.name}</span>
+                <span className="tnum text-cap font-semibold">{formatCOP(star.price)}</span>
+              </span>
+            </Link>
+          )
+        }
+        onReadMore={() => navigate('/tienda')}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -41,6 +41,10 @@ interface MinimalistHeroProps {
    * enlace siga siendo real (clic central, "abrir en pestaña nueva", SEO).
    */
   onReadMore?: () => void;
+  /** Sustituye al enlace "Read More" por botones u otro contenido. */
+  actions?: ReactNode;
+  /** Se superpone a la columna de la imagen (ficha de producto, sello…). */
+  floating?: ReactNode;
 }
 
 // Helper component for navigation links
@@ -78,6 +82,8 @@ export const MinimalistHero = ({
   imageShape = 'cutout',
   readMoreLabel = 'Read More',
   onReadMore,
+  actions,
+  floating,
 }: MinimalistHeroProps) => {
   return (
     <div
@@ -127,14 +133,16 @@ export const MinimalistHero = ({
           transition={{ duration: 0.6, delay: 1 }}
           className="z-20 order-2 md:order-1 text-center md:text-left"
         >
-          <p className="mx-auto max-w-xs text-sm leading-relaxed text-foreground/80 md:mx-0">{mainText}</p>
-          <a
-            href={readMoreLink}
-            onClick={onReadMore ? (e) => { e.preventDefault(); onReadMore(); } : undefined}
-            className="mt-4 inline-block text-sm font-medium text-foreground underline decoration-from-font"
-          >
-            {readMoreLabel}
-          </a>
+          <p className="mx-auto max-w-sm text-sm leading-relaxed text-foreground/80 md:mx-0">{mainText}</p>
+          {actions ?? (
+            <a
+              href={readMoreLink}
+              onClick={onReadMore ? (e) => { e.preventDefault(); onReadMore(); } : undefined}
+              className="mt-4 inline-block text-sm font-medium text-foreground underline decoration-from-font"
+            >
+              {readMoreLabel}
+            </a>
+          )}
         </motion.div>
 
         {/* Center Image with Circle */}
@@ -163,6 +171,7 @@ export const MinimalistHero = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
           />
+          {floating}
         </div>
 
         {/* Right Text */}
