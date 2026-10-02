@@ -5,12 +5,12 @@ const OUT = process.argv[2];
 // Paleta del sistema de diseno (ver tailwind.config.ts). Los nombres se conservan
 // por compatibilidad con los dibujos; los valores son los del sistema actual.
 const P = {
-  blush: '#EFE7E0',   // tinte calido claro
-  nude: '#F6F3EF',    // sand
+  blush: '#F7EBE8',   // PUREZA aclarada
+  nude: '#F1DFDA',    // PUREZA · sand
   ivory: '#FFFFFF',
-  wine: '#A8432A',    // clay
-  wineDark: '#8A3621',
-  ink: '#141110',
+  wine: '#521317',    // ELEGANCIA · el acento de la marca
+  wineDark: '#3B0D10',
+  ink: '#2A1215',
 };
 
 /* ---------- color helpers ---------- */
@@ -275,7 +275,7 @@ function packshot(obj, shades, variant) {
   const swatches = (shades ?? []).slice(0, 5)
     // Borde neutro semitransparente, no blanco: sobre carbon un aro blanco
     // convertia cada muestra en un punto brillante.
-    .map((c, i) => `<circle cx="${112 + i * 52}" cy="${H - 92}" r="19" fill="${c}" stroke="#8A827B" stroke-opacity=".35" stroke-width="2"/>`).join('');
+    .map((c, i) => `<circle cx="${112 + i * 52}" cy="${H - 92}" r="19" fill="${c}" stroke="#937B79" stroke-opacity=".35" stroke-width="2"/>`).join('');
   const cy = isB ? 545 : 520;
   const rot = isB ? -14 : 0;
   const sc = isB ? 1.34 : 1;
@@ -289,13 +289,13 @@ function packshot(obj, shades, variant) {
    */
   const body = `
     <radialGradient id="halo" cx=".5" cy=".5" r=".5">
-      <stop offset="0" stop-color="#FFF6F0" stop-opacity="${isB ? '.22' : '.30'}"/>
-      <stop offset=".55" stop-color="#FFF0E6" stop-opacity="${isB ? '.10' : '.14'}"/>
-      <stop offset="1" stop-color="#FFF0E6" stop-opacity="0"/>
+      <stop offset="0" stop-color="#FDF4F3" stop-opacity="${isB ? '.22' : '.30'}"/>
+      <stop offset=".55" stop-color="#F9E9E7" stop-opacity="${isB ? '.10' : '.14'}"/>
+      <stop offset="1" stop-color="#F9E9E7" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="suelo" x1="0" y1="${H - 330}" x2="0" y2="${H}" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#C98B76" stop-opacity="0"/>
-      <stop offset="1" stop-color="#C98B76" stop-opacity=".13"/>
+      <stop offset="0" stop-color="#CEB7B0" stop-opacity="0"/>
+      <stop offset="1" stop-color="#CEB7B0" stop-opacity=".13"/>
     </linearGradient>
     <circle cx="${W / 2}" cy="${isB ? 430 : 470}" r="${haloR}" fill="url(#halo)"/>
     <path d="M0 ${H} L0 ${H - 210} Q ${W / 2} ${H - 330} ${W} ${H - 210} L${W} ${H} Z" fill="url(#suelo)"/>

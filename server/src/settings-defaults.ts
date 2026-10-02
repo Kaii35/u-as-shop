@@ -20,14 +20,14 @@ export const SETTING_DEFAULTS: readonly SettingDefinition[] = [
     label: 'Nombre de la tienda',
     group: 'tienda',
     type: 'text',
-    value: 'Aurelle',
+    value: 'Natalia Sánchez',
   },
   {
     key: 'store.email',
     label: 'Correo de contacto',
     group: 'tienda',
     type: 'text',
-    value: 'hola@aurelle.co',
+    value: 'hola@nataliasanchez.co',
   },
   {
     key: 'store.phone',

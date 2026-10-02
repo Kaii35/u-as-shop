@@ -111,16 +111,78 @@ export function SectionHeading({ eyebrow, title, action, className }: { eyebrow:
   );
 }
 
-export function Logo({ size = 'md', light }: { size?: 'sm' | 'md' | 'lg'; light?: boolean }) {
-  const t = { sm: 'text-h5', md: 'text-h4', lg: 'text-h3' }[size];
+/**
+ * Logotipo de Natalia Sánchez.
+ *
+ * El dibujo es el vector original del estudio, extraído del archivo de
+ * Illustrator del manual. No se reconstruye con tipografía: el nombre está en
+ * contornos, así que sale exactamente como lo dibujaron —gota de esmalte en la
+ * N incluida— y no depende de Lamoric Rowen, que es comercial y no viaja con
+ * el proyecto.
+ *
+ * Tres encuadres, porque el del manual es apilado y eso no sirve en todas
+ * partes. Medido sobre el propio archivo: el bloque apilado necesita 52 px de
+ * alto para que "NATALIA SANCHEZ" se lea, y una cabecera no los tiene. Puestas
+ * en fila, las mismas dos piezas dejan el nombre legible desde 28 px.
+ *
+ * Se monta como `mask-image` y no como `<img>` a propósito: una imagen trae su
+ * color dentro y haría falta un archivo por tema. Con la máscara solo cuenta
+ * la silueta y el color lo pone `bg-current`, así que el mismo archivo sirve en
+ * vino sobre claro y en claro sobre vino, dos de las cuatro aplicaciones que
+ * aprueba el manual.
+ */
+type LogoVariante = 'horizontal' | 'apilado' | 'monograma';
+
+/** Relación de aspecto de cada archivo, tomada de su viewBox. */
+const LOGO_ARCHIVO: Record<LogoVariante, { src: string; ratio: string }> = {
+  horizontal: { src: '/logo-ns-horizontal.svg', ratio: 'aspect-[498/100]' },
+  apilado: { src: '/logo-ns.svg', ratio: 'aspect-[140/100]' },
+  monograma: { src: '/logo-ns-monograma.svg', ratio: 'aspect-[109/100]' },
+};
+
+/** El apilado arranca más alto: su nombre va debajo y necesita cuerpo. */
+const LOGO_ALTO: Record<LogoVariante, Record<'sm' | 'md' | 'lg', string>> = {
+  horizontal: { sm: 'h-6', md: 'h-8', lg: 'h-10' },
+  apilado: { sm: 'h-12', md: 'h-14', lg: 'h-20' },
+  monograma: { sm: 'h-7', md: 'h-9', lg: 'h-12' },
+};
+
+export function Logo({
+  size = 'md',
+  light,
+  variante = 'horizontal',
+  className,
+}: {
+  size?: 'sm' | 'md' | 'lg';
+  /** Va sobre la losa de contraste (el pie), no sobre una superficie normal. */
+  light?: boolean;
+  variante?: LogoVariante;
+  className?: string;
+}) {
+  const { src, ratio } = LOGO_ARCHIVO[variante];
+
   return (
-    <span className="inline-flex items-baseline gap-1.5">
-      {/* `light` significa "va sobre la losa de contraste", no "va en blanco":
-          hoy es el pie, que usa `bg-slab`. Con `on-ink` se perdería, porque en
-          oscuro `on-ink` es tinta oscura y la losa sigue siendo oscura. */}
-      <span className={cn('display leading-none', t, light ? 'text-on-slab' : 'text-ink')}>Aurelle</span>
-      <span className={cn('text-meta font-semibold uppercase leading-none tracking-[.12em]', light ? 'text-on-slab/60' : 'text-clay')}>Pro</span>
-    </span>
+    <span
+      role="img"
+      aria-label="Natalia Sánchez"
+      className={cn(
+        'inline-block shrink-0 bg-current',
+        LOGO_ALTO[variante][size],
+        ratio,
+        light ? 'text-on-slab' : 'text-clay',
+        className,
+      )}
+      style={{
+        maskImage: `url(${src})`,
+        WebkitMaskImage: `url(${src})`,
+        maskRepeat: 'no-repeat',
+        WebkitMaskRepeat: 'no-repeat',
+        maskPosition: 'center',
+        WebkitMaskPosition: 'center',
+        maskSize: 'contain',
+        WebkitMaskSize: 'contain',
+      }}
+    />
   );
 }
 

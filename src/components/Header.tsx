@@ -81,7 +81,7 @@ export function Header() {
         {/* Desktop */}
         <div className="hidden md:block">
           <div className="container-x flex items-center gap-6 py-3">
-            <Link to="/" aria-label="Aurelle, inicio" className="shrink-0"><Logo /></Link>
+            <Link to="/" aria-label="Natalia Sánchez, inicio" className="shrink-0"><Logo /></Link>
             <div className="min-w-0 flex-1"><SearchBar /></div>
             <div className="flex shrink-0 items-center gap-1">
               {/* Acceso directo a todo el catalogo: la navegacion de abajo solo
@@ -145,7 +145,7 @@ export function Header() {
             <IconButton label="Menú" onClick={() => setMenuOpen(true)}><Menu size={19} strokeWidth={2} /></IconButton>
             <IconButton label="Buscar" onClick={() => setSearchOpen(true)}><Search size={19} strokeWidth={2} /></IconButton>
           </div>
-          <Link to="/" aria-label="Aurelle, inicio"><Logo size="sm" /></Link>
+          <Link to="/" aria-label="Natalia Sánchez, inicio"><Logo size="sm" /></Link>
           <div className="flex justify-end">
             <Link to={accountTo} aria-label="Mi cuenta" className="flex h-10 w-10 items-center justify-center rounded"><User size={19} strokeWidth={2} /></Link>
             <IconButton label="Carrito" onClick={openCart} badge={count}><ShoppingBag size={19} strokeWidth={2} /></IconButton>

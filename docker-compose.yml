@@ -1,4 +1,4 @@
-# Base de datos de Aurelle.
+# Base de datos de Natalia Sánchez.
 #
 #   npm run db:up      → levanta solo Postgres (lo normal en desarrollo)
 #   npm run db:down    → lo apaga (los datos sobreviven en el volumen)
@@ -7,6 +7,8 @@
 # Las credenciales salen de .env en la raíz. Si no existe, los valores por
 # defecto de abajo bastan para desarrollo local.
 
+# Los nombres `aurelle-*` y el usuario/base `aurelle` son del nombre anterior y
+# se quedan: renombrarlos dejaría huérfano el volumen con los datos de hoy.
 services:
   db:
     image: postgres:17-alpine

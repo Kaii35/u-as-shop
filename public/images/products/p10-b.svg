@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img">
 <defs>
 <linearGradient id="bg81" x1="0" y1="0" x2=".6" y2="1">
-<stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F6F3EF"/><stop offset="1" stop-color="#EFE7E0"/>
+<stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F1DFDA"/><stop offset="1" stop-color="#F7EBE8"/>
 </linearGradient>
 <radialGradient id="v82" cx=".5" cy=".42" r=".72">
-<stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#141110" stop-opacity=".07"/>
+<stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#2A1215" stop-opacity=".07"/>
 </radialGradient>
 <filter id="blurWide" x="-60%" y="-200%" width="220%" height="500%"><feGaussianBlur stdDeviation="13"/></filter>
 <filter id="blurTight" x="-60%" y="-300%" width="220%" height="700%"><feGaussianBlur stdDeviation="4"/></filter>
@@ -25,24 +25,24 @@
 <stop offset=".88" stop-color="#bab8b9"/>
 <stop offset="1" stop-color="#e4e2e3"/>
 </linearGradient><linearGradient id="g80" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0" stop-color="#64291d"/>
-<stop offset=".07" stop-color="#7a311f"/>
-<stop offset=".26" stop-color="#8A3621"/>
-<stop offset=".37" stop-color="#dec7c1"/>
-<stop offset=".44" stop-color="#b68275"/>
-<stop offset=".64" stop-color="#8A3621"/>
-<stop offset=".88" stop-color="#682b1d"/>
-<stop offset="1" stop-color="#7d321f"/>
+<stop offset="0" stop-color="#300e11"/>
+<stop offset=".07" stop-color="#360e11"/>
+<stop offset=".26" stop-color="#3B0D10"/>
+<stop offset=".37" stop-color="#c8bbbc"/>
+<stop offset=".44" stop-color="#85696b"/>
+<stop offset=".64" stop-color="#3B0D10"/>
+<stop offset=".88" stop-color="#310e11"/>
+<stop offset="1" stop-color="#370d10"/>
 </linearGradient>
 </defs>
 <radialGradient id="halo" cx=".5" cy=".5" r=".5">
-<stop offset="0" stop-color="#FFF6F0" stop-opacity=".22"/>
-<stop offset=".55" stop-color="#FFF0E6" stop-opacity=".10"/>
-<stop offset="1" stop-color="#FFF0E6" stop-opacity="0"/>
+<stop offset="0" stop-color="#FDF4F3" stop-opacity=".22"/>
+<stop offset=".55" stop-color="#F9E9E7" stop-opacity=".10"/>
+<stop offset="1" stop-color="#F9E9E7" stop-opacity="0"/>
 </radialGradient>
 <linearGradient id="suelo" x1="0" y1="670" x2="0" y2="1000" gradientUnits="userSpaceOnUse">
-<stop offset="0" stop-color="#C98B76" stop-opacity="0"/>
-<stop offset="1" stop-color="#C98B76" stop-opacity=".13"/>
+<stop offset="0" stop-color="#CEB7B0" stop-opacity="0"/>
+<stop offset="1" stop-color="#CEB7B0" stop-opacity=".13"/>
 </linearGradient>
 <circle cx="400" cy="430" r="320" fill="url(#halo)"/>
 <path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="url(#suelo)"/>
@@ -55,16 +55,16 @@
 <rect x="-44" y="-170" width="88" height="300" rx="44" fill="url(#g79)"/>
 <rect x="-44" y="-60" width="88" height="70" fill="url(#g80)"/>
 <rect x="-30" y="-150" width="12" height="90" rx="6" fill="#fff" opacity=".55"/>
-<rect x="-16" y="130" width="32" height="46" rx="6" fill="#EFE7E0"/>
-<rect x="-9" y="170" width="18" height="34" rx="9" fill="#A8432A"/>
+<rect x="-16" y="130" width="32" height="46" rx="6" fill="#F7EBE8"/>
+<rect x="-9" y="170" width="18" height="34" rx="9" fill="#521317"/>
 </g>
 <g transform="translate(150,90)"><g transform="translate(0,0) rotate(12)">
-<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#EFE7E0"/>
-<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#A8432A"/></g><g transform="translate(30,0) rotate(12)">
-<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#EFE7E0"/>
-<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#A8432A"/></g><g transform="translate(60,0) rotate(12)">
-<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#EFE7E0"/>
-<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#A8432A"/></g></g></g>
+<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#F7EBE8"/>
+<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#521317"/></g><g transform="translate(30,0) rotate(12)">
+<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#F7EBE8"/>
+<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#521317"/></g><g transform="translate(60,0) rotate(12)">
+<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#F7EBE8"/>
+<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#521317"/></g></g></g>
 </g>
 <ellipse cx="10.850000000000001" cy="207" rx="155" ry="24.8" fill="#4A372F" opacity=".22" filter="url(#blurWide)"/>
 <ellipse cx="0" cy="205" rx="89.89999999999999" ry="10.416" fill="#3A2A24" opacity=".3" filter="url(#blurTight)"/>
@@ -72,15 +72,15 @@
 <rect x="-44" y="-170" width="88" height="300" rx="44" fill="url(#g79)"/>
 <rect x="-44" y="-60" width="88" height="70" fill="url(#g80)"/>
 <rect x="-30" y="-150" width="12" height="90" rx="6" fill="#fff" opacity=".55"/>
-<rect x="-16" y="130" width="32" height="46" rx="6" fill="#EFE7E0"/>
-<rect x="-9" y="170" width="18" height="34" rx="9" fill="#A8432A"/>
+<rect x="-16" y="130" width="32" height="46" rx="6" fill="#F7EBE8"/>
+<rect x="-9" y="170" width="18" height="34" rx="9" fill="#521317"/>
 </g>
 <g transform="translate(150,90)"><g transform="translate(0,0) rotate(12)">
-<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#EFE7E0"/>
-<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#A8432A"/></g><g transform="translate(30,0) rotate(12)">
-<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#EFE7E0"/>
-<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#A8432A"/></g><g transform="translate(60,0) rotate(12)">
-<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#EFE7E0"/>
-<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#A8432A"/></g></g>
+<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#F7EBE8"/>
+<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#521317"/></g><g transform="translate(30,0) rotate(12)">
+<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#F7EBE8"/>
+<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#521317"/></g><g transform="translate(60,0) rotate(12)">
+<rect x="-5" y="-60" width="10" height="90" rx="5" fill="#F7EBE8"/>
+<path d="M-13 -60 C-13 -95 13 -95 13 -60 Z" fill="#521317"/></g></g>
 </g>
 </svg>

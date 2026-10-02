@@ -53,7 +53,7 @@ export default function Login() {
         // pendiente de tokenizar.
         <div className="text-white">
           <p className="display text-h5 leading-snug text-balance">“Cada set que entrego empieza con un buen producto.”</p>
-          <span className="mt-1.5 block text-meta font-semibold uppercase tracking-[.12em] text-white/60">Comunidad Aurelle Pro</span>
+          <span className="mt-1.5 block text-meta font-semibold uppercase tracking-[.12em] text-white/60">Comunidad Natalia Sánchez Pro</span>
         </div>
       }
     >

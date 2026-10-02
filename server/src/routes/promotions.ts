@@ -23,7 +23,7 @@ const optionalText = z.string().trim().max(300).nullable().optional();
 
 /**
  * El cupón se guarda en mayúsculas porque la clienta lo escribe como quiere y
- * `code` es único: sin normalizar, AURELLE20 y aurelle20 serían dos cupones.
+ * `code` es único: sin normalizar, NATALIA20 y natalia20 serían dos cupones.
  * Cadena vacía quiere decir quitarlo: es lo que manda un formulario limpiado.
  */
 const codeSchema = z

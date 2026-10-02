@@ -1,4 +1,4 @@
-# API de Aurelle — contrato
+# API de Natalia Sánchez — contrato
 
 Este documento manda. El servidor y el panel se escribieron en paralelo contra
 él, así que si el código y este archivo no coinciden, uno de los dos está mal y
@@ -98,11 +98,11 @@ candidatas gana la de mayor `priority` y, a igualdad, la más reciente.
     "id": "…",
     "title": "20 % en esmaltes semipermanentes",
     "subtitle": "Solo esta semana, en toda la categoría.",
-    "badge": "Semana Aurelle",
+    "badge": "Semana Natalia Sánchez",
     "image": "/images/editorial/promo.jpg",
     "ctaLabel": "Ver la colección",
     "ctaUrl": "/tienda?categoria=esmaltes-semipermanentes",
-    "code": "AURELLE20",        // null si se aplica sola
+    "code": "NATALIA20",        // null si se aplica sola
     "frequency": "SESSION",     // ONCE | SESSION | DAILY | ALWAYS
     "delayMs": 1200,
     "endsAt": "2026-10-01T05:00:00.000Z"  // null si no vence
@@ -420,8 +420,8 @@ contra la hora del servidor.
 
 ```jsonc
 {
-  "name": "Semana Aurelle",          // requerido
-  "code": "AURELLE20",               // opcional, único, se guarda en mayúsculas
+  "name": "Semana Natalia Sánchez",          // requerido
+  "code": "NATALIA20",               // opcional, único, se guarda en mayúsculas
   "type": "PERCENTAGE",              // PERCENTAGE | FIXED_AMOUNT | FREE_SHIPPING
   "scope": "CATEGORY",               // ALL | CATEGORY | BRAND | PRODUCT
   "targetIds": ["c2"],               // requerido salvo scope ALL
@@ -435,7 +435,7 @@ contra la hora del servidor.
   "showPopup": true,
   "popupTitle": "20 % en esmaltes semipermanentes",
   "popupSubtitle": "Solo esta semana, en toda la categoría.",
-  "popupBadge": "Semana Aurelle",
+  "popupBadge": "Semana Natalia Sánchez",
   "popupImage": "/images/editorial/promo.jpg",
   "popupCtaLabel": "Ver la colección",
   "popupCtaUrl": "/tienda?categoria=esmaltes-semipermanentes",
@@ -506,7 +506,7 @@ y devuelve a dónde mandar a la clienta.
     "legalIdType": "CC", "legalId": "1020304050"
   },
   "shipping": { "line1": "…", "city": "Medellín", "region": "Antioquia", "country": "CO" },
-  "couponCode": "AURELLE20",       // opcional
+  "couponCode": "NATALIA20",       // opcional
   "shippingMethod": "std"          // std | exp | pick
 }
 ```

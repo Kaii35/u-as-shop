@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * Sistema de diseño Aurelle.
+ * Sistema de diseño Natalia Sánchez.
  *
  * Cuatro reglas que el resto del código respeta:
  * 1. Ningún componente escribe un hex ni un tamaño de fuente arbitrario; todo sale de aquí.
@@ -98,7 +98,18 @@ export default {
         foreground: token('ink'),
       },
       fontFamily: {
-        display: ['Archivo', 'system-ui', 'sans-serif'],
+        /*
+         * La marca usa Lamoric Rowen, que es comercial y no se puede
+         * distribuir con el sitio. El LOGOTIPO no la necesita -va como SVG,
+         * con sus contornos, asi que la palabra "Natalia Sanchez" sale
+         * exactamente como la dibujo el estudio-; lo que hace falta es una
+         * cara para los titulares que no desentone con ella.
+         *
+         * Bodoni Moda es una didona: alto contraste entre asta y filete y
+         * serifas planas, que es justo lo que define a Lamoric Rowen. Es
+         * variable, asi que trae los pesos que la interfaz necesita.
+         */
+        display: ['Bodoni Moda', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {

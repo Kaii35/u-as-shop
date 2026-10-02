@@ -19,8 +19,8 @@ import { AuthLayout } from '../AuthLayout';
  */
 
 /** Sembradas por el `seed` del servidor. Solo se enseñan en desarrollo. */
-const DEMO_EMAIL = 'admin@aurelle.co';
-const DEMO_PASSWORD = 'aurelle-admin';
+const DEMO_EMAIL = 'admin@nataliasanchez.co';
+const DEMO_PASSWORD = 'natalia-admin';
 
 export default function AdminLogin() {
   const { user, checking, login } = useAdminAuth();
@@ -89,7 +89,7 @@ export default function AdminLogin() {
         <form onSubmit={submit} noValidate className="flex flex-col gap-3">
           <div className="mb-1 flex flex-col gap-1">
             <div className="flex items-baseline gap-2">
-              <span className="display text-h4 leading-none tracking-[-.03em] text-ink">Aurelle</span>
+              <span className="display text-h4 leading-none tracking-[-.03em] text-ink">Natalia Sánchez</span>
               <span className="label-xs">Panel</span>
             </div>
             <h1 className="display mt-2 text-h3 text-ink">Entra al panel</h1>
@@ -103,7 +103,7 @@ export default function AdminLogin() {
             type="email"
             autoComplete="email"
             autoFocus
-            placeholder="tu@aurelle.co"
+            placeholder="tu@nataliasanchez.co"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);

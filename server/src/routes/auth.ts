@@ -32,7 +32,7 @@ const BAD_CREDENTIALS = 'Correo o contraseña incorrectos.';
  * existen. Se calcula una vez y en diferido para no pagarlo al arrancar.
  */
 let decoy: Promise<string> | null = null;
-const decoyHash = (): Promise<string> => (decoy ??= hashPassword('contrasena-senuelo-aurelle'));
+const decoyHash = (): Promise<string> => (decoy ??= hashPassword('contrasena-senuelo-natalia'));
 
 export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post('/api/admin/login', async (request, reply) => {

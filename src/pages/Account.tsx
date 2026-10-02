@@ -45,7 +45,7 @@ export default function Account() {
         <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-clay-soft display text-h4 text-clay">{user.firstName[0]}{user.lastName[0]}</span>
         <div className="flex flex-col gap-1.5">
           <h1 className="display text-h3">Hola, <em className="text-clay">{user.firstName}</em></h1>
-          <span className="text-body text-mist">Miembro Aurelle Pro · {user.email}</span>
+          <span className="text-body text-mist">Miembro Natalia Sánchez Pro · {user.email}</span>
         </div>
       </header>
 
@@ -156,7 +156,7 @@ export default function Account() {
                     2,96:1. `on-accent` es el texto de los rellenos de acento:
                     blanco en claro, tinta en oscuro. */}
                 <div className="flex aspect-[1.6] flex-col justify-between rounded-lg bg-clay p-[22px] text-on-accent">
-                  <span className="flex justify-between"><span className="display text-h5">Aurelle</span><span className="text-body font-semibold tracking-[.1em]">VISA</span></span>
+                  <span className="flex justify-between"><span className="display text-h5">Natalia Sánchez</span><span className="text-body font-semibold tracking-[.1em]">VISA</span></span>
                   <span className="text-h5 tracking-[.14em]">•••• •••• •••• 4821</span>
                   <span className="flex justify-between text-cap opacity-85"><span>{user.firstName} {user.lastName}</span><span>09/29</span></span>
                 </div>

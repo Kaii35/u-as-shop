@@ -814,7 +814,7 @@ export async function expireStale(limit = 50): Promise<ExpireReport> {
       methodType: 'UNKNOWN',
       providerStatus: 'EXPIRED',
       statusMessage: 'El tiempo para pagar se agotó.',
-      raw: { expiredAt: now.toISOString(), by: 'aurelle' },
+      raw: { expiredAt: now.toISOString(), by: 'natalia-sanchez' },
     };
 
     const outcome = await applySnapshot(

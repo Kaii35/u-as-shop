@@ -12,6 +12,8 @@
  */
 export const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:4100').replace(/\/$/, '');
 
+// Prefijo `aurelle.` heredado del nombre anterior: renombrarlo cerraría la
+// sesión de quien tenga el panel abierto.
 const TOKEN_KEY = 'aurelle.admin.token';
 
 export class ApiError extends Error {

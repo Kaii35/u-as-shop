@@ -16,7 +16,7 @@ const SOCIAL = [
 ];
 const HELP = [
   ['WhatsApp +57 310 000 0000', '#'],
-  ['hola@aurelle.co', 'mailto:hola@aurelle.co'],
+  ['hola@nataliasanchez.co', 'mailto:hola@nataliasanchez.co'],
   ['Envíos y entregas', '#'],
   ['Cambios y devoluciones', '#'],
   ['Preguntas frecuentes', '#'],
@@ -40,7 +40,7 @@ export function Footer() {
     <footer className="bg-slab text-on-slab">
       <div className="container-x grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div className="flex max-w-[340px] flex-col gap-3">
-          <Logo light />
+          <Logo light variante="apilado" size="sm" />
           <p className="text-body text-on-slab/70">
             Insumos profesionales para uñas, pestañas y cuidado personal. Envíos a toda Colombia.
           </p>
@@ -90,7 +90,7 @@ export function Footer() {
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-meta text-on-slab/45">
           <a href="#" className="transition-colors hover:text-on-slab">Privacidad</a>
           <a href="#" className="transition-colors hover:text-on-slab">Términos</a>
-          <span>© {new Date().getFullYear()} Aurelle</span>
+          <span>© {new Date().getFullYear()} Natalia Sánchez</span>
         </div>
       </div>
       {/* Deja sitio para la barra inferior fija de móvil. */}

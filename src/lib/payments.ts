@@ -126,6 +126,8 @@ export async function resolveMockPayment(reference: string, outcome: MockOutcome
  * atrás— y sin ella la pantalla de retorno no tendría por dónde preguntar.
  * `sessionStorage` y no `localStorage`: es de esta compra, no del navegador.
  */
+// Prefijo `aurelle.` heredado: renombrarlo dejaría sin referencia a quien
+// esté volviendo de la pasarela en este momento.
 const REFERENCE_KEY = 'aurelle.payment.reference';
 
 export function rememberPaymentReference(reference: string): void {

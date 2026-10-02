@@ -84,7 +84,7 @@ function Hero() {
           className="h-auto min-h-[520px] px-0 py-8 md:min-h-[600px] md:px-0 md:py-10"
           showHeader={false}
           showFooter={false}
-          logoText="Aurelle"
+          logoText="Natalia Sánchez"
           navLinks={[]}
           socialLinks={[]}
           locationText=""
@@ -138,7 +138,7 @@ function Promises() {
       <div className="container-x section-y">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 md:mb-7">
           <div className="flex max-w-xl flex-col gap-1.5">
-            <span className="text-meta font-semibold uppercase tracking-[.12em] text-clay-soft dark:text-clay">Por qué Aurelle</span>
+            <span className="text-meta font-semibold uppercase tracking-[.12em] text-clay-soft dark:text-clay">Por qué Natalia Sánchez</span>
             <h2 className="display text-h4 text-on-slab md:text-h3">Comprar aquí es otra cosa</h2>
           </div>
           <p className="max-w-[46ch] text-body text-on-slab/60">
@@ -357,7 +357,7 @@ function Newsletter() {
                 tema-ok: el texto del aviso va en blanco sobre el velo oscuro. */}
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ok text-on-accent"><Check size={16} strokeWidth={2.5} /></span>
             <span className="flex flex-col">
-              <span className="text-body font-medium text-white">Ya eres parte de Aurelle</span>
+              <span className="text-body font-medium text-white">Ya eres parte de Natalia Sánchez</span>
               <span className="text-meta text-white/60">Revisa tu correo: te enviamos tu código.</span>
             </span>
           </div>

@@ -37,6 +37,8 @@ const DEMO_CART: CartLine[] = [
 ];
 
 export function StoreProvider({ children }: { children: ReactNode }) {
+  // El prefijo `aurelle.` es herencia del nombre anterior y no se renombra:
+  // cambiarlo vaciaría el carrito, los favoritos y la sesión ya guardados.
   const [cart, setCart] = usePersistentState<CartLine[]>('aurelle.cart', DEMO_CART);
   const [favs, setFavs] = usePersistentState<string[]>('aurelle.favs', ['p3', 'p5', 'p12']);
   const [user, setUser] = usePersistentState<User | null>('aurelle.user', null);

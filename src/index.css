@@ -17,23 +17,48 @@
    ========================================================================== */
 
 @layer base {
+  /*
+     Paleta Natalia Sánchez.
+
+     Los cinco colores del manual de marca, con el nombre que les da el manual:
+
+       ELEGANCIA  #521317   vino profundo · el color del logotipo
+       FEMINIDAD  #B37677   rosa empolvado
+       BELLEZA    #F0B4BA   rosa claro
+       PUREZA     #F1DFDA   blanco rosado
+       EQUILIBRIO #CEB7B0   greige cálido
+
+     Cinco colores de marca no cubren una interfaz, que además necesita
+     neutros, estados y dos temas. Lo que se hizo fue darle a cada uno el papel
+     que ya cumple en el manual y derivar el resto de ahí, sin inventar tonos
+     que peleen con la marca:
+
+       ELEGANCIA  -> el acento en modo claro (precio, enlaces, botón de acción)
+       BELLEZA    -> el acento en modo oscuro, donde el vino no se leería
+       PUREZA     -> superficie alterna en claro, y el color del TEXTO en oscuro
+       EQUILIBRIO -> los bordes
+       FEMINIDAD  -> queda en reserva: ningún papel la pedía sin solaparse
+
+     Nota del manual: la ficha de BELLEZA declara 240-180-186 pero el círculo
+     impreso está pintado #F9E1E4, que es ese mismo color al 45 % sobre blanco.
+     Se usa el valor declarado, que es la especificación.
+  */
   :root {
     color-scheme: light;
 
-    /* Texto */
-    --ink: 20 17 16; /* #141110 · 18.8:1 sobre blanco */
-    --ash: 92 85 79; /* #5C554F */
-    --mist: 138 130 123; /* #8A827B */
+    /* Texto. `ink` es ELEGANCIA llevada a casi negro: conserva el tinte vino
+       de la marca sin que todo el cuerpo de texto grite. */
+    --ink: 42 18 21; /* #2A1215 */
+    --ash: 107 74 76; /* #6B4A4C */
+    --mist: 147 123 121; /* #937B79 */
     --on-ink: 255 255 255; /* texto sobre el botón primario */
     /*
        Texto sobre un relleno de color (clay, ok, warn, danger).
 
        Hace falta un token propio porque esos cuatro rellenos SUBEN de
-       luminosidad en oscuro, y el blanco deja de servir sobre ellos: medido,
-       blanco sobre el terracota oscuro da 2.96:1 y sobre el rojo 2.61:1, muy
-       por debajo de lo legible. Ahí lo correcto es tinta oscura. Un solo token
-       vale para los cuatro: en claro todos quieren blanco, en oscuro todos
-       quieren tinta.
+       luminosidad en oscuro y el blanco deja de servir sobre ellos. Un solo
+       token vale para los cuatro: en claro todos quieren blanco, en oscuro
+       todos quieren tinta.
     */
     --on-accent: 255 255 255;
 
@@ -42,51 +67,46 @@
        promesas, pastilla del aviso.
 
        No puede ser `ink`. `ink` se invierte -y debe hacerlo, porque el botón
-       primario negro de modo claro tiene que volverse claro en oscuro-, pero
-       una SUPERFICIE grande no sigue esa regla: un pie de página oscuro que
-       se vuelve crema deja una losa luminosa a lo ancho al final de una
-       página de carbón. En oscuro el bloque se hunde un poco por debajo del
-       fondo, que es lo que hace cualquier interfaz oscura decente.
+       primario oscuro de modo claro tiene que volverse claro en oscuro-, pero
+       una SUPERFICIE grande no sigue esa regla: un pie de página oscuro que se
+       vuelve claro deja una losa luminosa a lo ancho al final de la página.
     */
-    --slab: 20 17 16;
+    --slab: 42 18 21;
     --on-slab: 255 255 255;
 
     /* Superficies */
     --canvas: 255 255 255;
     /*
-       Fondo de página hundido: el gris del panel administrativo, sobre el que
-       flotan las tarjetas. No puede ser `sand`, porque `sand` es recesiva en
-       claro pero ELEVADA en oscuro, y la página acabaría más clara que las
-       tarjetas que lleva encima: la jerarquía al revés.
+       Fondo de página hundido: el del panel administrativo, sobre el que
+       flotan las tarjetas. Es PUREZA muy diluida. No puede ser `sand`, porque
+       `sand` es recesiva en claro pero ELEVADA en oscuro, y la página acabaría
+       más clara que las tarjetas que lleva encima: la jerarquía al revés.
     */
-    --canvas-sunk: 246 243 239;
+    --canvas-sunk: 250 244 242; /* #FAF4F2 */
     --surface: 255 255 255;
-    --sand: 246 243 239; /* #F6F3EF · aquí es RECESIVA */
-    --line: 231 226 220; /* #E7E2DC */
+    --sand: 241 223 218; /* PUREZA #F1DFDA · aquí es RECESIVA */
+    --line: 232 216 211; /* #E8D8D3 · EQUILIBRIO aclarado; a pleno es demasiado borde */
 
-    /* Acento */
-    --clay: 168 67 42; /* #A8432A · 6.0:1 sobre blanco */
-    --clay-strong: 138 54 33; /* #8A3621 · hover: más oscuro */
-    --clay-soft: 247 233 228; /* #F7E9E4 */
+    /* Acento: ELEGANCIA, el color del logotipo. */
+    --clay: 82 19 23; /* ELEGANCIA #521317 */
+    --clay-strong: 59 13 16; /* #3B0D10 · hover: más profundo */
+    --clay-soft: 251 232 234; /* #FBE8EA · BELLEZA diluida, para rellenos teñidos */
 
     /* Estado */
     --ok: 47 107 79;
     /*
-       #8F631C y no el #9A6B1F de antes.
-       El original daba 4,17:1 sobre su propio relleno `warn-soft`, por debajo
-       del minimo legible: el distintivo de aviso en modo claro estaba mal
-       desde antes del modo oscuro y lo descubrio la auditoria de contraste.
-       Un punto mas oscuro lo sube a 4,72:1 sin cambiar el tono.
+       #8F631C y no el #9A6B1F de antes: aquel daba 4,17:1 sobre su propio
+       relleno, por debajo del mínimo. Lo descubrió la auditoría de contraste.
     */
     --warn: 143 99 28;
     --danger: 179 38 30;
     --ok-soft: 234 242 237;
     --warn-soft: 251 241 223;
     --danger-soft: 251 233 231;
-    --info-soft: 236 239 243;
+    --info-soft: 243 236 234;
 
-    /* Sombra: oscuridad proyectada sobre un fondo claro. */
-    --shadow: 20 17 16;
+    /* Sombra: oscuridad proyectada, teñida con el vino de la marca. */
+    --shadow: 42 18 21;
     --shadow-weak: 0.04;
     --shadow-mid: 0.14;
     --shadow-strong: 0.22;
@@ -99,45 +119,54 @@
   }
 
   /*
-     Carbón cálido.
+     El tema oscuro de la marca.
 
-     No es un gris invertido: mantiene la temperatura de la marca, porque toda
-     la fotografía del catálogo es cálida y sobre un oscuro frío se ve sucia.
-     Nada es negro puro — el negro absoluto contra texto claro vibra y cansa.
+     El manual lo contempla: una de sus cuatro aplicaciones aprobadas es el
+     logotipo en blanco sobre negro. Aquí no es negro puro -el negro absoluto
+     contra texto claro vibra y cansa- sino un casi negro con el mismo tinte
+     vino, para que la fotografía cálida del catálogo no se vea sucia encima.
 
-     Todos los pares están medidos: texto 16.4:1, secundario 9.2:1,
-     metadatos 5.0:1, acento 6.3:1. El acento SUBE de luminosidad porque el
-     terracota original daba 3.08:1 aquí, por debajo de lo legible.
+     Los dos relevos que lo hacen funcionar:
+       el acento pasa de ELEGANCIA a BELLEZA, porque el vino sobre fondo oscuro
+       daría 1,4:1 y sería ilegible;
+       el texto pasa a PUREZA, que es el claro de la propia marca.
   */
   :root.dark {
     color-scheme: dark;
 
-    --ink: 245 241 236; /* #F5F1EC · 16.4:1 */
-    --ash: 191 182 172; /* #BFB6AC · 9.2:1 */
-    --mist: 141 132 123; /* #8D847B · 5.0:1 */
-    --on-ink: 23 19 15; /* el botón primario se invierte: fondo claro, texto oscuro */
-    --on-accent: 23 19 15; /* 6.3:1 sobre clay, 7.1:1 sobre danger, 9.3:1 sobre warn */
-    --slab: 15 12 10; /* #0F0C0A · un escalón POR DEBAJO del fondo, no por encima */
-    --on-slab: 245 241 236;
+    --ink: 241 223 218; /* PUREZA #F1DFDA */
+    --ash: 196 169 166; /* #C4A9A6 */
+    --mist: 153 131 128; /* #998380 */
+    --on-ink: 26 16 18; /* el botón primario se invierte: fondo claro, texto oscuro */
+    --on-accent: 26 16 18;
+    --slab: 18 11 12; /* #120B0C · un escalón POR DEBAJO del fondo, no por encima */
+    --on-slab: 241 223 218;
 
-    --canvas: 23 19 15; /* #17130F */
+    --canvas: 26 16 18; /* #1A1012 */
     /* En oscuro la página hundida es la página: no hay un escalón por debajo. */
-    --canvas-sunk: 23 19 15;
-    --surface: 33 28 24; /* #211C18 · un escalón por encima del fondo */
-    --sand: 44 38 32; /* #2C2620 · aquí es ELEVADA, no recesiva */
-    --line: 61 53 46; /* #3D352E · el borde es lo que de verdad define la tarjeta */
+    --canvas-sunk: 26 16 18;
+    --surface: 36 23 25; /* #241719 · un escalón por encima del fondo */
+    --sand: 48 32 31; /* #30201F · aquí es ELEVADA, no recesiva */
+    --line: 69 49 48; /* #453130 · el borde es lo que de verdad define la tarjeta */
 
-    --clay: 224 122 90; /* #E07A5A · 6.3:1, el mismo peso que 6.0:1 en claro */
-    --clay-strong: 240 150 122; /* #F0967A · hover: más CLARO, al revés que en claro */
-    --clay-soft: 58 33 25; /* #3A2119 */
+    --clay: 240 180 186; /* BELLEZA #F0B4BA · el acento de la marca que sí se lee aquí */
+    --clay-strong: 247 210 214; /* #F7D2D6 · hover: más CLARO, al revés que en claro */
+    --clay-soft: 60 27 31; /* #3C1B1F */
 
     --ok: 109 191 143;
     --warn: 224 176 92;
-    --danger: 240 128 118;
-    --ok-soft: 26 45 35;
-    --warn-soft: 51 40 20;
-    --danger-soft: 58 28 26;
-    --info-soft: 38 36 34;
+    /*
+       #FF6B5A y no el salmón de antes.
+       El acento de esta marca es rosado y el error también tiraba a rosa: la
+       diferencia perceptual entre los dos era de 12,7 en OKLab, por debajo del
+       umbral en que se distinguen con comodidad. Un rojo más anaranjado lo
+       sube a 16,7 sin acercarse al ámbar del aviso.
+    */
+    --danger: 255 107 90;
+    --ok-soft: 28 46 36;
+    --warn-soft: 53 42 22;
+    --danger-soft: 62 29 25;
+    --info-soft: 42 31 32;
 
     /* Negro puro y mucha más opacidad: una sombra suave no se ve sobre oscuro. */
     --shadow: 0 0 0;
@@ -149,11 +178,8 @@
     --edge-weight: 0.06;
 
     /*
-       La fotografía se baja un punto.
-
-       Las fotos están iluminadas para fondo blanco: tal cual, sobre carbón
-       parecen pantallas encendidas y se llevan toda la atención. Bajar el
-       brillo y un poco el contraste las integra sin desteñir el color.
+       La fotografía se baja un punto. Está iluminada para fondo blanco y sobre
+       un fondo oscuro parece una pantalla encendida.
     */
     --photo-filter: brightness(0.88) contrast(0.96) saturate(1.02);
   }

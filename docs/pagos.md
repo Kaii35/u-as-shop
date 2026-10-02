@@ -1,6 +1,6 @@
 # Pagos — arquitectura
 
-Cómo cobra Aurelle, por qué está hecho así y qué hay que hacer para ponerlo en
+Cómo cobra Natalia Sánchez, por qué está hecho así y qué hay que hacer para ponerlo en
 producción.
 
 El contrato de los endpoints está en **`docs/api.md`, sección 9**. Aquí va el
@@ -108,7 +108,7 @@ firma es el servidor.
 ### 3.1 El feliz
 
 ```
-CLIENTA            TIENDA (React)        API AURELLE              WOMPI
+CLIENTA            TIENDA (React)     API NATALIA SÁNCHEZ         WOMPI
    |                    |                      |                     |
    |-- "Pagar" -------->|                      |                     |
    |                    |-- POST /api/payments/intent -->|           |
@@ -171,7 +171,7 @@ Por eso hay dos vías, y hacen falta las dos:
   esperando una respuesta.
 
 ```
-CLIENTA                    API AURELLE                     WOMPI
+CLIENTA                API NATALIA SÁNCHEZ                  WOMPI
    |                            |                             |
    |------- paga ---------------------------------------------->|
    |                            |         X  webhook perdido    |
@@ -613,7 +613,7 @@ Sin adornos. Quien mantenga esto va a tropezar con estas cosas.
 
 1. **No hay reembolsos ni anulaciones desde el panel.** Wompi los soporta por
    API, pero aquí no hay ruta ni botón. Un reembolso hoy se hace en el panel de
-   Wompi, a mano, y el estado del `Payment` en Aurelle **no se entera**: hay que
+   Wompi, a mano, y el estado del `Payment` en Natalia Sánchez **no se entera**: hay que
    ajustarlo aparte. `VOIDED` existe en el modelo y `canTransition` lo permite
    desde `APPROVED`, pero nada lo dispara desde nuestro lado.
 2. **No hay correos de confirmación.** Ni de pedido recibido, ni de pago

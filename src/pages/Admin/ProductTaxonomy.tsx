@@ -134,7 +134,7 @@ function TaxonomyEditor({
     if (result !== null) onSaved();
   }
 
-  const formId = 'aurelle-taxonomy-form';
+  const formId = 'ns-taxonomy-form';
   const words = KIND_LABEL[kind];
 
   return (

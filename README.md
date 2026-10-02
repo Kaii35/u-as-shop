@@ -1,4 +1,4 @@
-# Aurelle · Professional Beauty
+# Natalia Sánchez · Professional Beauty
 
 Tienda de insumos de belleza profesional con panel administrativo.
 
@@ -25,7 +25,7 @@ npm run dev        # tienda y panel en http://localhost:5173
 ```
 
 - Tienda: <http://localhost:5173>
-- Panel: <http://localhost:5173/admin> · `admin@aurelle.co` / `aurelle-admin`
+- Panel: <http://localhost:5173/admin> · `admin@nataliasanchez.co` / `natalia-admin`
 
 `npm run setup` levanta Postgres, instala las dependencias del servidor, genera
 el cliente de Prisma, aplica las migraciones y siembra los datos. Es idempotente:
@@ -214,8 +214,9 @@ resto legítimo —texto sobre fotografía con velo— se marca en su línea con
 comentario `tema-ok: <motivo>`; exige el motivo a propósito.
 
 Toda la paleta está medida: 24 pares reales por tema, todos por encima del
-mínimo de contraste. El acento se aclara a `#E07A5A` en oscuro porque el
-terracota original daba 3,08:1 sobre el fondo, por debajo de lo legible.
+mínimo de contraste, y se comprueba además la separación perceptual entre los
+colores que podrían confundirse. El acento cambia de ELEGANCIA a BELLEZA en
+oscuro porque el vino sobre fondo oscuro da 1,4:1 y sería ilegible.
 
 ### La fotografía
 
@@ -228,9 +229,73 @@ se veía como una caja de luz.
 
 ---
 
+## La marca
+
+La identidad es de **Natalia Sánchez** y está en `docs/`: la presentación del
+estudio y el archivo de Illustrator del logotipo.
+
+### Los colores
+
+Los cinco del manual, con el nombre que les da el propio manual:
+
+| | Hex | Papel en la interfaz |
+|---|---|---|
+| ELEGANCIA | `#521317` | el acento en modo claro: precio, enlaces, botón de acción |
+| BELLEZA | `#F0B4BA` | el acento en modo oscuro, donde el vino no se leería |
+| PUREZA | `#F1DFDA` | superficie alterna en claro, y el color del **texto** en oscuro |
+| EQUILIBRIO | `#CEB7B0` | los bordes |
+| FEMINIDAD | `#B37677` | en reserva: ningún papel la pedía sin solaparse con otra |
+
+Cinco colores de marca no cubren una interfaz, que además necesita neutros,
+estados y dos temas. Lo que se hizo fue darle a cada uno el papel que ya cumple
+en el manual y derivar el resto de ahí, en vez de inventar tonos que peleen con
+la marca. Todo está en `src/index.css` y nada se tocó a ojo: `npm run
+theme:check` y la auditoría de contraste respaldan cada valor.
+
+> Una nota por si alguien compara con el PDF: la ficha de BELLEZA declara
+> `240-180-186` pero el círculo impreso está pintado `#F9E1E4`, que es ese mismo
+> color al 45 % sobre blanco. Se usa el valor declarado, que es la
+> especificación.
+
+### El logotipo
+
+Los archivos de `public/` salen del **vector original** del estudio, extraído
+del `.ai`. El nombre está en contornos, así que sale exactamente como lo
+dibujaron —incluida la gota de esmalte que cuelga de la N— y no depende de
+Lamoric Rowen, que es la cara de la marca pero es comercial y no viaja con el
+proyecto.
+
+| Archivo | Cuándo |
+|---|---|
+| `logo-ns-horizontal.svg` | cabeceras. Es el que usa `<Logo />` por defecto |
+| `logo-ns.svg` | el bloque apilado del manual. Pie de página |
+| `logo-ns-monograma.svg` | solo NS, para sitios estrechos |
+
+El bloque apilado necesita **52 px de alto** para que el nombre se lea —medido—
+y una cabecera no los tiene. Por eso existe la versión horizontal: con las
+mismas dos piezas en fila, el nombre es legible desde 28 px.
+
+El componente lo monta como `mask-image`, no como `<img>`: así el color lo pone
+`bg-current` y el mismo archivo sirve en vino sobre claro y en claro sobre vino,
+que son dos de las cuatro aplicaciones que aprueba el manual.
+
+Para los titulares se usa **Bodoni Moda**, que es una didona como Lamoric Rowen
+—alto contraste entre asta y filete, serifas planas— y sí está en Google Fonts.
+
+### El favicon
+
+Monograma claro sobre el vino, que es la primera aplicación del manual y la que
+mejor aguanta a tamaño pequeño. Hay **dos encuadres**: el normal de 32 px para
+arriba, y uno compacto para 16 px, porque los trazos finos de una serif de alto
+contraste se empastan si les dejas aire a ese tamaño. Aun así, 16 px es duro
+para esta marca.
+
+
+---
+
 ## Sistema de diseño
 
-Todo sale de `tailwind.config.ts`: la paleta (neutros cálidos + terracota), una
+Todo sale de `tailwind.config.ts`: la paleta de la marca, una
 escala tipográfica de 9 pasos que **termina en 44 px**, espaciado múltiplo de 4.
 Ningún componente escribe un hex ni un tamaño de fuente arbitrario.
 

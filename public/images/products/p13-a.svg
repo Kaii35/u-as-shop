@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img">
 <defs>
 <linearGradient id="bg98" x1="0" y1="0" x2=".6" y2="1">
-<stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F6F3EF"/><stop offset="1" stop-color="#EFE7E0"/>
+<stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F1DFDA"/><stop offset="1" stop-color="#F7EBE8"/>
 </linearGradient>
 <radialGradient id="v99" cx=".5" cy=".42" r=".72">
-<stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#141110" stop-opacity=".07"/>
+<stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#2A1215" stop-opacity=".07"/>
 </radialGradient>
 <filter id="blurWide" x="-60%" y="-200%" width="220%" height="500%"><feGaussianBlur stdDeviation="13"/></filter>
 <filter id="blurTight" x="-60%" y="-300%" width="220%" height="700%"><feGaussianBlur stdDeviation="4"/></filter>
@@ -27,13 +27,13 @@
 </linearGradient>
 </defs>
 <radialGradient id="halo" cx=".5" cy=".5" r=".5">
-<stop offset="0" stop-color="#FFF6F0" stop-opacity=".30"/>
-<stop offset=".55" stop-color="#FFF0E6" stop-opacity=".14"/>
-<stop offset="1" stop-color="#FFF0E6" stop-opacity="0"/>
+<stop offset="0" stop-color="#FDF4F3" stop-opacity=".30"/>
+<stop offset=".55" stop-color="#F9E9E7" stop-opacity=".14"/>
+<stop offset="1" stop-color="#F9E9E7" stop-opacity="0"/>
 </radialGradient>
 <linearGradient id="suelo" x1="0" y1="670" x2="0" y2="1000" gradientUnits="userSpaceOnUse">
-<stop offset="0" stop-color="#C98B76" stop-opacity="0"/>
-<stop offset="1" stop-color="#C98B76" stop-opacity=".13"/>
+<stop offset="0" stop-color="#CEB7B0" stop-opacity="0"/>
+<stop offset="1" stop-color="#CEB7B0" stop-opacity=".13"/>
 </linearGradient>
 <circle cx="400" cy="470" r="370" fill="url(#halo)"/>
 <path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="url(#suelo)"/>
@@ -45,7 +45,7 @@
 <path d="M-76 -140 L76 -140 L62 180 L-62 180 Z" fill="url(#g97)"/>
 <rect x="-76" y="-152" width="152" height="16" rx="4" fill="#b2a5a7"/>
 <rect x="-50" y="-118" width="15" height="250" rx="7.5" fill="#fff" opacity=".4"/>
-<rect x="-34" y="180" width="68" height="36" rx="8" fill="#8A3621"/>
+<rect x="-34" y="180" width="68" height="36" rx="8" fill="#3B0D10"/>
 <rect x="-62" y="10" width="124" height="52" rx="4" fill="#fff" opacity=".8"/></g>
 </g>
 <ellipse cx="6.16" cy="207" rx="88" ry="14.08" fill="#4A372F" opacity=".22" filter="url(#blurWide)"/>
@@ -53,7 +53,7 @@
 <path d="M-76 -140 L76 -140 L62 180 L-62 180 Z" fill="url(#g97)"/>
 <rect x="-76" y="-152" width="152" height="16" rx="4" fill="#b2a5a7"/>
 <rect x="-50" y="-118" width="15" height="250" rx="7.5" fill="#fff" opacity=".4"/>
-<rect x="-34" y="180" width="68" height="36" rx="8" fill="#8A3621"/>
+<rect x="-34" y="180" width="68" height="36" rx="8" fill="#3B0D10"/>
 <rect x="-62" y="10" width="124" height="52" rx="4" fill="#fff" opacity=".8"/>
 </g>
 </svg>

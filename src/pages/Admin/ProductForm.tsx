@@ -331,7 +331,7 @@ export default function ProductForm({
     if (result) onSaved();
   }
 
-  const formId = 'aurelle-product-form';
+  const formId = 'ns-product-form';
 
   return (
     <Modal

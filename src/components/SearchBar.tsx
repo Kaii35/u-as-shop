@@ -14,6 +14,8 @@ interface Props {
 export function SearchBar({ variant = 'inline', onClose }: Props) {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(variant === 'overlay');
+  // Clave con el prefijo `aurelle.` del nombre anterior: renombrarla borraría
+  // las búsquedas recientes ya guardadas.
   const [recent, setRecent] = usePersistentState<string[]>('aurelle.recent', ['Builder gel', 'Top coat', 'Lámpara LED']);
   const navigate = useNavigate();
   const ref = useRef<HTMLDivElement>(null);

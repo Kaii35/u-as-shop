@@ -11,6 +11,8 @@ import { env } from './env.js';
  * emita tokens de cliente firmados con el mismo secreto, sin audiencia
  * cualquiera que se registre pasaría por `requireAuth` y entraría al panel.
  */
+// El valor lleva el nombre anterior a propósito: cambiarlo invalidaría de
+// golpe los tokens ya emitidos.
 const AUDIENCE = 'aurelle:admin';
 
 /** Lo que viaja dentro del token. Nunca la contraseña, obviamente. */

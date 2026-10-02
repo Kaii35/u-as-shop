@@ -447,7 +447,7 @@ export function PromotionEditor({
               value={draft.name}
               error={errors.name}
               onChange={(e) => set('name', e.target.value)}
-              placeholder="Semana Aurelle"
+              placeholder="Semana Natalia Sánchez"
             />
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -551,7 +551,7 @@ export function PromotionEditor({
               hint="opcional; si lo dejas vacío se aplica sola"
               value={draft.code}
               onChange={(e) => set('code', e.target.value.toUpperCase())}
-              placeholder="AURELLE20"
+              placeholder="NATALIA20"
             />
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -636,7 +636,7 @@ export function PromotionEditor({
                     hint="opcional"
                     value={draft.popupBadge}
                     onChange={(e) => set('popupBadge', e.target.value)}
-                    placeholder="Semana Aurelle"
+                    placeholder="Semana Natalia Sánchez"
                   />
                   <Input
                     label="Imagen"

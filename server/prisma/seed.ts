@@ -1,5 +1,5 @@
 /**
- * Siembra de Aurelle.
+ * Siembra de Natalia Sánchez.
  *
  * El panel no se puede juzgar con la base vacía: las tres gráficas salen
  * planas, las alertas de stock no tienen a quién avisar y las estadísticas de
@@ -372,7 +372,7 @@ const productById = new Map(PRODUCTS.map((p) => [p.id, p]));
 
 const FIRST_NAMES: readonly string[] = [
   'Laura', 'Daniela', 'Camila', 'Valentina', 'Mariana', 'Andrea', 'Paula', 'Juliana',
-  'Sofía', 'Catalina', 'Natalia', 'Isabella', 'Alejandra', 'Carolina', 'Manuela',
+  'Sofía', 'Catalina', 'Mariana', 'Isabella', 'Alejandra', 'Carolina', 'Manuela',
   'Luisa', 'Ximena', 'Tatiana', 'Angie', 'Yuliana', 'Diana', 'Verónica', 'Estefanía',
   'Johana', 'Melissa', 'Sara', 'Gabriela', 'Lorena', 'Vanessa', 'Adriana',
 ];
@@ -535,8 +535,8 @@ const PROMOTIONS: readonly SeedPromotion[] = [
     // necesita para tener algo que enseñar en "promociones terminadas".
     data: {
       id: 'promo-black-friday',
-      name: 'Black Friday Aurelle',
-      code: 'BLACKAURELLE',
+      name: 'Black Friday Natalia Sánchez',
+      code: 'BLACKNATALIA',
       type: PromotionType.PERCENTAGE,
       scope: PromotionScope.ALL,
       targetIds: [],
@@ -606,8 +606,8 @@ const PROMOTIONS: readonly SeedPromotion[] = [
     // Es el caso que distingue "vencida" de "desactivada" en el panel.
     data: {
       id: 'promo-bienvenida',
-      name: 'Bienvenida AURELLE10',
-      code: 'AURELLE10',
+      name: 'Bienvenida NATALIA10',
+      code: 'NATALIA10',
       type: PromotionType.FIXED_AMOUNT,
       scope: PromotionScope.ALL,
       targetIds: [],
@@ -1114,7 +1114,7 @@ async function seedUsers(): Promise<void> {
     },
   });
 
-  const staffHash = await hashPassword('aurelle-staff');
+  const staffHash = await hashPassword('natalia-staff');
   await prisma.user.upsert({
     where: { email: 'staff@example.com' },
     update: { name: 'Mariana Ospina', role: UserRole.STAFF, active: true },
@@ -1127,6 +1127,29 @@ async function seedUsers(): Promise<void> {
       lastLoginAt: addDays(NOW, -3),
     },
   });
+
+  /*
+   * Avisa de cuentas de panel que la siembra no creo.
+   *
+   * El upsert va por correo, asi que cambiar ADMIN_EMAIL no renombra la cuenta
+   * vieja: crea una nueva y deja la anterior viva, con su contrasena y sus
+   * permisos. Paso de verdad al renombrar la marca.
+   *
+   * El seed NO las borra. Una de esas cuentas puede ser de una persona del
+   * equipo dada de alta desde el panel, y un script de datos de ejemplo no
+   * tiene por que decidir quien pierde el acceso. Avisar es lo correcto;
+   * borrar, no.
+   */
+  const ajenas = await prisma.user.findMany({
+    where: { email: { notIn: [env.adminEmail, 'staff@example.com'] } },
+    select: { email: true, role: true },
+  });
+  if (ajenas.length > 0) {
+    console.log('');
+    console.log('  AVISO · hay cuentas de panel que esta siembra no creo:');
+    for (const u of ajenas) console.log(`    ${u.email} (${u.role})`);
+    console.log('    Si sobran -por ejemplo de un correo anterior- borralas a mano.');
+  }
 }
 
 async function seedSettings(): Promise<void> {
@@ -1146,7 +1169,7 @@ async function seedSettings(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  console.log(`\nSembrando Aurelle · semilla ${env.seedRandom} · ${env.seedMonths} meses de historia`);
+  console.log(`\nSembrando Natalia Sánchez · semilla ${env.seedRandom} · ${env.seedMonths} meses de historia`);
   console.log(`Rango: ${fmtDate(FIRST_DAY)} → ${fmtDate(TODAY)} (${TOTAL_DAYS + 1} días)\n`);
 
   // Borrado en orden de dependencias: los movimientos apuntan a pedidos y

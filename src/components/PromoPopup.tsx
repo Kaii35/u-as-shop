@@ -31,6 +31,8 @@ import { Img } from './ui/Primitives';
  * descartada para todo el que hubiera cerrado la anterior, y la dueña vería un
  * anuncio que nadie llega a ver.
  */
+// `aurelle.` viene del nombre anterior y se queda: renombrarlo volvería a
+// enseñar anuncios ya cerrados.
 const SEEN_PREFIX = 'aurelle.promo.seen.';
 /** Identifica la pestaña abierta: es lo que hace distinta una sesión de otra. */
 const SESSION_KEY = 'aurelle.promo.session';

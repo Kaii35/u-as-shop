@@ -429,7 +429,7 @@ export default function CounterSaleModal({
             hint="opcional"
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value)}
-            placeholder="AURELLE20"
+            placeholder="NATALIA20"
           />
         </div>
 

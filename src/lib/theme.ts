@@ -14,6 +14,7 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 /** El tema que realmente se está pintando. `system` ya resuelto. */
 export type ResolvedTheme = 'light' | 'dark';
 
+/** Prefijo `aurelle.` del nombre anterior: renombrarlo haría perder el tema ya guardado. */
 export const THEME_KEY = 'aurelle.theme';
 
 const query = (): MediaQueryList | null =>

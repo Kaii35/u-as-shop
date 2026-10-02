@@ -134,7 +134,7 @@ export default function AdminLayout() {
         </button>
 
         <Link to="/admin" className="flex items-baseline gap-2">
-          <span className="display text-h5 leading-none tracking-[-.03em] text-ink">Aurelle</span>
+          <span className="display text-h5 leading-none tracking-[-.03em] text-ink">Natalia Sánchez</span>
           <span className="label-xs">Panel</span>
         </Link>
 

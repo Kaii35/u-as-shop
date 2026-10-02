@@ -36,8 +36,8 @@ export const env = {
    * Semilla del primer administrador. Solo se usa al sembrar: si el usuario
    * ya existe, el seed no le toca la contraseña.
    */
-  adminEmail: process.env.ADMIN_EMAIL ?? 'admin@aurelle.co',
-  adminPassword: process.env.ADMIN_PASSWORD ?? 'aurelle-admin',
+  adminEmail: process.env.ADMIN_EMAIL ?? 'admin@nataliasanchez.co',
+  adminPassword: process.env.ADMIN_PASSWORD ?? 'natalia-admin',
 
   // -------------------------------------------------------------------------
   // Pagos

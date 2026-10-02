@@ -34,7 +34,7 @@ export default function Register() {
 
   const done = (first: string, last: string, email: string, phone?: string) => {
     login({ firstName: first, lastName: last, email, phone });
-    notify({ title: 'Cuenta creada', description: `Bienvenida a Aurelle, ${first}` });
+    notify({ title: 'Cuenta creada', description: `Bienvenida a Natalia Sánchez, ${first}` });
     navigate('/cuenta');
   };
 
