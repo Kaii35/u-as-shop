@@ -226,8 +226,11 @@ export const Component = ({
           </defs>
 
           <g ref={mainGroupRef} clipPath={`url(#${items[0].clipId})`}>
+            {/* `photo` también aquí: son fotos de colección y el filtro de modo
+                oscuro funciona igual sobre un <image> de SVG. */}
             <image
               ref={imageRef}
+              className="photo"
               href={items[0].image}
               width="500"
               height="500"

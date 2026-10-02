@@ -54,13 +54,29 @@ function Hero() {
           un degradado calido que arranca en el tinte de marca, dos halos
           difusos que dan profundidad, y una reticula de puntos muy tenue
           con mascara para que se desvanezca por los bordes en vez de
-          cortarse en seco. */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-clay-soft via-sand to-white" />
-      <div className="absolute -left-24 top-0 -z-10 h-[420px] w-[420px] rounded-full bg-clay/20 blur-[130px]" />
+          cortarse en seco.
+
+          El degradado cierra en `canvas`, no en blanco: tiene que fundirse con
+          el fondo de pagina, y en oscuro ese fondo es carbon. */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-clay-soft via-sand to-canvas" />
+      {/* El halo de acento se mide sobre lo que hay detras: en oscuro `clay`
+          sube de luminosidad y al 20% se convertia en una mancha naranja que
+          competia con el titular, asi que ahi pesa la mitad. */}
+      <div className="absolute -left-24 top-0 -z-10 h-[420px] w-[420px] rounded-full bg-clay/20 blur-[130px] dark:bg-clay/10" />
+      {/* El segundo halo va en `clay-soft`, que en oscuro ya es un marron
+          profundo: aporta temperatura sin aclarar la zona. */}
       <div className="absolute -right-20 bottom-0 -z-10 h-[380px] w-[380px] rounded-full bg-clay-soft blur-[110px]" />
+      {/*
+         La reticula llevaba el hex `#141110` incrustado y en oscuro eran puntos
+         negros sobre carbon: invisibles. Un valor arbitrario no acepta un token
+         de Tailwind, pero si acepta la variable CSS en crudo, asi que el punto
+         es `rgb(var(--ink))` y cambia de tema solo, sin variante `dark:`.
+         La opacidad si sube un punto: un punto claro al 7% sobre carbon se
+         percibe mas tenue que uno oscuro al 7% sobre crema.
+      */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 opacity-[0.07] [background-image:radial-gradient(circle,#141110_1px,transparent_1px)] [background-size:20px_20px] [-webkit-mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)]"
+        className="absolute inset-0 -z-10 opacity-[0.07] [background-image:radial-gradient(circle,rgb(var(--ink))_1px,transparent_1px)] [background-size:20px_20px] [-webkit-mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)] dark:opacity-[0.1]"
       />
 
       <div className="container-x">
@@ -77,7 +93,9 @@ function Hero() {
           imageSrc="/images/editorial/hero-portrait.jpg"
           imageAlt="Manos con manicura profesional"
           imageShape="circle"
-          accentClassName="bg-white/70"
+          // El disco de acento es una superficie, no un blanco literal: en
+          // oscuro tiene que quedar un escalon por encima del fondo, no brillar.
+          accentClassName="bg-surface/70"
           overlayText={{ part1: 'menos', part2: 'es más.' }}
           actions={
             <div className="mt-5 flex flex-col items-center gap-5 md:items-start">
@@ -112,14 +130,18 @@ function Hero() {
  */
 function Promises() {
   return (
-    <section className="bg-ink text-white">
+    /* La franja va sobre `slab`: un bloque a sangre que es oscuro en los DOS
+       temas. No usa `ink` porque `ink` se invierte, y una banda crema a lo
+       ancho en mitad de una pagina de carbon es el mayor salto de luminancia
+       que puede tener la portada. */
+    <section className="bg-slab text-on-slab">
       <div className="container-x section-y">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 md:mb-7">
           <div className="flex max-w-xl flex-col gap-1.5">
-            <span className="text-meta font-semibold uppercase tracking-[.12em] text-clay-soft">Por qué Aurelle</span>
-            <h2 className="display text-h4 text-white md:text-h3">Comprar aquí es otra cosa</h2>
+            <span className="text-meta font-semibold uppercase tracking-[.12em] text-clay-soft dark:text-clay">Por qué Aurelle</span>
+            <h2 className="display text-h4 text-on-slab md:text-h3">Comprar aquí es otra cosa</h2>
           </div>
-          <p className="max-w-[46ch] text-body text-white/60">
+          <p className="max-w-[46ch] text-body text-on-slab/60">
             Cuatro cosas que damos por sentadas para que tú solo pienses en el servicio.
           </p>
         </div>
@@ -161,7 +183,10 @@ function Categories() {
 function Collections() {
   const navigate = useNavigate();
   return (
-    <section className="bg-sand">
+    // Banda de fondo, no una tarjeta: `sand` es recesiva en claro pero ELEVADA
+    // en oscuro, y la seccion acabaria mas clara que la pagina. `canvas-sunk` es
+    // el gris hundido en claro y el propio fondo de pagina en oscuro.
+    <section className="bg-canvas-sunk">
       <div className="container-x section-y">
         <SectionHeading
           eyebrow="Colecciones"
@@ -212,9 +237,19 @@ function Promos() {
         {tiles.map((t) => (
           <Link key={t.title} to={t.to} className="group relative aspect-[3/2] overflow-hidden rounded-lg border border-line bg-sand md:aspect-[5/2]">
             <div className="absolute inset-0 transition-transform duration-500 ease-soft group-hover:scale-[1.03]">
-              <Img src={t.img} alt="" label="Promoción" />
+              {/* Foto real: lleva `.photo` para que en oscuro baje de brillo. */}
+              <Img src={t.img} alt="" label="Promoción" className="photo" />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-ink/80 via-ink/45 to-transparent" />
+            {/*
+               El velo existe para que el texto blanco se lea sobre la foto, asi
+               que tiene que ser oscuro en los DOS temas. `ink` lo es en claro
+               pero se vuelve crema en oscuro, asi que ahi releva `canvas`, que
+               es lo mas oscuro del tema. No es un parche de color: es el mismo
+               significado con el token que lo cumple en cada tema.
+            */}
+            <div className="absolute inset-0 bg-gradient-to-r from-ink/80 via-ink/45 to-transparent dark:from-canvas/85 dark:via-canvas/50" />
+            {/* tema-ok: todo este bloque se queda en blanco: esta sobre el velo, que es
+                oscuro en los dos temas. */}
             <div className="relative flex h-full max-w-[60%] flex-col items-start justify-center gap-1.5 p-5">
               <span className="text-meta font-semibold uppercase tracking-[.1em] text-white/70">{t.kicker}</span>
               <h3 className="display text-h5 text-white md:text-h4">{t.title}</h3>
@@ -280,25 +315,47 @@ function Newsletter() {
   const submit = () => (isEmail(email) ? setDone(true) : setError('Escribe un correo válido'));
 
   return (
-    <section className="relative isolate overflow-hidden bg-ink">
+    // La banda es oscura en los dos temas (ver el velo): el fondo base solo se
+    // ve si la foto no carga, y tiene que ser oscuro igual.
+    <section className="relative isolate overflow-hidden bg-ink dark:bg-canvas">
       <img
         src="/images/editorial/newsletter.jpg"
         alt=""
         aria-hidden
-        className="absolute inset-0 h-full w-full object-cover"
+        // Foto editorial: `.photo` le baja el brillo solo en oscuro.
+        className="photo absolute inset-0 h-full w-full object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/25 md:via-ink/70 md:to-ink/10" />
+      {/*
+         Mismo caso que los banners promocionales: el velo es lo unico que
+         garantiza el contraste del texto blanco, asi que se mantiene oscuro en
+         los dos temas. En claro lo cumple `ink`; en oscuro `ink` es crema y
+         releva `canvas`.
+      */}
+      <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/25 md:via-ink/70 md:to-ink/10 dark:from-canvas dark:via-canvas/85 dark:to-canvas/30 md:dark:via-canvas/75 md:dark:to-canvas/15" />
 
       <Reveal className="container-x relative flex min-h-[260px] flex-col justify-center gap-2.5 py-10">
-        <span className="text-meta font-semibold uppercase tracking-[.12em] text-clay-soft">Newsletter</span>
+        {/* Sobre un velo oscuro en los dos temas, `clay-soft` solo sirve en
+            tema-ok: el titular y el cuerpo van en blanco sobre el velo oscuro.
+            El kicker en cambio NO puede quedarse en `clay-soft`, que solo es
+            claro en modo claro: en oscuro es un marron profundo que se pierde. Ahi el acento
+            legible es `clay`, que sube de luminosidad justo para esto. */}
+        <span className="text-meta font-semibold uppercase tracking-[.12em] text-clay-soft dark:text-clay">Newsletter</span>
         <h2 className="display max-w-[20ch] text-h3 text-white text-balance">10% en tu primera compra</h2>
         <p className="max-w-[44ch] text-body text-white/70">
           Lanzamientos antes que nadie y precios de profesional. Uno o dos correos al mes.
         </p>
 
         {done ? (
+          // El lavado y el aro blancos no son una superficie: son un realce
+          // tema-ok: realce
+          // translucido sobre el velo oscuro, que lo es en los dos temas. Como
+          // superficie (`surface/10`) se volveria un rectangulo gris en claro.
           <div className="mt-1 flex max-w-[420px] items-center gap-2.5 rounded-lg bg-white/10 p-3 ring-1 ring-white/20 backdrop-blur-sm">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ok text-white"><Check size={16} strokeWidth={2.5} /></span>
+            {/* `ok` pasa de verde oscuro a verde claro entre temas y un check
+                blanco encima baja a 2,21:1. `on-accent` es el texto de los
+                rellenos de estado y pasa en los dos.
+                tema-ok: el texto del aviso va en blanco sobre el velo oscuro. */}
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ok text-on-accent"><Check size={16} strokeWidth={2.5} /></span>
             <span className="flex flex-col">
               <span className="text-body font-medium text-white">Ya eres parte de Aurelle</span>
               <span className="text-meta text-white/60">Revisa tu correo: te enviamos tu código.</span>
@@ -316,13 +373,21 @@ function Newsletter() {
                 aria-label="Correo electrónico"
                 aria-invalid={!!error}
                 className={cn(
-                  'h-11 min-w-0 flex-1 rounded border bg-white px-3 text-body outline-none transition-colors',
-                  error ? 'border-danger' : 'border-transparent focus:border-clay',
+                  // El campo es una superficie, no un blanco: en oscuro no debe
+                  // ser un rectangulo brillante sobre la banda.
+                  'h-11 min-w-0 flex-1 rounded border bg-surface px-3 text-body outline-none transition-colors',
+                  // Sin borde se perdia: en claro el campo blanco ya destaca
+                  // sobre el velo, pero en oscuro superficie y velo estan a dos
+                  // pasos de tono y hace falta el filo para ver donde se escribe.
+                  error ? 'border-danger' : 'border-transparent focus:border-clay dark:border-line',
                 )}
               />
               <Button size="lg" variant="accent" className="shrink-0" onClick={submit}>Suscribirme</Button>
             </div>
-            {error && <span role="alert" className="text-cap text-clay-soft">{error}</span>}
+            {/* Un aviso de error no puede depender del tema: mismo relevo que el
+                kicker, porque esta sobre el mismo velo oscuro.
+                tema-ok: la nota de baja va en blanco sobre ese mismo velo. */}
+            {error && <span role="alert" className="text-cap text-clay-soft dark:text-clay">{error}</span>}
             <span className="text-meta text-white/50">Sin spam. Puedes darte de baja cuando quieras.</span>
           </div>
         )}

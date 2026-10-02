@@ -28,7 +28,8 @@ const TAG_VALUES: readonly ProductTag[] = TAGS.map((t) => t.value);
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
-/** Gris del selector de color cuando el hex escrito todavía no es válido. */
+/** tema-ok: gris del selector de color mientras el hex escrito no es valido.
+    No es color de interfaz: es el valor de reserva de un <input type="color">. */
 const HEX_FALLBACK = '#CCCCCC';
 
 interface SizeDraft {
@@ -257,6 +258,8 @@ export default function ProductForm({
 
     draft.shades.forEach((s, i) => {
       if (blank(s.name) && blank(s.hex)) return;
+      // tema-ok: el hex de las dos lineas siguientes es TEXTO de ejemplo que
+      // lee la dueña, no un color pintado por la interfaz.
       if (blank(s.name)) e[`shade-${i}`] = 'El tono necesita nombre.';
       else if (!HEX.test(s.hex.trim()))
         e[`shade-${i}`] = 'El color va en formato #RRGGBB (por ejemplo #D9A5AE).';
@@ -655,6 +658,7 @@ export default function ProductForm({
                       draft.shades.map((s, j) => (j === i ? { ...s, hex: e.target.value } : s)),
                     )
                   }
+                  /* tema-ok: ejemplo de formato, no un color de la interfaz. */
                   placeholder="#D9A5AE"
                   inputClassName="tnum uppercase"
                 />
@@ -673,7 +677,7 @@ export default function ProductForm({
                     )
                   }
                   className={cn(
-                    'h-10 w-11 shrink-0 cursor-pointer rounded border border-line bg-white p-1',
+                    'h-10 w-11 shrink-0 cursor-pointer rounded border border-line bg-surface p-1',
                     i === 0 && 'mt-6',
                   )}
                 />

@@ -25,7 +25,7 @@ export function StoreLayout() {
  */
 export function AuthShell() {
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-white p-3 md:p-4">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-canvas p-3 md:p-4">
       <header className="shrink-0 pb-3">
         <Link to="/" aria-label="Volver a la tienda" className="inline-flex items-center gap-2 text-mist transition-colors hover:text-ink">
           <ArrowLeft size={16} strokeWidth={2} />

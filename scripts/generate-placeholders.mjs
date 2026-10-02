@@ -231,7 +231,16 @@ const O = {
 };
 
 /* ---------- lienzo ---------- */
-function canvas(w, h, inner, { a = '#FFFFFF', b = P.nude, c = P.blush } = {}) {
+/**
+ * Lienzo del SVG.
+ *
+ * `transparent` quita el rectangulo de fondo y la vineta. Lo usan los
+ * packshots: con un fondo opaco claro incrustado, en modo oscuro cada ficha de
+ * producto era un rectangulo blanco brillante sobre carbon -una caja de luz- y
+ * la rejilla del catalogo se volvia ilegible. Sin fondo, el producto flota
+ * sobre la superficie de la tarjeta y funciona en los dos temas.
+ */
+function canvas(w, h, inner, { a = '#FFFFFF', b = P.nude, c = P.blush, transparent = false } = {}) {
   const bg = id('bg'); const vg = id('v');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img">
   <defs>
@@ -252,9 +261,9 @@ function canvas(w, h, inner, { a = '#FFFFFF', b = P.nude, c = P.blush } = {}) {
     </mask>
     ${inner.defs ?? ''}
   </defs>
-  <rect width="${w}" height="${h}" fill="url(#${bg})"/>
+  ${transparent ? '' : `<rect width="${w}" height="${h}" fill="url(#${bg})"/>`}
   ${inner.body}
-  <rect width="${w}" height="${h}" fill="url(#${vg})"/>
+  ${transparent ? '' : `<rect width="${w}" height="${h}" fill="url(#${vg})"/>`}
 </svg>`;
 }
 
@@ -264,13 +273,32 @@ const W = 800; const H = 1000;
 function packshot(obj, shades, variant) {
   const isB = variant === 'b';
   const swatches = (shades ?? []).slice(0, 5)
-    .map((c, i) => `<circle cx="${112 + i * 52}" cy="${H - 92}" r="19" fill="${c}" stroke="#fff" stroke-width="3"/>`).join('');
+    // Borde neutro semitransparente, no blanco: sobre carbon un aro blanco
+    // convertia cada muestra en un punto brillante.
+    .map((c, i) => `<circle cx="${112 + i * 52}" cy="${H - 92}" r="19" fill="${c}" stroke="#8A827B" stroke-opacity=".35" stroke-width="2"/>`).join('');
   const cy = isB ? 545 : 520;
   const rot = isB ? -14 : 0;
   const sc = isB ? 1.34 : 1;
+  const haloR = (isB ? 250 : 300) + 70;
+  /**
+   * Charco de luz y suelo, los dos desvaneciendo a transparente.
+   *
+   * Antes eran un circulo blanco opaco y una franja rosada: sobre fondo claro
+   * no se notaban, pero sobre carbon eran dos manchas duras. Un degradado que
+   * muere en alfa cero se funde con lo que haya detras, sea blanco o carbon.
+   */
   const body = `
-    <circle cx="${W / 2}" cy="${isB ? 430 : 470}" r="${isB ? 250 : 300}" fill="#fff" opacity="${isB ? '.34' : '.5'}"/>
-    <path d="M0 ${H} L0 ${H - 210} Q ${W / 2} ${H - 330} ${W} ${H - 210} L${W} ${H} Z" fill="${P.blush}" opacity=".45"/>
+    <radialGradient id="halo" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#FFF6F0" stop-opacity="${isB ? '.22' : '.30'}"/>
+      <stop offset=".55" stop-color="#FFF0E6" stop-opacity="${isB ? '.10' : '.14'}"/>
+      <stop offset="1" stop-color="#FFF0E6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="suelo" x1="0" y1="${H - 330}" x2="0" y2="${H}" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#C98B76" stop-opacity="0"/>
+      <stop offset="1" stop-color="#C98B76" stop-opacity=".13"/>
+    </linearGradient>
+    <circle cx="${W / 2}" cy="${isB ? 430 : 470}" r="${haloR}" fill="url(#halo)"/>
+    <path d="M0 ${H} L0 ${H - 210} Q ${W / 2} ${H - 330} ${W} ${H - 210} L${W} ${H} Z" fill="url(#suelo)"/>
     <g transform="translate(${W / 2},${cy}) rotate(${rot}) scale(${sc})">
       <g mask="url(#reflFade)" opacity=".5">
         <g transform="translate(0,412) scale(1,-1)">${obj.body}</g>
@@ -278,8 +306,7 @@ function packshot(obj, shades, variant) {
       ${obj.body}
     </g>
     ${swatches}`;
-  const tint = isB ? { a: P.nude, b: P.blush, c: mix(P.blush, P.wine, 0.12) } : {};
-  return canvas(W, H, { defs: obj.defs, body }, tint);
+  return canvas(W, H, { defs: obj.defs, body }, { transparent: true });
 }
 
 /* ---------- motivos editoriales (sin uso actual, se conservan por si vuelven) ---------- */

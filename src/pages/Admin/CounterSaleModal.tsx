@@ -293,7 +293,7 @@ export default function CounterSaleModal({
                   <div className="mt-2 flex flex-wrap items-end gap-3">
                     <div className="flex flex-col gap-1.5">
                       <span className="text-cap font-medium text-ash">Cantidad</span>
-                      <div className="flex h-10 items-center rounded border border-line bg-white">
+                      <div className="flex h-10 items-center rounded border border-line bg-surface">
                         <button
                           type="button"
                           onClick={() =>

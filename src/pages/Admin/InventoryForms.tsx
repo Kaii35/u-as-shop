@@ -143,7 +143,7 @@ export function ProductPicker({
               setTerm('');
             }}
             aria-label="Elegir otro producto"
-            className="shrink-0 cursor-pointer rounded p-1.5 text-mist transition-colors hover:bg-white hover:text-ink"
+            className="shrink-0 cursor-pointer rounded p-1.5 text-mist transition-colors hover:bg-surface hover:text-ink"
           >
             <X size={15} strokeWidth={2} />
           </button>
@@ -159,7 +159,7 @@ export function ProductPicker({
         <SearchInput value={term} onChange={setTerm} placeholder={placeholder} />
 
         {query.length >= 2 && (
-          <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 max-h-60 overflow-y-auto rounded border border-line bg-white shadow-pop">
+          <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 max-h-60 overflow-y-auto rounded border border-line bg-surface shadow-pop">
             {search.first ? (
               <div className="flex flex-col gap-1.5 p-2.5">
                 <Skeleton className="h-4 w-2/3" />
@@ -723,7 +723,7 @@ export function BulkCountModal({
                         onChange={(e) => setCounted(row.product.id, e.target.value)}
                         aria-label={`Unidades contadas de ${row.product.name}`}
                         placeholder="—"
-                        className="tnum h-9 w-20 rounded border border-line bg-white px-2 text-right text-body outline-none transition-colors focus:border-clay focus:ring-2 focus:ring-clay/25"
+                        className="tnum h-9 w-20 rounded border border-line bg-surface px-2 text-right text-body outline-none transition-colors focus:border-clay focus:ring-2 focus:ring-clay/25"
                       />
                     </Td>
                     <Td align="right">

@@ -55,14 +55,14 @@ export function ProductGallery({ product }: { product: Product }) {
         {badge && <Badge tone={badge.tone} className="pointer-events-none absolute left-2.5 top-2.5">{badge.label}</Badge>}
         <button
           onClick={(e) => { e.stopPropagation(); setZoom(true); }}
-          className="absolute bottom-2.5 right-2.5 flex h-8 cursor-pointer items-center gap-1.5 rounded bg-white/95 px-2.5 text-cap font-medium shadow-card backdrop-blur-sm transition-colors hover:bg-white"
+          className="absolute bottom-2.5 right-2.5 flex h-8 cursor-pointer items-center gap-1.5 rounded bg-surface/95 px-2.5 text-cap font-medium shadow-card backdrop-blur-sm transition-colors hover:bg-surface"
         >
           <Maximize2 size={14} strokeWidth={2} /> Ampliar
         </button>
       </div>
       <Modal open={zoom} onClose={() => setZoom(false)} className="max-w-[min(92vw,720px)] bg-sand" label="Imagen ampliada">
         <div className="relative aspect-[4/5] w-full"><Img src={current} alt={product.name} label="Foto del producto" /></div>
-        <CloseButton onClick={() => setZoom(false)} className="absolute right-2.5 top-2.5 bg-white/90 backdrop-blur-sm" />
+        <CloseButton onClick={() => setZoom(false)} className="absolute right-2.5 top-2.5 bg-surface/90 backdrop-blur-sm" />
       </Modal>
     </div>
   );

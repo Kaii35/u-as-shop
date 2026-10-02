@@ -34,7 +34,15 @@ const LOOKS: Record<PublicPaymentStatus, Look> = {
     title: 'Tu pago fue aprobado',
     extra: 'Ya estamos preparando tu pedido.',
     icon: Check,
-    circle: 'bg-ok text-white',
+    /*
+       El unico circulo de relleno macizo, porque es el unico desenlace que hay
+       que celebrar. El glifo NO puede ser blanco fijo: `ok` pasa de verde
+       oscuro (#2F6B4F) a verde claro (#6DBF8F) al cambiar de tema y el blanco
+       encima cae a 2,21:1. `on-accent` es el texto de los rellenos de acento y
+       estado, y aguanta en los dos. Los demas desenlaces van en `bg-sand` con
+       el color en el texto, y ahi los dos tokens se invierten juntos.
+    */
+    circle: 'bg-ok text-on-accent',
     accent: 'text-ok',
   },
   PENDING: {
@@ -193,7 +201,7 @@ export default function PaymentResult() {
       {look.extra && <p className="max-w-[520px] text-body leading-relaxed text-mist">{look.extra}</p>}
 
       {payment.status === 'APPROVED' && (
-        <dl className="mt-2 flex w-full max-w-[420px] flex-col gap-2 rounded-lg border border-line bg-white p-5 text-left">
+        <dl className="mt-2 flex w-full max-w-[420px] flex-col gap-2 rounded-lg border border-line bg-surface p-5 text-left shadow-edge">
           <Row label="Pedido" value={payment.orderNumber} />
           <Row label="Total pagado" value={formatCOP(payment.amount)} strong />
           {payment.methodType && <Row label="Medio de pago" value={methodLabel(payment.methodType)} />}

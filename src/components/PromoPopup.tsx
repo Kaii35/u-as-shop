@@ -260,7 +260,9 @@ export function PromoPopup() {
         type="button"
         aria-label="Cerrar el anuncio"
         onClick={dismiss}
-        className="absolute inset-0 cursor-default bg-ink/45"
+        // El velo no puede quedarse solo en `ink`: en oscuro `ink` es claro y
+        // aclararía la página en vez de apagarla.
+        className="absolute inset-0 cursor-default bg-ink/45 dark:bg-canvas/70"
       />
 
       <div
@@ -270,13 +272,13 @@ export function PromoPopup() {
         aria-labelledby={TITLE_ID}
         tabIndex={-1}
         onKeyDown={keepFocus}
-        className="relative w-full max-w-[680px] animate-fade-up overflow-hidden rounded-lg bg-white shadow-pop outline-none"
+        className="relative w-full max-w-[680px] animate-fade-up overflow-hidden rounded-lg bg-surface shadow-pop dark:shadow-edge outline-none"
       >
         <button
           type="button"
           onClick={dismiss}
           aria-label="Cerrar"
-          className="absolute right-2 top-2 z-10 flex h-9 w-9 cursor-pointer items-center justify-center rounded bg-white/85 text-ash transition-colors hover:bg-sand hover:text-ink"
+          className="absolute right-2 top-2 z-10 flex h-9 w-9 cursor-pointer items-center justify-center rounded bg-surface/85 text-ash transition-colors hover:bg-sand hover:text-ink"
         >
           <X size={17} strokeWidth={2} aria-hidden />
         </button>
@@ -305,7 +307,7 @@ export function PromoPopup() {
                 <button
                   type="button"
                   onClick={() => void copyCode()}
-                  className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-sm border border-dashed border-clay bg-clay-soft px-2.5 py-1.5 text-body font-semibold tracking-[.08em] text-clay-dark transition-colors hover:bg-clay hover:text-white"
+                  className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-sm border border-dashed border-clay bg-clay-soft px-2.5 py-1.5 text-body font-semibold tracking-[.08em] text-clay-dark transition-colors hover:bg-clay hover:text-on-accent"
                 >
                   <Tag size={13} strokeWidth={2} aria-hidden />
                   {promotion.code}

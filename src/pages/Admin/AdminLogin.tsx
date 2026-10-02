@@ -44,7 +44,7 @@ export default function AdminLogin() {
 
   if (checking) {
     return (
-      <div className="flex h-[100dvh] items-center justify-center bg-sand">
+      <div className="flex h-[100dvh] items-center justify-center bg-canvas-sunk">
         <p className="text-body text-mist">Verificando sesión…</p>
       </div>
     );
@@ -69,15 +69,18 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="h-[100dvh] overflow-hidden bg-sand p-0 md:p-4">
+    <div className="h-[100dvh] overflow-hidden bg-canvas-sunk p-0 md:p-4">
       <AuthLayout
         reverse
         aside={
-          <div className="text-white">
+          // Este texto va sobre FOTOGRAFÍA con un degradado oscuro encima, no
+          // sobre una superficie del sistema: el blanco es correcto en los dos
+          // temas y `text-on-ink` lo volvería ilegible en oscuro.
+          <div className="text-white">{/* tema-ok: va sobre fotografia con velo oscuro, no sobre una superficie del sistema */}
             <p className="display text-h5 leading-snug text-balance">
               Todo lo que cambies aquí se ve en la tienda al instante.
             </p>
-            <span className="mt-1.5 block text-meta font-semibold uppercase tracking-[.12em] text-white/60">
+            <span className="mt-1.5 block text-meta font-semibold uppercase tracking-[.12em] text-white/60"> {/* tema-ok: sobre la misma fotografia */}
               Panel de administración
             </span>
           </div>

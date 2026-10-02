@@ -27,7 +27,7 @@ function Field({ id, label, hint, error, className, children }: FieldProps & { i
 /** Caja de campo: 40px de alto, esquina de 8px y foco marcado con el acento. */
 const box = (error?: string) =>
   cn(
-    'rounded border bg-white transition-colors focus-within:ring-2 focus-within:ring-clay/25',
+    'rounded border bg-surface transition-colors focus-within:ring-2 focus-within:ring-clay/25',
     error ? 'border-danger focus-within:border-danger' : 'border-line focus-within:border-clay',
   );
 
@@ -96,7 +96,7 @@ export function Checkbox({ checked, onChange, children, radio, className }: {
       <span className={cn(
         'mt-px flex h-4 w-4 shrink-0 items-center justify-center border transition-colors',
         radio ? 'rounded-full' : 'rounded-xs',
-        checked ? (radio ? 'border-clay' : 'border-clay bg-clay text-white') : 'border-line bg-white',
+        checked ? (radio ? 'border-clay' : 'border-clay bg-clay text-on-accent') : 'border-line bg-surface',
       )}>
         {checked && (radio ? <span className="h-2 w-2 rounded-full bg-clay" /> : <Check size={11} strokeWidth={3} />)}
       </span>

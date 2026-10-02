@@ -16,7 +16,7 @@ export function CouponField() {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex gap-2">
-        <input value={code} onChange={(e) => { setCode(e.target.value); setMsg(''); }} onKeyDown={(e) => e.key === 'Enter' && apply()} placeholder="Cupón de descuento" aria-label="Cupón de descuento" className="h-9 min-w-0 flex-1 rounded border border-line bg-white px-2.5 text-body uppercase outline-none transition-colors focus:border-clay" />
+        <input value={code} onChange={(e) => { setCode(e.target.value); setMsg(''); }} onKeyDown={(e) => e.key === 'Enter' && apply()} placeholder="Cupón de descuento" aria-label="Cupón de descuento" className="h-9 min-w-0 flex-1 rounded border border-line bg-surface px-2.5 text-body uppercase outline-none transition-colors focus:border-clay" />
         <Button size="sm" variant="secondary" onClick={apply}>Aplicar</Button>
       </div>
       {(msg || coupon) && <span className="text-cap text-clay">{msg || `Código ${coupon} aplicado`}</span>}
@@ -87,7 +87,7 @@ export function CartDrawer() {
               );
             })}
           </ul>
-          <div className="flex flex-col gap-2 border-t border-line bg-white px-4 pb-4 pt-3">
+          <div className="flex flex-col gap-2 border-t border-line bg-surface px-4 pb-4 pt-3">
             <CouponField />
             <Row label="Subtotal" value={formatCOP(t.subtotal)} />
             {t.discount > 0 && <Row label={`Descuento ${coupon}`} value={`−${formatCOP(t.discount)}`} accent />}

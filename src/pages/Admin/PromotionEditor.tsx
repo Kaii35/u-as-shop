@@ -753,7 +753,7 @@ function Block({
   return (
     <section className="rounded-lg border border-line">
       <header className="flex items-start gap-2.5 border-b border-line bg-sand px-3.5 py-2.5">
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-white">
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-on-ink">
           {icon}
         </span>
         <div className="min-w-0">
@@ -834,7 +834,10 @@ function TargetPicker({
               key={id}
               type="button"
               onClick={() => onToggle(id)}
-              className="inline-flex cursor-pointer items-center gap-1 rounded-sm bg-clay-soft px-1.5 py-1 text-cap text-clay-dark transition-colors hover:bg-clay hover:text-white"
+              // `bg-clay` es terracota en los dos temas, así que el blanco del
+              // hover se queda. (En oscuro el terracota se aclara y el par queda
+              // justo de contraste: hace falta un token `on-clay`.)
+              className="inline-flex cursor-pointer items-center gap-1 rounded-sm bg-clay-soft px-1.5 py-1 text-cap text-clay-dark transition-colors hover:bg-clay hover:text-on-accent"
             >
               {productNames[id] ?? 'Elegido'}
               <X size={11} strokeWidth={2.5} aria-hidden />
@@ -945,7 +948,7 @@ function PopupMock({ draft }: { draft: Draft }) {
   useEffect(() => setBroken(false), [image]);
 
   return (
-    <div className="overflow-hidden rounded bg-white shadow-card">
+    <div className="overflow-hidden rounded border border-line bg-surface shadow-card">
       {image !== '' && !broken && (
         <div className="h-20 w-full bg-sand">
           <img
@@ -970,7 +973,7 @@ function PopupMock({ draft }: { draft: Draft }) {
             {draft.code.trim().toUpperCase()}
           </span>
         )}
-        <span className="mt-1 inline-flex h-8 w-fit items-center rounded bg-ink px-3 text-cap font-medium text-white">
+        <span className="mt-1 inline-flex h-8 w-fit items-center rounded bg-ink px-3 text-cap font-medium text-on-ink">
           {draft.popupCtaLabel.trim() === '' ? 'Ver la promoción' : draft.popupCtaLabel}
         </span>
         {endsAt && <p className="text-meta text-mist">Hasta el {longDate(endsAt)}</p>}

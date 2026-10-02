@@ -44,9 +44,17 @@
 <stop offset="1" stop-color="#b2a4c8"/>
 </linearGradient>
 </defs>
-<rect width="800" height="1000" fill="url(#bg68)"/>
-<circle cx="400" cy="470" r="300" fill="#fff" opacity=".5"/>
-<path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="#EFE7E0" opacity=".45"/>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5">
+<stop offset="0" stop-color="#FFF6F0" stop-opacity=".30"/>
+<stop offset=".55" stop-color="#FFF0E6" stop-opacity=".14"/>
+<stop offset="1" stop-color="#FFF0E6" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="suelo" x1="0" y1="670" x2="0" y2="1000" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#C98B76" stop-opacity="0"/>
+<stop offset="1" stop-color="#C98B76" stop-opacity=".13"/>
+</linearGradient>
+<circle cx="400" cy="470" r="370" fill="url(#halo)"/>
+<path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="url(#suelo)"/>
 <g transform="translate(400,520) rotate(0) scale(1)">
 <g mask="url(#reflFade)" opacity=".5">
 <g transform="translate(0,412) scale(1,-1)">
@@ -80,6 +88,5 @@
 <ellipse cx="-120" cy="0" rx="8" ry="19" fill="#8a7e99"/>
 <rect x="-70" y="-22" width="150" height="7" rx="3.5" fill="#fff" opacity=".5"/></g>
 </g>
-<circle cx="112" cy="908" r="19" fill="#C9CBD0" stroke="#fff" stroke-width="3"/><circle cx="164" cy="908" r="19" fill="#D4A08E" stroke="#fff" stroke-width="3"/><circle cx="216" cy="908" r="19" fill="#C7B8E0" stroke="#fff" stroke-width="3"/>
-<rect width="800" height="1000" fill="url(#v69)"/>
+<circle cx="112" cy="908" r="19" fill="#C9CBD0" stroke="#8A827B" stroke-opacity=".35" stroke-width="2"/><circle cx="164" cy="908" r="19" fill="#D4A08E" stroke="#8A827B" stroke-opacity=".35" stroke-width="2"/><circle cx="216" cy="908" r="19" fill="#C7B8E0" stroke="#8A827B" stroke-opacity=".35" stroke-width="2"/>
 </svg>

@@ -15,7 +15,9 @@ export const variantLabel = (p: Product, shade = 0, size = 0) =>
   [p.shades?.[shade]?.name, p.sizes?.[size]?.label].filter(Boolean).join(' / ');
 
 export function stockInfo(stock: number) {
-  if (stock === 0) return { label: 'Agotado', dot: 'bg-[#B9AEB2]' };
+  // `mist` y no un gris propio: era el unico hex suelto de este archivo y no
+  // sabia nada del tema, asi que en oscuro seguia siendo el mismo gris frio.
+  if (stock === 0) return { label: 'Agotado', dot: 'bg-mist' };
   if (stock <= 6) return { label: `Últimas ${stock} unidades`, dot: 'bg-warn' };
   return { label: 'Disponible', dot: 'bg-ok' };
 }

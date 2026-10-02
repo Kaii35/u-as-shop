@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Boxes, Check, Megaphone, Store, Truck } from 'lucide-react';
+import { Boxes, Check, Megaphone, Palette, Store, Truck } from 'lucide-react';
 import {
   ErrorState,
   FormError,
@@ -11,6 +11,7 @@ import {
 } from '../../components/admin/Primitives';
 import { Button } from '../../components/ui/Button';
 import { Checkbox, Input } from '../../components/ui/Input';
+import { ThemeSegmented } from '../../components/ui/ThemeToggle';
 import { api } from '../../lib/api';
 import { useAction, useResource } from '../../lib/useResource';
 import { useAdminAuth } from '../../store/AdminAuth';
@@ -277,7 +278,7 @@ export default function AdminSettings() {
       {/* La barra solo aparece cuando hay algo que guardar, y se queda pegada
           abajo: en una lista larga el botón no puede estar fuera de la vista. */}
       {changed.length > 0 && (
-        <div className="sticky bottom-3 z-20 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white p-3 shadow-pop">
+        <div className="sticky bottom-3 z-20 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface p-3 shadow-pop">
           <div className="min-w-0">
             <p className="text-body font-medium text-ink">
               {changed.length === 1
@@ -314,6 +315,31 @@ export default function AdminSettings() {
           Ajustes guardados. La tienda ya los está usando.
         </p>
       )}
+
+      {/*
+        Apariencia.
+
+        Va en su propia sección y FUERA del formulario de arriba porque no es un
+        ajuste de la tienda: vive en el navegador de quien mira, no en la base de
+        datos. Por eso no entra en el `PUT /settings` ni cuenta como «cambio sin
+        guardar» — se aplica en el mismo clic y lo recuerda `localStorage`.
+      */}
+      <Panel
+        className="mt-4"
+        title="Apariencia"
+        description="Solo afecta a este navegador. No se guarda con los ajustes de la tienda."
+        actions={<Palette size={16} strokeWidth={2} className="text-mist" />}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-body font-medium text-ink">Tema de la interfaz</p>
+            <p className="mt-0.5 text-cap text-ash">
+              «Según tu equipo» sigue el modo claro u oscuro del sistema.
+            </p>
+          </div>
+          <ThemeSegmented />
+        </div>
+      </Panel>
 
       {/*
         Equipo solo para ADMIN. Esto es comodidad, no seguridad: sirve para no

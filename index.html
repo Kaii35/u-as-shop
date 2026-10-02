@@ -5,6 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#FFFFFF" />
     <title>Aurelle · Insumos de belleza profesional</title>
+    <!--
+      Tema, aplicado ANTES de pintar.
+
+      Va aqui en linea y sin `defer` a proposito: si esperara a que React
+      montara, el navegador ya habria pintado una pagina blanca y se veria un
+      destello cegador antes de pasar a oscuro. Es el fallo clasico del modo
+      oscuro y la unica forma de evitarlo es esto.
+
+      Duplica tres lineas de `src/lib/theme.ts`. Es una duplicacion aceptada:
+      importar el modulo exigiria cargarlo antes del primer pintado, que es
+      justo lo que no se puede hacer.
+    -->
+    <script>
+      (function () {
+        try {
+          var guardado = localStorage.getItem('aurelle.theme');
+          var oscuro =
+            guardado === 'dark' ||
+            (guardado !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (oscuro) {
+            document.documentElement.classList.add('dark');
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', '#17130F');
+          }
+        } catch (e) {
+          /* Sin almacenamiento se queda en claro. Mejor eso que no arrancar. */
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

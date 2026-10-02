@@ -26,9 +26,17 @@
 <stop offset="1" stop-color="#e4e2e3"/>
 </linearGradient>
 </defs>
-<rect width="800" height="1000" fill="url(#bg116)"/>
-<circle cx="400" cy="470" r="300" fill="#fff" opacity=".5"/>
-<path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="#EFE7E0" opacity=".45"/>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5">
+<stop offset="0" stop-color="#FFF6F0" stop-opacity=".30"/>
+<stop offset=".55" stop-color="#FFF0E6" stop-opacity=".14"/>
+<stop offset="1" stop-color="#FFF0E6" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="suelo" x1="0" y1="670" x2="0" y2="1000" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#C98B76" stop-opacity="0"/>
+<stop offset="1" stop-color="#C98B76" stop-opacity=".13"/>
+</linearGradient>
+<circle cx="400" cy="470" r="370" fill="url(#halo)"/>
+<path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="url(#suelo)"/>
 <g transform="translate(400,520) rotate(0) scale(1)">
 <g mask="url(#reflFade)" opacity=".5">
 <g transform="translate(0,412) scale(1,-1)">
@@ -114,5 +122,4 @@
 <path d="M0 -18 L15.66 -9 L0 0 Z" fill="#fff" opacity=".55"/>
 <path d="M0 0 L15.66 9 L0 18 Z" fill="#000" opacity=".12"/></g>
 </g>
-<rect width="800" height="1000" fill="url(#v117)"/>
 </svg>

@@ -31,7 +31,7 @@ export function CheckoutSummary({ totals }: { totals: Totals }) {
               <li key={`${l.productId}-${l.shade}-${l.size}`} className="flex items-center gap-2.5">
                 <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded border border-line bg-sand">
                   <Img src={p.images[0]} alt={p.name} />
-                  <span className="tnum absolute right-0.5 top-0.5 min-w-4 rounded-full bg-ink px-1 text-center text-[10px] font-semibold leading-4 text-white">{l.qty}</span>
+                  <span className="tnum absolute right-0.5 top-0.5 min-w-4 rounded-full bg-ink px-1 text-center text-[10px] font-semibold leading-4 text-on-ink">{l.qty}</span>
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="truncate text-body leading-snug">{p.name}</span>

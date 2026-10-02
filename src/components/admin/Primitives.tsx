@@ -74,11 +74,11 @@ export type Tone = 'neutral' | 'ok' | 'warn' | 'danger' | 'clay' | 'info';
 
 const toneClasses: Record<Tone, string> = {
   neutral: 'bg-sand text-ash',
-  ok: 'bg-[#EAF2ED] text-ok',
-  warn: 'bg-[#FBF1DF] text-warn',
-  danger: 'bg-[#FBE9E7] text-danger',
+  ok: 'bg-ok-soft text-ok',
+  warn: 'bg-warn-soft text-warn',
+  danger: 'bg-danger-soft text-danger',
   clay: 'bg-clay-soft text-clay-dark',
-  info: 'bg-[#ECEFF3] text-ash',
+  info: 'bg-info-soft text-ash',
 };
 
 export function Badge({
@@ -254,7 +254,7 @@ export function Th({
       scope="col"
       aria-sort={active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined}
       className={cn(
-        'sticky top-0 z-10 border-b border-line bg-white px-3 py-2.5 text-meta font-semibold uppercase tracking-[.06em] text-mist',
+        'sticky top-0 z-10 border-b border-line bg-surface px-3 py-2.5 text-meta font-semibold uppercase tracking-[.06em] text-mist',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',
         className,
@@ -428,7 +428,7 @@ export function SearchInput({
   return (
     <div
       className={cn(
-        'flex h-9 items-center gap-2 rounded border border-line bg-white px-2.5 transition-colors focus-within:border-clay focus-within:ring-2 focus-within:ring-clay/25',
+        'flex h-9 items-center gap-2 rounded border border-line bg-surface px-2.5 transition-colors focus-within:border-clay focus-within:ring-2 focus-within:ring-clay/25',
         className,
       )}
     >
@@ -467,7 +467,7 @@ export function SegmentedControl<T extends string>({
   label: string;
 }) {
   return (
-    <div role="group" aria-label={label} className="flex rounded border border-line bg-white p-0.5">
+    <div role="group" aria-label={label} className="flex rounded border border-line bg-surface p-0.5">
       {options.map((o) => (
         <button
           key={o.value}
@@ -476,7 +476,7 @@ export function SegmentedControl<T extends string>({
           aria-pressed={value === o.value}
           className={cn(
             'cursor-pointer whitespace-nowrap rounded-sm px-2.5 py-1 text-cap font-medium transition-colors',
-            value === o.value ? 'bg-ink text-white' : 'text-ash hover:bg-sand hover:text-ink',
+            value === o.value ? 'bg-ink text-on-ink' : 'text-ash hover:bg-sand hover:text-ink',
           )}
         >
           {o.label}
@@ -525,8 +525,14 @@ export function Modal({
 
   const width = { sm: 'max-w-md', md: 'max-w-2xl', lg: 'max-w-4xl' }[size];
 
+  /*
+     El velo es el único sitio del diálogo que lleva `dark:`, porque es una
+     decisión distinta por tema y no una sustitución de color: en oscuro `ink` ES
+     CLARO, así que `bg-ink/35` pintaría una neblina blanca sobre la página. Se
+     cambia por el fondo de página al 70 %, que sí hunde lo que queda detrás.
+  */
   return (
-    <div className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto bg-ink/35 p-4 backdrop-blur-[2px] md:items-center">
+    <div className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto bg-ink/35 p-4 backdrop-blur-[2px] dark:bg-canvas/70 md:items-center">
       <button
         type="button"
         aria-label="Cerrar"
@@ -539,7 +545,7 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          'relative my-auto w-full animate-fade-up rounded-lg bg-white shadow-pop',
+          'relative my-auto w-full animate-fade-up rounded-lg border border-line bg-surface shadow-pop',
           width,
         )}
       >

@@ -48,6 +48,9 @@ export default function Login() {
     <AuthLayout
       image={media.login}
       aside={
+        // tema-ok: va sobre el velo oscuro del carrusel de `AuthLayout`, que es oscuro en
+        // los dos temas: aqui el blanco es el color correcto, no un literal
+        // pendiente de tokenizar.
         <div className="text-white">
           <p className="display text-h5 leading-snug text-balance">“Cada set que entrego empieza con un buen producto.”</p>
           <span className="mt-1.5 block text-meta font-semibold uppercase tracking-[.12em] text-white/60">Comunidad Aurelle Pro</span>

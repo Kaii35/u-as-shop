@@ -87,13 +87,13 @@ export function ProductCard({ product: p, layout = 'grid' }: { product: Product;
           {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
           {p.oldPrice && <Badge tone="light">−{discountPct(p)}%</Badge>}
         </div>
-        <FavButton product={p} className="absolute right-1.5 top-1.5 h-8 w-8 rounded bg-white/90 backdrop-blur-sm" />
+        <FavButton product={p} className="absolute right-1.5 top-1.5 h-8 w-8 rounded bg-surface/90 backdrop-blur-sm" />
         {/* La vista rápida aparece al enfocar o pasar el cursor; en táctil nunca
             estorba porque no hay hover y la ficha sigue siendo alcanzable. */}
         <div className="absolute inset-x-1.5 bottom-1.5 translate-y-2 opacity-0 transition duration-200 ease-soft group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 max-md:hidden">
           <button
             onClick={() => openQuickView(p.id)}
-            className="h-9 w-full cursor-pointer rounded bg-white/95 text-cap font-medium text-ink shadow-card backdrop-blur-sm transition-colors hover:bg-white"
+            className="h-9 w-full cursor-pointer rounded bg-surface/95 text-cap font-medium text-ink shadow-card backdrop-blur-sm transition-colors hover:bg-surface"
           >
             Vista rápida
           </button>
@@ -125,7 +125,7 @@ export function ProductCard({ product: p, layout = 'grid' }: { product: Product;
             onClick={() => addToCart(p.id)}
             disabled={p.stock === 0}
             aria-label={`Agregar ${p.name} al carrito`}
-            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded border border-line text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white disabled:pointer-events-none disabled:opacity-35"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded border border-line text-ink transition-colors hover:border-ink hover:bg-ink hover:text-on-ink disabled:pointer-events-none disabled:opacity-35"
           >
             <Plus size={16} strokeWidth={2} />
           </button>

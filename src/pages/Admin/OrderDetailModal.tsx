@@ -192,7 +192,7 @@ export default function OrderDetailModal({
                 // La confirmación aparece donde se pulsó y no en otro diálogo
                 // encima: lo importante es leer el aviso de stock antes de decir
                 // que sí, y para eso tiene que estar a la vista.
-                <div className="mt-3 rounded border border-line bg-white p-3">
+                <div className="mt-3 rounded border border-line bg-surface p-3">
                   <p className="text-body font-semibold text-ink">
                     {ORDER_STATUS_LABEL[order.status]} → {ORDER_STATUS_LABEL[armed.to]}
                   </p>

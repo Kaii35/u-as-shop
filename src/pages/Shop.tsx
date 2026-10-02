@@ -105,7 +105,7 @@ export default function Shop() {
           <h1 className="display text-h3">{title}</h1>
           <p className="max-w-[70ch] text-body text-ash">{desc}</p>
         </div>
-        <label className="flex h-10 w-full items-center gap-2 rounded border border-line bg-white px-3 text-mist transition-colors focus-within:border-clay sm:w-[300px]">
+        <label className="flex h-10 w-full items-center gap-2 rounded border border-line bg-surface px-3 text-mist transition-colors focus-within:border-clay sm:w-[300px]">
           <Search size={16} strokeWidth={2} />
           <input value={q} onChange={(e) => setParam('q', e.target.value || null)} placeholder="Buscar en la tienda" className="min-w-0 flex-1 bg-transparent text-body text-ink outline-none placeholder:text-mist" />
         </label>
@@ -123,12 +123,12 @@ export default function Shop() {
               <span className="tnum text-cap text-mist">{results.length} {results.length === 1 ? 'producto' : 'productos'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Ordenar por" className="h-9 cursor-pointer rounded border border-line bg-white px-2.5 text-body outline-none transition-colors hover:border-ink">
+              <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Ordenar por" className="h-9 cursor-pointer rounded border border-line bg-surface px-2.5 text-body outline-none transition-colors hover:border-ink">
                 {Object.entries(SORTS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
               </select>
               <div className="flex rounded border border-line p-0.5" role="group" aria-label="Vista">
                 {([['grid', LayoutGrid], ['list', List]] as const).map(([v, Icon]) => (
-                  <button key={v} onClick={() => setView(v)} aria-pressed={view === v} aria-label={v === 'grid' ? 'Cuadrícula' : 'Lista'} className={cn('flex h-7 w-8 cursor-pointer items-center justify-center rounded-xs transition-colors', view === v ? 'bg-ink text-white' : 'text-mist hover:text-ink')}>
+                  <button key={v} onClick={() => setView(v)} aria-pressed={view === v} aria-label={v === 'grid' ? 'Cuadrícula' : 'Lista'} className={cn('flex h-7 w-8 cursor-pointer items-center justify-center rounded-xs transition-colors', view === v ? 'bg-ink text-on-ink' : 'text-mist hover:text-ink')}>
                     <Icon size={14} strokeWidth={2} />
                   </button>
                 ))}
@@ -167,7 +167,7 @@ export default function Shop() {
       </div>
 
       <Sheet open={sheet} onClose={() => setSheet(false)} side="bottom" label="Filtros">
-        <div className="sticky top-0 z-[2] flex flex-col items-center gap-2 border-b border-line bg-white px-4 pb-2 pt-2">
+        <div className="sticky top-0 z-[2] flex flex-col items-center gap-2 border-b border-line bg-surface px-4 pb-2 pt-2">
           <span className="h-1 w-9 rounded-full bg-line" />
           <div className="flex w-full items-center justify-between"><span className="display text-h5">Filtros</span><CloseButton onClick={() => setSheet(false)} /></div>
         </div>

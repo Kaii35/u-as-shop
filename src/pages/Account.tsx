@@ -24,7 +24,10 @@ const STATUS_STYLE: Record<OrderStatus, string> = {
   Confirmado: 'bg-sand text-clay',
   Preparando: 'bg-sand text-clay',
   'En camino': 'bg-sand text-clay',
-  Entregado: 'bg-[#E4EDE3] text-[#2F5A3C]',
+  // Era el par de hex `#E4EDE3` / `#2F5A3C`, verde de "listo" escrito a mano.
+  // Es exactamente para lo que existen `ok-soft` y `ok`, que ademas conservan
+  // la relacion relleno/texto al invertirse el tema.
+  Entregado: 'bg-ok-soft text-ok',
 };
 
 export default function Account() {
@@ -68,7 +71,7 @@ export default function Account() {
                 {orders.map((o) => {
                   const open = openOrder === o.number;
                   return (
-                    <div key={o.number} className="overflow-hidden rounded-lg border border-line bg-white">
+                    <div key={o.number} className="overflow-hidden rounded-lg border border-line bg-surface shadow-edge">
                       <button onClick={() => setOpenOrder(open ? null : o.number)} aria-expanded={open} className="grid w-full grid-cols-[repeat(auto-fit,minmax(130px,1fr))] items-center gap-4 px-[22px] py-5 text-left">
                         <span className="flex flex-col gap-1"><span className="font-medium">#{o.number}</span><span className="text-cap text-mist">{o.date}</span></span>
                         <span className="flex items-center gap-1.5">
@@ -87,7 +90,7 @@ export default function Account() {
                             {o.tracking.map((s, i) => (
                               <li key={s.label} className="flex gap-3.5">
                                 <div className="flex flex-col items-center">
-                                  <span className={cn('h-3.5 w-3.5 shrink-0 rounded-full border-[1.5px]', s.done ? 'border-clay bg-clay' : 'border-line bg-white')} />
+                                  <span className={cn('h-3.5 w-3.5 shrink-0 rounded-full border-[1.5px]', s.done ? 'border-clay bg-clay' : 'border-line bg-surface')} />
                                   {i < o.tracking.length - 1 && <span className={cn('min-h-7 w-[1.5px] flex-1', o.tracking[i + 1].done ? 'bg-clay' : 'bg-ink/15')} />}
                                 </div>
                                 <div className="-mt-0.5 flex flex-col gap-0.5 pb-4">
@@ -125,7 +128,7 @@ export default function Account() {
               <Title>Direcciones guardadas</Title>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3.5">
                 {addresses.map((a) => (
-                  <div key={a.label} className={cn('flex flex-col gap-2 rounded-lg border bg-white p-[22px]', a.primary ? 'border-clay' : 'border-line')}>
+                  <div key={a.label} className={cn('flex flex-col gap-2 rounded-lg border bg-surface p-[22px] shadow-edge', a.primary ? 'border-clay' : 'border-line')}>
                     <span className="flex items-center justify-between">
                       <span className="display text-h5">{a.label}</span>
                       {a.primary && <span className="rounded-full bg-sand px-2.5 py-[5px] text-meta font-medium uppercase tracking-[.14em] text-clay">Principal</span>}
@@ -149,12 +152,15 @@ export default function Account() {
             <>
               <Title>Métodos de pago</Title>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3.5">
-                <div className="flex aspect-[1.6] flex-col justify-between rounded-lg bg-clay p-[22px] text-white">
+                {/* `clay` sube de luminosidad en oscuro y el blanco encima cae a
+                    2,96:1. `on-accent` es el texto de los rellenos de acento:
+                    blanco en claro, tinta en oscuro. */}
+                <div className="flex aspect-[1.6] flex-col justify-between rounded-lg bg-clay p-[22px] text-on-accent">
                   <span className="flex justify-between"><span className="display text-h5">Aurelle</span><span className="text-body font-semibold tracking-[.1em]">VISA</span></span>
                   <span className="text-h5 tracking-[.14em]">•••• •••• •••• 4821</span>
                   <span className="flex justify-between text-cap opacity-85"><span>{user.firstName} {user.lastName}</span><span>09/29</span></span>
                 </div>
-                <div className="flex aspect-[1.6] flex-col justify-between rounded-lg border border-line bg-white p-[22px]">
+                <div className="flex aspect-[1.6] flex-col justify-between rounded-lg border border-line bg-surface p-[22px] shadow-edge">
                   <span className="label-xs">Billetera digital</span>
                   <span className="display text-h4">Nequi</span>
                   <span className="text-body">•••• 1177</span>

@@ -17,10 +17,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * al registro editorial anterior; en una tienda densa restan legibilidad y espacio.
  */
 const variants: Record<Variant, string> = {
-  primary: 'bg-ink text-white hover:bg-ash',
-  secondary: 'border border-line bg-white text-ink hover:border-ink',
-  accent: 'bg-clay text-white hover:bg-clay-dark',
-  light: 'bg-white text-ink hover:bg-sand',
+  primary: 'bg-ink text-on-ink hover:bg-ash',
+  secondary: 'border border-line bg-surface text-ink hover:border-ink',
+  // El terracota se aclara en oscuro, así que el texto encima no puede ser
+  // blanco fijo: `on-accent` se invierte con él.
+  accent: 'bg-clay text-on-accent hover:bg-clay-dark',
+  // `light` es el botón para una losa de contraste (`bg-slab`), que es oscura en
+  // los dos temas: por eso aquí no hay inversión, el botón es claro siempre.
+  light: 'bg-on-slab text-slab hover:bg-sand',
   ghost: 'text-ash hover:bg-sand hover:text-ink',
 };
 const sizes: Record<Size, string> = {
@@ -58,7 +62,7 @@ export function IconButton({ className, label, badge, ...rest }: ButtonHTMLAttri
     >
       {rest.children}
       {!!badge && (
-        <span className="tnum absolute right-0.5 top-0.5 min-w-[16px] rounded-full bg-clay px-1 text-center text-[10px] font-semibold leading-4 text-white">
+        <span className="tnum absolute right-0.5 top-0.5 min-w-[16px] rounded-full bg-clay px-1 text-center text-[10px] font-semibold leading-4 text-on-accent">
           {badge}
         </span>
       )}

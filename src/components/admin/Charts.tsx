@@ -22,10 +22,20 @@ import { money, shortCOP } from './Primitives';
  * - **Nunca dos ejes.** Si dos medidas no comparten escala, son dos gráficas.
  */
 
-const CLAY = '#A8432A';
-const MIST = '#8A827B';
-const LINE = '#E7E2DC';
-const INK = '#141110';
+/**
+ * Aquí no hay constantes de color a propósito.
+ *
+ * Antes eran cuatro hex (`#A8432A`, `#8A827B`, `#E7E2DC`, `#141110`) que se
+ * pasaban como atributos SVG. Un atributo con un hex escrito no puede cambiar
+ * de tema: en oscuro el trazo quedaba apagado sobre el fondo y la retícula
+ * desaparecía. La solución son CLASES (`stroke-clay`, `fill-mist`,
+ * `stroke-line`), porque Tailwind las genera desde los mismos tokens y heredan
+ * la variable, y `rgb(var(--clay))` donde la propiedad no acepta clase.
+ *
+ * Lo que NO se hace es leer `useTheme()` para elegir un hex en JavaScript: eso
+ * devuelve los hex al componente y lo desincroniza de `index.css` en cuanto
+ * alguien retoque la paleta. El SVG no necesita saber en qué tema está.
+ */
 
 /** Ancho real del contenedor. El SVG se redibuja con él en vez de estirarse. */
 function useWidth<T extends HTMLElement>() {
@@ -135,7 +145,7 @@ export function TimeSeriesChart({
         <div className="mb-2 flex flex-wrap items-center gap-4 text-cap text-ash">
           <span className="inline-flex items-center gap-1.5">
             <svg width="16" height="8" aria-hidden>
-              <line x1="0" y1="4" x2="16" y2="4" stroke={CLAY} strokeWidth="2" />
+              <line x1="0" y1="4" x2="16" y2="4" className="stroke-clay" strokeWidth="2" />
             </svg>
             {valueLabel}
           </span>
@@ -146,7 +156,7 @@ export function TimeSeriesChart({
                 y1="4"
                 x2="16"
                 y2="4"
-                stroke={MIST}
+                className="stroke-mist"
                 strokeWidth="2"
                 strokeDasharray="4 3"
               />
@@ -168,8 +178,10 @@ export function TimeSeriesChart({
         >
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor={CLAY} stopOpacity="0.18" />
-              <stop offset="1" stopColor={CLAY} stopOpacity="0" />
+              {/* `stopColor` no acepta clase de Tailwind, pero sí la variable
+                  CSS en crudo: funciona dentro de SVG y sigue al tema. */}
+              <stop offset="0" stopColor="rgb(var(--clay))" stopOpacity="0.18" />
+              <stop offset="1" stopColor="rgb(var(--clay))" stopOpacity="0" />
             </linearGradient>
           </defs>
 
@@ -179,14 +191,13 @@ export function TimeSeriesChart({
             const gy = pad.top + innerH * f;
             return (
               <g key={f}>
-                <line x1={pad.left} y1={gy} x2={width - pad.right} y2={gy} stroke={LINE} strokeWidth="1" />
+                <line x1={pad.left} y1={gy} x2={width - pad.right} y2={gy} className="stroke-line" strokeWidth="1" />
                 <text
                   x={pad.left - 8}
                   y={gy + 3}
                   textAnchor="end"
                   fontSize="10"
-                  fill={MIST}
-                  className="tnum"
+                  className="tnum fill-mist"
                 >
                   {fmtAxis(value)}
                 </text>
@@ -201,7 +212,7 @@ export function TimeSeriesChart({
                 <path
                   d={path((p) => p.compare)}
                   fill="none"
-                  stroke={MIST}
+                  className="stroke-mist"
                   strokeWidth="2"
                   strokeDasharray="4 3"
                   strokeLinejoin="round"
@@ -210,7 +221,7 @@ export function TimeSeriesChart({
               <path
                 d={path((p) => p.value)}
                 fill="none"
-                stroke={CLAY}
+                className="stroke-clay"
                 strokeWidth="2"
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -226,7 +237,7 @@ export function TimeSeriesChart({
                 y={height - 8}
                 textAnchor={i === 0 ? 'start' : i === points.length - 1 ? 'end' : 'middle'}
                 fontSize="10"
-                fill={MIST}
+                className="fill-mist"
               >
                 {p.label}
               </text>
@@ -240,16 +251,17 @@ export function TimeSeriesChart({
                 y1={pad.top}
                 x2={x(hover)}
                 y2={pad.top + innerH}
-                stroke={INK}
-                strokeOpacity="0.18"
+                className="stroke-ink/20"
                 strokeWidth="1"
               />
               {typeof active.compare === 'number' && (
-                <circle cx={x(hover)} cy={y(active.compare)} r="4" fill={MIST} stroke="#fff" strokeWidth="2" />
+                <circle cx={x(hover)} cy={y(active.compare)} r="4" className="fill-mist stroke-surface" strokeWidth="2" />
               )}
-              {/* Anillo blanco de 2px: separa el punto de la línea y del área
-                  cuando se superponen, que es justo donde se va a mirar. */}
-              <circle cx={x(hover)} cy={y(active.value)} r="5" fill={CLAY} stroke="#fff" strokeWidth="2" />
+              {/* Anillo de 2px: separa el punto de la línea y del área cuando se
+                  superponen. Es `stroke-surface`, no blanco, porque su función
+                  es ser del color del fondo de la tarjeta: en oscuro un anillo
+                  blanco sería un punto de luz, no un separador. */}
+              <circle cx={x(hover)} cy={y(active.value)} r="5" className="fill-clay stroke-surface" strokeWidth="2" />
             </g>
           )}
         </svg>
@@ -257,7 +269,7 @@ export function TimeSeriesChart({
 
       {hover !== null && active && width > 0 && (
         <div
-          className="pointer-events-none absolute z-20 w-max max-w-[220px] rounded border border-line bg-white p-2.5 shadow-pop"
+          className="pointer-events-none absolute z-20 w-max max-w-[220px] rounded border border-line bg-surface p-2.5 shadow-pop"
           style={{
             left: Math.min(Math.max(x(hover) - 70, 4), Math.max(4, width - 150)),
             top: 4,
@@ -387,7 +399,7 @@ export function Sparkline({
 
   return (
     <svg width={width} height={height} className={className} aria-hidden>
-      <path d={d} fill="none" stroke={CLAY} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      <path d={d} fill="none" className="stroke-clay" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }

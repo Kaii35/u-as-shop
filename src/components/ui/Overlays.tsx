@@ -12,12 +12,19 @@ export function Modal({ open, onClose, children, className, label }: {
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-3">
-          <motion.div className="absolute inset-0 bg-ink/45" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+          {/* El velo no puede quedarse solo en `ink`: en oscuro `ink` es claro y
+              teñiría la página de crema en vez de apagarla. En oscuro lo tiñe
+              `canvas`, el color de página, y con más peso: sobre un fondo ya
+              oscuro un velo flojo no separa nada. */}
+          <motion.div className="absolute inset-0 bg-ink/45 dark:bg-canvas/70" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-label={label}
-            className={cn('relative max-h-[calc(100vh-24px)] w-full overflow-auto rounded-lg bg-white shadow-pop', className)}
+            // `dark:shadow-edge` y no las dos sombras a la vez: las utilidades
+            // de box-shadow no se suman, la última gana. En oscuro la sombra
+            // proyectada no se ve, así que ahí el filo claro la sustituye.
+            className={cn('relative max-h-[calc(100vh-24px)] w-full overflow-auto rounded-lg bg-surface shadow-pop dark:shadow-edge', className)}
             initial={{ opacity: 0, y: 10, scale: 0.99 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.99 }}
@@ -55,12 +62,13 @@ export function Sheet({ open, onClose, side = 'right', children, className, labe
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[100]">
-          <motion.div className="absolute inset-0 bg-ink/40" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+          {/* Mismo criterio que el modal: en oscuro cambia de color y sube de peso. */}
+          <motion.div className="absolute inset-0 bg-ink/40 dark:bg-canvas/70" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
           <motion.aside
             role="dialog"
             aria-modal="true"
             aria-label={label}
-            className={cn('absolute flex flex-col overflow-hidden bg-white', pos, className)}
+            className={cn('absolute flex flex-col overflow-hidden bg-surface dark:shadow-edge', pos, className)}
             initial={offscreen}
             animate={{ x: 0, y: 0 }}
             exit={offscreen}

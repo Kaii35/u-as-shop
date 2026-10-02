@@ -9,6 +9,7 @@ import { SearchBar } from './SearchBar';
 import { Button, IconButton } from './ui/Button';
 import { CloseButton, Sheet } from './ui/Overlays';
 import { Logo } from './ui/Primitives';
+import { ThemeToggle } from './ui/ThemeToggle';
 
 export const NAV_ITEMS: Array<{ label: string; to: string; highlight?: boolean }> = [
   { label: 'Novedades', to: '/tienda?orden=new' },
@@ -22,8 +23,11 @@ export const NAV_ITEMS: Array<{ label: string; to: string; highlight?: boolean }
 
 export function AnnouncementBar() {
   return (
-    <div className="bg-ink px-4 py-2 text-center text-meta text-white/85 text-balance">
-      Envío gratis desde $250.000 <span className="mx-2 text-white/30">·</span> 10% para profesionales con el código <strong className="font-semibold text-white">PRO10</strong>
+    // `slab` es la losa de contraste: oscura en los DOS temas, al contrario que
+    // `ink`. Por eso su texto es `on-slab` y no `on-ink`, que en oscuro se
+    // vuelve tinta oscura y aquí desaparecería.
+    <div className="bg-slab px-4 py-2 text-center text-meta text-on-slab/85 text-balance">
+      Envío gratis desde $250.000 <span className="mx-2 text-on-slab/30">·</span> 10% para profesionales con el código <strong className="font-semibold text-on-slab">PRO10</strong>
     </div>
   );
 }
@@ -70,7 +74,7 @@ export function Header() {
         // el foco entraria en enlaces invisibles fuera de pantalla.
         onFocusCapture={() => setHidden(false)}
         className={cn(
-          'sticky top-0 z-[60] border-b border-line bg-white/95 backdrop-blur-md transition-transform duration-300 ease-soft',
+          'sticky top-0 z-[60] border-b border-line bg-surface/95 backdrop-blur-md transition-transform duration-300 ease-soft',
           hidden && '-translate-y-full',
         )}
       >
@@ -100,11 +104,14 @@ export function Header() {
                 </div>
               )}
               <Link to={accountTo} aria-label="Mi cuenta" className="flex h-10 w-10 items-center justify-center rounded transition-colors hover:bg-sand lg:hidden"><User size={18} strokeWidth={2} /></Link>
+              {/* Con los iconos de acción y no en el pie: es un ajuste, pero es
+                  aquí donde se busca, junto a lo demás que no es navegación. */}
+              <ThemeToggle size="md" />
               <Link to="/favoritos" aria-label="Favoritos" className="relative flex h-10 w-10 items-center justify-center rounded transition-colors hover:bg-sand">
                 <Heart size={18} strokeWidth={2} />
-                {favs.length > 0 && <span className="tnum absolute right-0.5 top-0.5 min-w-[16px] rounded-full bg-clay px-1 text-center text-[10px] font-semibold leading-4 text-white">{favs.length}</span>}
+                {favs.length > 0 && <span className="tnum absolute right-0.5 top-0.5 min-w-[16px] rounded-full bg-clay px-1 text-center text-[10px] font-semibold leading-4 text-on-accent">{favs.length}</span>}
               </Link>
-              <button onClick={openCart} aria-label={`Carrito, ${count} productos`} className="ml-1 flex h-10 cursor-pointer items-center gap-2 rounded bg-ink pl-3 pr-3.5 text-white transition-colors hover:bg-ash">
+              <button onClick={openCart} aria-label={`Carrito, ${count} productos`} className="ml-1 flex h-10 cursor-pointer items-center gap-2 rounded bg-ink pl-3 pr-3.5 text-on-ink transition-colors hover:bg-ash">
                 <ShoppingBag size={17} strokeWidth={2} /><span className="tnum text-body font-medium">{count}</span>
               </button>
             </div>
@@ -167,6 +174,12 @@ export function Header() {
           </div>
         </div>
         <div className="flex flex-col gap-2 border-t border-line p-4">
+          {/* El tema también aquí: la barra superior de móvil no tiene sitio para
+              otro icono, y el menú es el único cajón de ajustes que hay. */}
+          <div className="flex items-center justify-between gap-3 pb-1">
+            <span className="text-body font-medium">Tema</span>
+            <ThemeToggle size="md" className="-mr-1.5" />
+          </div>
           {user ? (
             <Link to="/cuenta"><Button block>Mi cuenta</Button></Link>
           ) : (
@@ -191,14 +204,14 @@ function MobileBottomBar({ onSearch }: { onSearch: () => void }) {
   const item = 'relative flex cursor-pointer flex-col items-center justify-center gap-0.5 text-[10px]';
   const active = ({ isActive }: { isActive: boolean }) => cn(item, isActive ? 'text-clay' : 'text-ash');
   return (
-    <nav aria-label="Accesos rápidos" className="fixed inset-x-0 bottom-0 z-[80] grid h-14 grid-cols-5 border-t border-line bg-white/95 backdrop-blur md:hidden">
+    <nav aria-label="Accesos rápidos" className="fixed inset-x-0 bottom-0 z-[80] grid h-14 grid-cols-5 border-t border-line bg-surface/95 backdrop-blur md:hidden">
       <NavLink to="/" end className={active}><Home size={18} strokeWidth={2} />Inicio</NavLink>
       <NavLink to="/tienda" className={active}><Store size={18} strokeWidth={2} />Tienda</NavLink>
       <button onClick={onSearch} className={cn(item, 'text-ash')}><Search size={18} strokeWidth={2} />Buscar</button>
       <NavLink to="/favoritos" className={active}><Heart size={18} strokeWidth={2} />Favoritos</NavLink>
       <button onClick={openCart} className={cn(item, 'text-ash')}>
         <ShoppingBag size={18} strokeWidth={2} />Carrito
-        {count > 0 && <span className="tnum absolute left-[calc(50%+4px)] top-1 min-w-[15px] rounded-full bg-clay px-1 text-[9px] font-semibold leading-[15px] text-white">{count}</span>}
+        {count > 0 && <span className="tnum absolute left-[calc(50%+4px)] top-1 min-w-[15px] rounded-full bg-clay px-1 text-[9px] font-semibold leading-[15px] text-on-accent">{count}</span>}
       </button>
     </nav>
   );

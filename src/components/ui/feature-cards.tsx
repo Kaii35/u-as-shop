@@ -32,20 +32,24 @@ export function FeatureCards({ items, className, ratio = 'aspect-[4/5]' }: {
         const inner = (
           <>
             <div className="absolute inset-0 transition-transform duration-500 ease-soft group-hover:scale-[1.05]">
-              <Img src={it.image} alt="" label={it.title} />
+              {/* Estas tarjetas son siempre fotografía: el filtro va fijo. */}
+              <Img src={it.image} alt="" label={it.title} photo />
             </div>
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-transparent to-70%" />
+            {/* El velo tiene que oscurecer la foto en los dos temas, y `ink` en
+                oscuro es crema: se releva con `canvas`. */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-transparent to-70% dark:from-canvas dark:via-canvas/60" />
             {/* Tinta translúcida, no blanco: un chip claro desaparece sobre las
-                fotos de fondo claro, y aquí las hay de los dos tipos. */}
+                fotos de fondo claro, y aquí las hay de los dos tipos. Se releva
+                con `canvas` por lo mismo que el velo. */}
             {it.icon && (
-              <span className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-ink/45 text-white ring-1 ring-white/20 backdrop-blur-sm">
+              <span className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-ink/45 text-white ring-1 ring-white/20 backdrop-blur-sm dark:bg-canvas/55">{/* tema-ok: el glifo y el aro van sobre el chip, oscuro en los dos temas */}
                 {it.icon}
               </span>
             )}
             <div className="absolute inset-x-0 bottom-0 flex flex-col gap-0.5 p-3.5">
-              <span className="text-meta font-semibold uppercase tracking-[.12em] text-white/60">{it.kicker}</span>
-              <span className="display text-h5 leading-tight text-white text-balance">{it.title}</span>
-              {it.detail && <span className="text-cap leading-snug text-white/65">{it.detail}</span>}
+              <span className="text-meta font-semibold uppercase tracking-[.12em] text-white/60">{it.kicker}</span>{/* tema-ok: va sobre foto con velo oscuro en los dos temas */}
+              <span className="display text-h5 leading-tight text-white text-balance">{it.title}</span>{/* tema-ok: va sobre foto con velo oscuro en los dos temas */}
+              {it.detail && <span className="text-cap leading-snug text-white/65">{it.detail}</span>}{/* tema-ok: va sobre foto con velo oscuro en los dos temas */}
             </div>
           </>
         );

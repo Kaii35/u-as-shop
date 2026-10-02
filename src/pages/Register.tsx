@@ -10,7 +10,15 @@ import { AuthLayout, Divider, GoogleButton } from './AuthLayout';
 
 type Field = 'first' | 'last' | 'email' | 'phone' | 'pass' | 'pass2';
 const STRENGTH = ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Excelente'];
-const STRENGTH_COLOR = ['bg-danger', 'bg-warn', 'bg-[#8C9A5B]', 'bg-ok'];
+/**
+ * Color de la barra de fuerza, por puntuacion alcanzada.
+ *
+ * El tercer paso era el hex `#8C9A5B`, un oliva a medio camino entre el ambar y
+ * el verde. No hay token para ese intermedio y no se inventa uno: la gradacion
+ * ya la cuenta el numero de segmentos encendidos, asi que al color solo le toca
+ * decir mal / regular / bien, y `warn` cubre los dos pasos del medio.
+ */
+const STRENGTH_COLOR = ['bg-danger', 'bg-warn', 'bg-warn', 'bg-ok'];
 
 export default function Register() {
   const { login, notify } = useStore();
@@ -56,10 +64,15 @@ export default function Register() {
       reverse
       image={media.register}
       aside={
+        // tema-ok: sobre el velo oscuro del carrusel de `AuthLayout`, oscuro en los dos
+        // temas: el blanco es deliberado.
         <div className="flex flex-col gap-1.5 text-white">
           <span className="text-meta font-semibold uppercase tracking-[.12em] text-white/60">Beneficios de tu cuenta</span>
           {['10% en tu primera compra', 'Seguimiento de pedidos en tiempo real', 'Favoritos y direcciones guardadas'].map((b) => (
-            <span key={b} className="flex items-center gap-2 text-cap"><Check size={14} strokeWidth={2.5} className="shrink-0 text-clay-soft" />{b}</span>
+            // `clay-soft` solo aclara sobre fondo oscuro en el tema claro; en
+            // oscuro es un marron profundo y sobre el velo desapareceria, asi
+            // que ahi el acento legible es `clay`.
+            <span key={b} className="flex items-center gap-2 text-cap"><Check size={14} strokeWidth={2.5} className="shrink-0 text-clay-soft dark:text-clay" />{b}</span>
           ))}
         </div>
       }

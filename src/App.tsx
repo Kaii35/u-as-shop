@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { StoreProvider } from './store/StoreContext';
+import { ThemeProvider } from './store/ThemeContext';
 import { AdminAuthProvider, RequireAdmin } from './store/AdminAuth';
 import { StoreLayout, CheckoutLayout, AuthShell } from './components/layout/Layouts';
 import { ScrollManager } from './components/layout/ScrollManager';
@@ -54,7 +55,9 @@ function AdminLoading() {
  */
 export default function App() {
   return (
-    <>
+    /* El tema envuelve a los dos: es de la persona, no de la seccion, y asi no
+       se reinicia al pasar de la tienda al panel, que son arboles distintos. */
+    <ThemeProvider>
       <ScrollManager />
       <Routes>
         <Route
@@ -90,7 +93,7 @@ export default function App() {
 
         <Route path="*" element={<Storefront />} />
       </Routes>
-    </>
+    </ThemeProvider>
   );
 }
 

@@ -26,9 +26,17 @@
 <stop offset="1" stop-color="#973d27"/>
 </linearGradient>
 </defs>
-<rect width="800" height="1000" fill="url(#bg110)"/>
-<circle cx="400" cy="470" r="300" fill="#fff" opacity=".5"/>
-<path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="#EFE7E0" opacity=".45"/>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5">
+<stop offset="0" stop-color="#FFF6F0" stop-opacity=".30"/>
+<stop offset=".55" stop-color="#FFF0E6" stop-opacity=".14"/>
+<stop offset="1" stop-color="#FFF0E6" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="suelo" x1="0" y1="670" x2="0" y2="1000" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#C98B76" stop-opacity="0"/>
+<stop offset="1" stop-color="#C98B76" stop-opacity=".13"/>
+</linearGradient>
+<circle cx="400" cy="470" r="370" fill="url(#halo)"/>
+<path d="M0 1000 L0 790 Q 400 670 800 790 L800 1000 Z" fill="url(#suelo)"/>
 <g transform="translate(400,520) rotate(0) scale(1)">
 <g mask="url(#reflFade)" opacity=".5">
 <g transform="translate(0,412) scale(1,-1)">
@@ -46,5 +54,4 @@
 <g transform="translate(-96,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#D9A5AE"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g><g transform="translate(-32,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#FFFFFF"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g><g transform="translate(32,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#E3C1B3"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g><g transform="translate(96,70)"><rect x="-19" y="-70" width="38" height="110" rx="10" fill="#7A5347"/><rect x="-12" y="-96" width="24" height="30" rx="5" fill="#8A3621"/><rect x="-13" y="-56" width="7" height="70" rx="3.5" fill="#fff" opacity=".4"/></g>
 <rect x="-90" y="-116" width="180" height="46" rx="10" fill="#8A3621"/>
 </g>
-<rect width="800" height="1000" fill="url(#v111)"/>
 </svg>

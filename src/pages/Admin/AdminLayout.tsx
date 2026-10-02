@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   X,
 } from 'lucide-react';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import { useAdminAuth } from '../../store/AdminAuth';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
@@ -86,7 +87,9 @@ export default function AdminLayout() {
           className={({ isActive }) =>
             cn(
               'group flex items-center gap-2.5 rounded px-2.5 py-2 text-body transition-colors',
-              isActive ? 'bg-ink text-white' : 'text-ash hover:bg-sand hover:text-ink',
+              // Sobre `bg-ink` el texto va en `text-on-ink`: en oscuro `ink` es
+              // claro y un blanco fijo desaparecería.
+              isActive ? 'bg-ink text-on-ink' : 'text-ash hover:bg-sand hover:text-ink',
             )
           }
         >
@@ -98,7 +101,10 @@ export default function AdminLayout() {
                 <span
                   className={cn(
                     'tnum min-w-[20px] rounded-full px-1.5 py-px text-center text-[10px] font-semibold leading-4',
-                    isActive ? 'bg-white text-ink' : 'bg-danger text-white',
+                    // Inactivo: `bg-danger` es rojo en los dos temas, así que el
+                    // blanco se queda. Activo: el distintivo se apoya sobre
+                    // `bg-ink`, y ahí el relleno es el inverso de la tinta.
+                    isActive ? 'bg-on-ink text-ink' : 'bg-danger text-on-accent',
                   )}
                   title={`${alerts} referencias necesitan reposición`}
                 >
@@ -113,10 +119,10 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="min-h-[100dvh] bg-sand">
+    <div className="min-h-[100dvh] bg-canvas-sunk">
       {/* Barra superior. En escritorio solo lleva identidad y sesión: la
           navegación vive en la columna, donde no compite con ella. */}
-      <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-line bg-white px-3 md:px-4">
+      <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-line bg-surface px-3 md:px-4">
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
@@ -139,6 +145,9 @@ export default function AdminLayout() {
           >
             Ver la tienda <ArrowUpRight size={13} strokeWidth={2} />
           </Link>
+          {/* El tema se cambia desde aquí: es una preferencia de quien mira, y
+              la barra superior es lo único presente en todas las secciones. */}
+          <ThemeToggle size="sm" />
           {user && (
             <div className="flex items-center gap-1.5 rounded border border-line py-1 pl-2.5 pr-1">
               <div className="hidden leading-tight sm:block">
@@ -162,7 +171,7 @@ export default function AdminLayout() {
       </header>
 
       <div className="flex">
-        <aside className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-56 shrink-0 overflow-y-auto border-r border-line bg-white lg:block">
+        <aside className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-56 shrink-0 overflow-y-auto border-r border-line bg-surface lg:block">
           {nav}
           <p className="px-4 py-3 text-meta leading-relaxed text-mist">
             Los cambios que hagas aquí se ven en la tienda al instante.
@@ -175,9 +184,11 @@ export default function AdminLayout() {
               type="button"
               aria-label="Cerrar menú"
               onClick={() => setMenuOpen(false)}
-              className="absolute inset-0 cursor-default bg-ink/25"
+              // Mismo caso que el velo del diálogo: en oscuro `ink` es claro, así
+              // que el velo se cambia por el fondo de página, más opaco.
+              className="absolute inset-0 cursor-default bg-ink/25 dark:bg-canvas/70"
             />
-            <div className="relative h-full w-64 max-w-[80vw] overflow-y-auto border-r border-line bg-white shadow-drawer">
+            <div className="relative h-full w-64 max-w-[80vw] overflow-y-auto border-r border-line bg-surface shadow-drawer">
               {nav}
             </div>
           </div>

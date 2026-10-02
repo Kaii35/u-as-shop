@@ -25,7 +25,10 @@ interface MinimalistHeroProps {
    */
   showHeader?: boolean;
   showFooter?: boolean;
-  /** Color del círculo de fondo. Por defecto el amarillo del diseño original. */
+  /**
+   * Color del círculo de fondo. Por defecto el tinte de marca: el amarillo del
+   * diseño original no sale de la paleta y en oscuro queda como una lámpara.
+   */
   accentClassName?: string;
   /**
    * 'cutout' espera un PNG recortado con fondo transparente, que es lo que usa
@@ -76,7 +79,7 @@ export const MinimalistHero = ({
   className,
   showHeader = true,
   showFooter = true,
-  accentClassName = 'bg-yellow-400/90',
+  accentClassName = 'bg-clay-soft',
   imageShape = 'cutout',
   readMoreLabel = 'Read More',
   onReadMore,
@@ -158,8 +161,10 @@ export const MinimalistHero = ({
           <motion.img
             src={imageSrc}
             alt={imageAlt}
+            // `photo`: es una foto editorial, iluminada para fondo blanco, y sin
+            // filtro sobre el carbón parece una pantalla encendida.
             className={cn(
-              'relative z-10 object-cover',
+              'photo relative z-10 object-cover',
               imageShape === 'cutout'
                 ? 'h-auto w-56 scale-150 md:w-64 lg:w-72'
                 // Una foto rectangular no puede desbordar el círculo como un

@@ -4,12 +4,15 @@ import { cn, formatCOP } from '../../lib/utils';
 
 export type BadgeTone = 'sale' | 'new' | 'pro' | 'neutral' | 'light';
 
+// Ningún relleno del sistema conserva el blanco: `clay` sube de luminosidad en
+// oscuro y el blanco encima se queda en 2,96:1. `on-accent` sirve para los
+// cuatro rellenos de acento y estado; `on-ink` para `bg-ink`.
 const tones: Record<BadgeTone, string> = {
-  sale: 'bg-clay text-white',
-  new: 'bg-ink text-white',
+  sale: 'bg-clay text-on-accent',
+  new: 'bg-ink text-on-ink',
   pro: 'bg-clay-soft text-clay-dark',
   neutral: 'bg-sand text-ash',
-  light: 'bg-white/95 text-ink',
+  light: 'bg-surface/95 text-ink',
 };
 
 export function Badge({ tone = 'neutral', children, className }: { tone?: BadgeTone; children: ReactNode; className?: string }) {
@@ -74,9 +77,21 @@ export function QuantitySelector({ value, onChange, min = 1, max = 99, size = 'm
   );
 }
 
-/** Imagen con marcador de posición neutro mientras no hay foto. */
-export function Img({ src, alt = '', label, className }: { src?: string; alt?: string; label?: string; className?: string }) {
-  if (src) return <img src={src} alt={alt} loading="lazy" className={cn('h-full w-full object-cover', className)} />;
+/**
+ * Imagen con marcador de posición neutro mientras no hay foto.
+ *
+ * Decide sola si lleva `.photo`, el filtro que baja el brillo en oscuro. El
+ * catálogo separa fotografía (raster: categorías, editorial, colecciones) de
+ * packshot (vectorial, `/images/products/*.svg`), y al packshot el filtro solo
+ * lo apagaría: es un dibujo, no una foto iluminada para fondo blanco. La regla
+ * va por extensión y no por una marca en cada llamada para que acierte también
+ * en las páginas que pasan la ruta directamente. `photo` la fuerza si falla.
+ */
+export function Img({ src, alt = '', label, className, photo }: {
+  src?: string; alt?: string; label?: string; className?: string; photo?: boolean;
+}) {
+  const filtered = photo ?? !/\.svg(\?|$)/i.test(src ?? '');
+  if (src) return <img src={src} alt={alt} loading="lazy" className={cn('h-full w-full object-cover', filtered && 'photo', className)} />;
   return (
     <div className={cn('flex h-full w-full items-center justify-center bg-sand p-3 text-center', className)}>
       {label && <span className="text-meta font-medium uppercase tracking-[.08em] text-mist">{label}</span>}
@@ -100,8 +115,11 @@ export function Logo({ size = 'md', light }: { size?: 'sm' | 'md' | 'lg'; light?
   const t = { sm: 'text-h5', md: 'text-h4', lg: 'text-h3' }[size];
   return (
     <span className="inline-flex items-baseline gap-1.5">
-      <span className={cn('display leading-none', t, light ? 'text-white' : 'text-ink')}>Aurelle</span>
-      <span className={cn('text-meta font-semibold uppercase leading-none tracking-[.12em]', light ? 'text-white/60' : 'text-clay')}>Pro</span>
+      {/* `light` significa "va sobre la losa de contraste", no "va en blanco":
+          hoy es el pie, que usa `bg-slab`. Con `on-ink` se perdería, porque en
+          oscuro `on-ink` es tinta oscura y la losa sigue siendo oscura. */}
+      <span className={cn('display leading-none', t, light ? 'text-on-slab' : 'text-ink')}>Aurelle</span>
+      <span className={cn('text-meta font-semibold uppercase leading-none tracking-[.12em]', light ? 'text-on-slab/60' : 'text-clay')}>Pro</span>
     </span>
   );
 }

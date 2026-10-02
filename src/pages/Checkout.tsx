@@ -175,7 +175,11 @@ export default function Checkout() {
                 <li key={label} className={cn('flex items-center', n < STEPS.length && 'flex-1')}>
                   <button type="button" onClick={() => done && setStep(n)} disabled={!done} aria-current={on ? 'step' : undefined} className="flex shrink-0 items-center gap-2.5 disabled:cursor-default">
                     <span className={cn('flex h-8 w-8 items-center justify-center rounded-full border text-cap font-medium transition-colors',
-                      on ? 'border-clay bg-clay text-white' : done ? 'border-ink bg-ink text-white' : 'border-line text-mist')}>
+                      // Dos rellenos distintos, dos tokens de texto distintos:
+                      // `on-accent` sobre el acento del paso en curso y `on-ink`
+                      // sobre la tinta del paso ya hecho. Los dos rellenos se
+                      // invierten con el tema y un blanco fijo fallaria en ambos.
+                      on ? 'border-clay bg-clay text-on-accent' : done ? 'border-ink bg-ink text-on-ink' : 'border-line text-mist')}>
                       {done ? <Check size={14} strokeWidth={2} /> : n}
                     </span>
                     <span className={cn('text-cap', on ? 'text-ink' : 'text-mist', !on && 'max-sm:hidden')}>{label}</span>
@@ -244,7 +248,7 @@ export default function Checkout() {
                     Al confirmar te llevamos a la pasarela de pagos, donde eliges el medio y autorizas el cobro.
                     Verás la dirección del sitio en la barra de tu navegador y volverás aquí con el resultado.
                   </p>
-                  <div className="flex flex-col gap-3 rounded-lg border border-line bg-white p-6">
+                  <div className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-6 shadow-edge">
                     <span className="label-xs">Medios disponibles</span>
                     <ul className="flex flex-col gap-2">
                       {PAY_METHODS.map((m) => (
@@ -287,7 +291,10 @@ export default function Checkout() {
           )}
 
           {failure && (
-            <p role="alert" className="flex items-start gap-2.5 rounded border border-danger/40 bg-white p-4 text-body text-danger">
+            // El relleno del aviso no es una superficie blanca: `danger-soft`
+            // es el tinte que existe para esto y mantiene el texto legible al
+            // invertirse el tema.
+            <p role="alert" className="flex items-start gap-2.5 rounded border border-danger/40 bg-danger-soft p-4 text-body text-danger">
               <AlertTriangle size={16} strokeWidth={1.8} className="mt-0.5 shrink-0" />
               <span>{failure.message}</span>
             </p>
@@ -325,7 +332,7 @@ function StepTitle({ children }: { children: ReactNode }) {
 function OptionCard({ selected, onSelect, label, desc, aside }: { selected: boolean; onSelect: () => void; label: string; desc: string; aside?: string }) {
   return (
     <button type="button" role="radio" aria-checked={selected} onClick={onSelect}
-      className={cn('flex items-center gap-4 rounded-lg border p-5 text-left transition-colors', selected ? 'border-clay bg-white' : 'border-line hover:border-ink/40')}>
+      className={cn('flex items-center gap-4 rounded-lg border p-5 text-left transition-colors', selected ? 'border-clay bg-surface' : 'border-line hover:border-ink/40')}>
       <span className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded-full border', selected ? 'border-clay' : 'border-line')}>
         {selected && <span className="h-2.5 w-2.5 rounded-full bg-clay" />}
       </span>

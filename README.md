@@ -158,6 +158,76 @@ el servidor se niega a arrancar. `server/.env` no se versiona.
 
 ---
 
+## Los dos temas
+
+La tienda y el panel tienen modo claro y oscuro. Al entrar **siguen el tema del
+equipo**; el botón de la cabecera alterna entre claro, oscuro y «según tu
+equipo», y la elección se recuerda.
+
+Funciona porque los colores **no son hex: son variables CSS**. En
+`tailwind.config.ts` cada color se declara como `rgb(var(--x) / <alpha-value>)`
+y `src/index.css` redefine esas variables bajo `:root.dark`. Por eso los ~1.000
+usos de `text-ink`, `bg-sand` o `border-line` repartidos por el proyecto cambian
+de tema solos, sin una sola variante `dark:`. La variable guarda los canales
+sueltos (`20 17 16`) y no un color completo: es la única forma de que
+`bg-ink/35` siga funcionando.
+
+Los nombres son semánticos, no literales. En oscuro `ink` ya no es tinta negra;
+sigue siendo «el color del texto principal».
+
+### Los tokens que hay que conocer
+
+| Token | Para qué | Claro | Oscuro |
+|---|---|---|---|
+| `canvas` | fondo de página | blanco | `#17130F` |
+| `canvas-sunk` | página con tarjetas encima (el panel) | `#F6F3EF` | `#17130F` |
+| `surface` | tarjeta, panel, barra | blanco | `#211C18` |
+| `sand` | superficie alterna | recesiva | **elevada** |
+| `slab` | bloque a sangre: pie, banda de anuncios | `#141110` | `#0F0C0A` |
+| `on-ink` | texto sobre `bg-ink` | blanco | tinta |
+| `on-slab` | texto sobre `bg-slab` | blanco | crema |
+| `on-accent` | texto sobre clay / ok / warn / danger | blanco | tinta |
+
+Tres trampas que ya costaron un fallo cada una:
+
+1. **`ink` se invierte, `slab` no.** El botón primario negro debe volverse claro
+   en oscuro; un pie de página oscuro **no**, o queda una losa crema a lo ancho
+   al final de la página.
+2. **`text-white` sobre un relleno de color no vale.** `clay`, `ok`, `warn` y
+   `danger` suben de luminosidad en oscuro, y el blanco encima cae a 2,0–3,0:1.
+   Para eso existe `on-accent`.
+3. **Un velo sobre fotografía no puede ser `ink`.** Existe para oscurecer la
+   foto; con `ink` se vuelve claro en oscuro y se come el texto. Se releva con
+   `canvas`: `from-ink/80 dark:from-canvas/85`. Y si el velo tiene variantes de
+   pantalla, hay que escribir también el par `md:dark:`, porque Tailwind ordena
+   los `@media` **después** de las `dark:`.
+
+### Comprobarlo
+
+```bash
+npm run theme:check
+```
+
+Busca colores escritos fuera del sistema (`bg-white`, `text-white`, hex sueltos),
+que son los que no se enteran del tema y se quedan blancos sobre carbón. Un
+resto legítimo —texto sobre fotografía con velo— se marca en su línea con un
+comentario `tema-ok: <motivo>`; exige el motivo a propósito.
+
+Toda la paleta está medida: 24 pares reales por tema, todos por encima del
+mínimo de contraste. El acento se aclara a `#E07A5A` en oscuro porque el
+terracota original daba 3,08:1 sobre el fondo, por debajo de lo legible.
+
+### La fotografía
+
+Las fotos están iluminadas para fondo blanco y sobre carbón parecen pantallas
+encendidas, así que llevan la clase `.photo`, que les baja el brillo solo en
+oscuro. Los packshots de producto **no** la llevan: son vectores y el filtro
+solo los apagaría. En su lugar se regeneraron **sin fondo**, de modo que el
+producto flota sobre la tarjeta; antes eran un rectángulo claro que en oscuro
+se veía como una caja de luz.
+
+---
+
 ## Sistema de diseño
 
 Todo sale de `tailwind.config.ts`: la paleta (neutros cálidos + terracota), una

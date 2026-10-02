@@ -41,7 +41,7 @@ export function SearchBar({ variant = 'inline', onClose }: Props) {
   };
 
   const field = (
-    <div className={cn('flex items-center gap-2.5 rounded border border-line bg-white text-mist transition-colors focus-within:border-clay', variant === 'inline' ? 'h-10 pl-3 pr-1' : 'h-10 flex-1 px-3')}>
+    <div className={cn('flex items-center gap-2.5 rounded border border-line bg-surface text-mist transition-colors focus-within:border-clay', variant === 'inline' ? 'h-10 pl-3 pr-1' : 'h-10 flex-1 px-3')}>
       <Search size={16} strokeWidth={2} />
       <input
         value={q}
@@ -54,7 +54,7 @@ export function SearchBar({ variant = 'inline', onClose }: Props) {
         className="min-w-0 flex-1 bg-transparent text-body text-ink outline-none placeholder:text-mist"
       />
       {variant === 'inline' && (
-        <button onClick={() => submit()} className="h-8 cursor-pointer rounded bg-ink px-3 text-cap font-medium text-white transition-colors hover:bg-ash">Buscar</button>
+        <button onClick={() => submit()} className="h-8 cursor-pointer rounded bg-ink px-3 text-cap font-medium text-on-ink transition-colors hover:bg-ash">Buscar</button>
       )}
     </div>
   );
@@ -117,7 +117,9 @@ export function SearchBar({ variant = 'inline', onClose }: Props) {
 
   if (variant === 'overlay') {
     return (
-      <motion.div className="fixed inset-0 z-[130] flex flex-col overflow-auto bg-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      // Tapa la página entera, así que su fondo es el de página (`canvas`) y no
+      // el de una tarjeta.
+      <motion.div className="fixed inset-0 z-[130] flex flex-col overflow-auto bg-canvas" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <div className="flex items-center gap-2 border-b border-line px-3 py-2.5">
           {field}
           <button onClick={close} className="cursor-pointer px-1 py-2 text-body font-medium text-ash">Cerrar</button>
@@ -132,11 +134,13 @@ export function SearchBar({ variant = 'inline', onClose }: Props) {
       {field}
       {open && (
         <>
-          <div className="fixed inset-0 -z-10 bg-ink/10" onClick={() => setOpen(false)} />
+          {/* Atrapa el clic de fuera y apaga un poco la página. En oscuro `ink`
+              es claro, así que ahí el tinte lo pone `canvas`. */}
+          <div className="fixed inset-0 -z-10 bg-ink/10 dark:bg-canvas/55" onClick={() => setOpen(false)} />
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="absolute left-0 top-[calc(100%+8px)] w-[min(720px,calc(100vw-80px))] rounded-lg border border-line bg-white p-5 shadow-pop"
+            className="absolute left-0 top-[calc(100%+8px)] w-[min(720px,calc(100vw-80px))] rounded-lg border border-line bg-surface p-5 shadow-pop dark:shadow-edge"
           >
             {panel}
           </motion.div>

@@ -87,7 +87,12 @@ function ProductDetail({ product: p }: { product: Product }) {
                 {p.shades.map((s, i) => (
                   <button key={s.name} role="radio" aria-checked={i === shade} aria-label={s.name} title={s.name} onClick={() => setShade(i)}
                     className={cn('h-11 w-11 rounded-full border-[1.5px] p-[3px] transition-colors', i === shade ? 'border-clay' : 'border-transparent hover:border-line')}>
-                    <span className="block h-full w-full rounded-full shadow-[inset_0_0_0_1px_rgba(36,33,36,.12)]" style={{ background: s.hex }} />
+                    {/* El filo interior era `rgba(36,33,36,.12)` fijo y en oscuro
+                        quedaba un borde negro invisible. Con la variable en crudo
+                        se aclara con el tema y es justo lo que separa un tono
+                        oscuro del fondo de la tarjeta. El `s.hex` del tono SI es
+                        un color literal: es el producto, no la interfaz. */}
+                    <span className="block h-full w-full rounded-full shadow-[inset_0_0_0_1px_rgb(var(--ink)/0.12)]" style={{ background: s.hex }} />
                   </button>
                 ))}
               </div>
@@ -100,7 +105,7 @@ function ProductDetail({ product: p }: { product: Product }) {
               <div className="flex flex-wrap gap-2" role="radiogroup">
                 {p.sizes.map((s, i) => (
                   <button key={s.label} role="radio" aria-checked={i === size} onClick={() => setSize(i)}
-                    className={cn('h-11 min-w-[76px] rounded-full border px-[18px] text-body transition-colors', i === size ? 'border-ink bg-ink text-white' : 'border-line hover:border-ink')}>
+                    className={cn('h-11 min-w-[76px] rounded-full border px-[18px] text-body transition-colors', i === size ? 'border-ink bg-ink text-on-ink' : 'border-line hover:border-ink')}>
                     {s.label}{s.price ? <span className="ml-1.5 opacity-70">{formatCOP(s.price)}</span> : null}
                   </button>
                 ))}
@@ -124,7 +129,7 @@ function ProductDetail({ product: p }: { product: Product }) {
           <div className="grid grid-cols-3 gap-px overflow-hidden rounded border border-line bg-ink/10">
             {[[Truck, 'Envío gratis desde $250.000'], [RotateCcw, 'Cambios hasta 30 días'], [ShieldCheck, 'Producto original garantizado']].map(([Icon, text]) => {
               const I = Icon as typeof Truck;
-              return <div key={text as string} className="flex flex-col gap-2 bg-white p-3.5 text-cap leading-snug"><I size={20} strokeWidth={1.5} className="text-clay" />{text as string}</div>;
+              return <div key={text as string} className="flex flex-col gap-2 bg-surface p-3.5 text-cap leading-snug"><I size={20} strokeWidth={1.5} className="text-clay" />{text as string}</div>;
             })}
           </div>
         </div>

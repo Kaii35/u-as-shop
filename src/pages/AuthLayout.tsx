@@ -29,8 +29,11 @@ export function AuthLayout({ children, aside, reverse }: {
 
   return (
     <div className={cn('flex h-full overflow-hidden rounded-lg border border-line', reverse && 'md:flex-row-reverse')}>
-      {/* Panel de imagen. Oculto en móvil: ahí el formulario necesita todo el alto. */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-sand md:block">
+      {/* Panel de imagen. Oculto en móvil: ahí el formulario necesita todo el alto.
+          El borde interior separa la foto del formulario: en claro apenas se
+          nota, pero en oscuro la foto sigue siendo lo mas claro de la pantalla y
+          sin filo parece pegada al panel. Va del lado que toca segun `reverse`. */}
+      <div className={cn('relative hidden w-1/2 overflow-hidden bg-sand md:block', reverse ? 'md:border-l md:border-line' : 'md:border-r md:border-line')}>
         {SLIDES.map((src, n) => (
           <img
             key={src}
@@ -38,12 +41,15 @@ export function AuthLayout({ children, aside, reverse }: {
             alt=""
             aria-hidden
             className={cn(
-              'absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-soft',
+              // Fotografia real: `.photo` la integra en oscuro.
+              'photo absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-soft',
               n === i ? 'opacity-100' : 'opacity-0',
             )}
           />
         ))}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent" />
+        {/* El velo inferior sostiene el texto del `aside` y los puntos, asi que
+            es oscuro en los dos temas: `ink` en claro, `canvas` en oscuro. */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent dark:from-canvas/80 dark:via-canvas/15" />
         {aside && <div className="absolute inset-x-5 bottom-12">{aside}</div>}
         <div className="absolute inset-x-0 bottom-5 flex justify-center gap-1.5">
           {SLIDES.map((src, n) => (
@@ -54,6 +60,11 @@ export function AuthLayout({ children, aside, reverse }: {
               aria-label={`Imagen ${n + 1}`}
               aria-current={n === i}
               className={cn(
+                // Los puntos se quedan blancos a proposito: estan sobre el velo
+                // tema-ok: los puntos van sobre el velo
+                // oscuro del pie, que es oscuro en los dos temas, no sobre una
+                // superficie. Y en oscuro la foto llega atenuada por `.photo`,
+                // asi que el blanco gana contraste en vez de perderlo.
                 'h-1.5 rounded-full transition-all duration-300',
                 n === i ? 'w-5 bg-white' : 'w-1.5 bg-white/45 hover:bg-white/70',
               )}
@@ -76,8 +87,10 @@ export function GoogleButton({ onClick, children, loading }: { onClick: () => vo
       type="button"
       onClick={onClick}
       disabled={loading}
-      className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded border border-line bg-white text-body font-medium transition-colors hover:border-ink disabled:opacity-50"
+      className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded border border-line bg-surface text-body font-medium transition-colors hover:border-ink disabled:opacity-50"
     >
+      {/* tema-ok: los cuatro hex del logotipo de Google son marca ajena y no se tocan:
+          tokenizarlos lo convertiria en otro logotipo. */}
       <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
         <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
         <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
