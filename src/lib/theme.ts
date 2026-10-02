@@ -83,14 +83,38 @@ export function watchSystem(onChange: (theme: ResolvedTheme) => void): () => voi
   return () => mq.removeEventListener('change', handler);
 }
 
-/** El ciclo del botón. Lo que hay ahora puesto decide el siguiente. */
+/**
+ * El ciclo del botón: Claro → Oscuro → Equipo → Claro.
+ *
+ * Fijo y sin mirar en qué está el sistema, y eso es lo importante. La versión
+ * anterior saltaba desde `system` al contrario de lo que el equipo mostrara, y
+ * con el equipo en oscuro el ciclo degeneraba a dos estados: se quedaba
+ * rebotando entre «según tu equipo» y «claro», y no habia forma de llegar a
+ * «oscuro» fijo. Un ciclo que depende del entorno tampoco es predecible: el
+ * mismo botón, pulsado dos veces, llevaba a sitios distintos en dos equipos.
+ */
+const CICLO: readonly ThemePreference[] = ['light', 'dark', 'system'];
+
 export function nextPreference(current: ThemePreference): ThemePreference {
-  if (current === 'system') return resolve('system') === 'dark' ? 'light' : 'dark';
-  return current === 'dark' ? 'light' : 'system';
+  const i = CICLO.indexOf(current);
+  return CICLO[(i + 1) % CICLO.length] ?? 'light';
 }
 
 export const PREFERENCE_LABEL: Record<ThemePreference, string> = {
   system: 'Según tu equipo',
+  light: 'Claro',
+  dark: 'Oscuro',
+};
+
+/**
+ * La misma idea en una palabra, para los sitios donde no cabe la frase.
+ *
+ * «Según tu equipo» desborda un cajón de móvil de 320 px dentro de un control
+ * segmentado de tres posiciones, y partir la etiqueta en dos líneas descuadra
+ * la fila entera.
+ */
+export const PREFERENCE_SHORT: Record<ThemePreference, string> = {
+  system: 'Equipo',
   light: 'Claro',
   dark: 'Oscuro',
 };

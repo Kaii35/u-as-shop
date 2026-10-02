@@ -1,6 +1,11 @@
 import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../../store/ThemeContext';
-import { PREFERENCE_LABEL, type ThemePreference } from '../../lib/theme';
+import {
+  PREFERENCE_LABEL,
+  PREFERENCE_SHORT,
+  nextPreference,
+  type ThemePreference,
+} from '../../lib/theme';
 import { cn } from '../../lib/utils';
 
 /**
@@ -19,11 +24,15 @@ const ICONS: Record<ThemePreference, typeof Sun> = {
   dark: Moon,
 };
 
-const NEXT_HINT: Record<ThemePreference, string> = {
-  system: 'Cambiar a tema fijo',
-  light: 'Cambiar a oscuro',
-  dark: 'Volver a seguir tu equipo',
-};
+/**
+ * La pista sale del propio ciclo, no de una tabla aparte.
+ *
+ * Una lista escrita a mano se desincroniza en cuanto alguien reordena el
+ * ciclo, y entonces el botón promete una cosa y hace otra — que es peor que no
+ * decir nada, porque se le cree.
+ */
+const siguiente = (preferencia: ThemePreference): string =>
+  `Cambiar a ${PREFERENCE_LABEL[nextPreference(preferencia)].toLowerCase()}`;
 
 export function ThemeToggle({
   className,
@@ -42,8 +51,8 @@ export function ThemeToggle({
       onClick={cycle}
       // El estado va en el nombre accesible, no solo en el icono: un lector de
       // pantalla no puede ver que la luna está rellena.
-      aria-label={`Tema: ${PREFERENCE_LABEL[preference]}. ${NEXT_HINT[preference]}`}
-      title={`Tema: ${PREFERENCE_LABEL[preference]} · ${NEXT_HINT[preference]}`}
+      aria-label={`Tema: ${PREFERENCE_LABEL[preference]}. ${siguiente(preference)}`}
+      title={`Tema: ${PREFERENCE_LABEL[preference]} · ${siguiente(preference)}`}
       className={cn(
         'flex shrink-0 cursor-pointer items-center justify-center rounded text-ash transition-colors hover:bg-sand hover:text-ink',
         size === 'sm' ? 'h-9 w-9' : 'h-10 w-10',
@@ -78,13 +87,14 @@ export function ThemeSegmented({ className }: { className?: string }) {
             type="button"
             onClick={() => setPreference(option)}
             aria-pressed={active}
+            title={PREFERENCE_LABEL[option]}
             className={cn(
               'flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-sm px-2.5 py-1 text-cap font-medium transition-colors',
               active ? 'bg-ink text-on-ink' : 'text-ash hover:bg-sand hover:text-ink',
             )}
           >
             <Icon size={13} strokeWidth={2} aria-hidden />
-            {PREFERENCE_LABEL[option]}
+            {PREFERENCE_SHORT[option]}
           </button>
         );
       })}
