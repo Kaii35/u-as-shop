@@ -11,7 +11,6 @@ import { Img, SectionHeading } from '../components/ui/Primitives';
 import { MinimalistHero } from '@/components/ui/minimalist-hero';
 import { Component as StackInteractor } from '@/components/ui/connoisseur-stack-interactor';
 import { FeatureCards } from '@/components/ui/feature-cards';
-import { TypePortal } from '../components/TypePortal';
 import { BrandLogo } from '../components/ui/BrandLogo';
 import type { ProductTag } from '../types';
 
@@ -122,45 +121,38 @@ function Hero() {
 }
 
 /**
- * Sección de promesas de la tienda, con el portal tipográfico por delante.
+ * Sección de promesas de la tienda. Sustituye a la tira de iconos, que era
+ * una fila de texto pequeño sin jerarquía ni peso visual.
  *
  * Va sobre fondo oscuro a propósito: es el único corte de contraste entre el
  * banner y el catálogo, y hace que las garantías se lean como una declaración
  * de marca y no como un pie de página.
- *
- * El portal vive aquí y no en el banner precisamente por ese corte. La palabra
- * se recorta sobre el fondo de página y por el hueco de las letras asoma esta
- * misma franja, así que la cámara entra al sitio al que la portada ya iba, sin
- * costura de luminancia. En el banner habría metido dos pantallas de scroll
- * fijado por delante de los botones de compra; aquí no le quita el sitio a nada.
- *
- * La palabra es «OFICIO» por medida: rasterizando la Bodoni Moda 700 real y
- * corriendo sobre ella el mismo algoritmo del componente, su O da la apertura
- * más grande de las candidatas (53 px en escritorio, 14 px en móvil, zoom 48×).
- * «CONFIANZA» se quedaba en 8 px en móvil, que es un pinchazo, no una puerta.
  */
 function Promises() {
   return (
-    /* La franja va sobre `slab`, que es el relleno por defecto del portal: un
-       bloque a sangre oscuro en los DOS temas. No usa `ink` porque `ink` se
-       invierte, y una banda crema a lo ancho en mitad de una pagina de carbon
-       es el mayor salto de luminancia que puede tener la portada. */
-    <TypePortal word="OFICIO" focusChar="O" eyebrow="Por qué Natalia Sánchez" enterLabel="Ver las garantías">
-      {/* El rótulo de sección sube al marco de apertura del portal, donde hace
-          de contexto de la palabra, así que aquí no se repite. */}
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 md:mb-7">
-        <h2 className="display max-w-xl text-h4 text-on-slab md:text-h3">Comprar aquí es otra cosa</h2>
-        <p className="max-w-[46ch] text-body text-on-slab/60">
-          Cuatro cosas que damos por sentadas para que tú solo pienses en el servicio.
-        </p>
+    /* La franja va sobre `slab`: un bloque a sangre que es oscuro en los DOS
+       temas. No usa `ink` porque `ink` se invierte, y una banda crema a lo
+       ancho en mitad de una pagina de carbon es el mayor salto de luminancia
+       que puede tener la portada. */
+    <section className="bg-slab text-on-slab">
+      <div className="container-x section-y">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 md:mb-7">
+          <div className="flex max-w-xl flex-col gap-1.5">
+            <span className="text-meta font-semibold uppercase tracking-[.12em] text-clay-soft dark:text-clay">Por qué Natalia Sánchez</span>
+            <h2 className="display text-h4 text-on-slab md:text-h3">Comprar aquí es otra cosa</h2>
+          </div>
+          <p className="max-w-[46ch] text-body text-on-slab/60">
+            Cuatro cosas que damos por sentadas para que tú solo pienses en el servicio.
+          </p>
+        </div>
+        <FeatureCards
+          items={PROMISES.map(({ kicker, title, detail, image, Icon }) => ({
+            kicker, title, detail, image,
+            icon: <Icon size={15} strokeWidth={2} />,
+          }))}
+        />
       </div>
-      <FeatureCards
-        items={PROMISES.map(({ kicker, title, detail, image, Icon }) => ({
-          kicker, title, detail, image,
-          icon: <Icon size={15} strokeWidth={2} />,
-        }))}
-      />
-    </TypePortal>
+    </section>
   );
 }
 
