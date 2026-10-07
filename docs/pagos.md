@@ -674,6 +674,47 @@ Sin adornos. Quien mantenga esto va a tropezar con estas cosas.
 
 ---
 
+---
+
+## APP_URL no puede ser localhost
+
+**Wompi rechaza con un 403 de CloudFront («Request blocked») cualquier
+`redirect-url` que apunte a `localhost` o `127.0.0.1`**, con `http` y con
+`https`. Comprobado contra el checkout real, aislando parámetro a parámetro:
+
+```
+200  solo los 5 parametros minimos
+403  + redirect-url = http://localhost:5173/pago/respuesta
+200  + los otros doce parametros, uno a uno
+```
+
+```
+403  http://localhost:5173/pago/respuesta
+403  https://localhost:5173/pago/respuesta
+403  http://127.0.0.1:5173/pago/respuesta
+200  http://ejemplo.com/pago/respuesta          <- http simple, pero dominio real
+200  https://nataliasanchez.co/pago/respuesta
+```
+
+Con `APP_URL=http://localhost:5173` —el valor por defecto del proyecto— **el
+checkout no abre en absoluto**. Y el síntoma no se parece a la causa: la clienta
+ve una página de error de Amazon sin una sola pista, y en nuestro servidor no
+queda ni rastro, porque el fallo ocurre antes de que nadie nos llame.
+
+`assertPaymentsReady` lo detecta al arrancar: avisa en desarrollo y aborta en
+producción. La prueba `FIRM-06` no se conforma con mirar la forma de la URL,
+pide el checkout de verdad y exige un 200.
+
+**Para probar en local**, `APP_URL` tiene que ser un dominio público. Lo más
+cómodo es reutilizar el mismo túnel con el que se reciben los avisos:
+
+```
+APP_URL=https://<lo-que-sea>.trycloudflare.com
+```
+
+Y hay que **reiniciar la API** después de tocarlo: `tsx watch` vigila `src/`, no
+`.env`.
+
 ## Límites de uso y agotamiento de inventario
 
 Crear un intento de pago **aparta stock** durante `RESERVATION_MINUTES` y no

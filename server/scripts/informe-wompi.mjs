@@ -108,6 +108,16 @@ const CAPAS = [
 
 const HALLAZGOS = [
   {
+    id: 'H-0',
+    estado: 'corregido',
+    titulo: 'Con APP_URL en localhost el checkout no abre, en absoluto',
+    gravedad: 'Crítica',
+    que: 'Wompi rechaza con un 403 de CloudFront («Request blocked») cualquier redirect-url que apunte a localhost o 127.0.0.1, con http y con https. La configuración por defecto del proyecto era APP_URL=http://localhost:5173.',
+    evidencia: 'Aislado parámetro a parámetro contra el checkout real: con los otros doce parámetros la URL responde 200, y basta añadir el redirect-url a localhost para que devuelva 403. Un dominio cualquiera pasa, incluso por http simple. Esta es la razón de que la integración nunca se hubiera completado de punta a punta.',
+    arreglo: 'El arranque lo detecta y avisa a gritos; en producción aborta. Para probar en local, APP_URL apunta al mismo túnel con el que se reciben los avisos. La prueba FIRM-06 no se conforma con mirar la forma de la URL: pide el checkout de verdad y exige un 200.',
+    nota: 'El síntoma no se parece a la causa: la clienta ve una página de error de Amazon sin una sola pista, y en nuestro servidor no queda ni rastro.',
+  },
+  {
     id: 'H-1',
     estado: 'corregido',
     titulo: 'Las reservas de stock no tenían ningún freno',
@@ -345,15 +355,33 @@ const html = `<!doctype html>
     máquina de estados, reconciliación, superficie expuesta y límites de uso.</p>
 
     <div class="destacado">
-      <p><strong>Veredicto.</strong> La integración resiste los ataques que se le probaron: no se puede
-      cambiar el monto de un pedido, no se puede falsificar un aviso de pago, un aviso repetido no
-      duplica nada y dos compras simultáneas no venden la misma unidad. Durante las pruebas
-      aparecieron <strong>tres defectos reales que se corrigieron</strong> y queda
+      <p><strong>Veredicto: la pasarela funciona de punta a punta.</strong> Se completaron pagos
+      reales en el sandbox de Wompi, con tarjeta aprobada y con tarjeta rechazada, conduciendo el
+      checkout real en un navegador. En los dos casos llegó el aviso de Wompi,
+      <strong>nuestra verificación del checksum lo aceptó</strong>, el pedido cambió de estado y el
+      inventario se movió —o no se movió— como correspondía.</p>
+      <p>Eso cierra la única duda de fondo que quedaba: el algoritmo del checksum que implementamos
+      <strong>es</strong> el de Wompi, pese a que el ejemplo resuelto de su documentación no
+      reproduzca su propio hash (H-4).</p>
+      <p>La integración además resiste los ataques que se le probaron: no se puede cambiar el monto
+      de un pedido, no se puede falsificar un aviso, un aviso repetido no duplica nada y dos compras
+      simultáneas no venden la misma unidad. Durante las pruebas aparecieron
+      <strong>cuatro defectos reales, los cuatro corregidos</strong>, y queda
       <strong>un riesgo abierto</strong> que no es de configuración sino de diseño (R-1).</p>
-      <p>La prueba <strong>E2E-01 sigue sin ejecutarse</strong>, y es la más importante que falta:
-      hasta que un aviso emitido por Wompi pase por nuestra verificación, lo demostrado es que
-      verificamos bien el algoritmo que implementamos, no que ese algoritmo sea el suyo.</p>
     </div>
+
+    <h3 style="margin:6mm 0 2mm; color:var(--clay)">Pagos reales completados en sandbox</h3>
+    <table>
+      <thead><tr><th>Referencia</th><th>Tarjeta</th><th>Wompi</th><th>Pedido</th><th>Inventario</th></tr></thead>
+      <tbody>
+        <tr><td class="id">AU-11682-b7c7</td><td>4242…4242</td><td>APPROVED</td>
+            <td>PAID</td><td>SALE −1 · stock 20 → 19</td></tr>
+        <tr><td class="id">AU-11683-93c1</td><td>4111…1111</td><td>DECLINED</td>
+            <td>CANCELLED</td><td>sin movimiento · reserva liberada</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:8.5pt;color:#5c4042;margin-top:2mm">En los dos casos el aviso de Wompi
+    quedó registrado con <code>checksumOk = true</code> y <code>aplicado = true</code>.</p>
   </section>
 
   <section class="evitar">
@@ -365,9 +393,12 @@ const html = `<!doctype html>
       <code>sandbox.wompi.co</code>; no hay simulación de la pasarela en ninguna prueba.</li>
       <li><strong>Nuestra API es real.</strong> Las pruebas entran por HTTP igual que lo haría el
       navegador, contra el servidor corriendo, y comprueban el efecto en la base de datos.</li>
-      <li><strong>Los avisos de webhook se fabrican aquí</strong> y se firman con el secreto de
-      eventos real. Eso prueba nuestra verificación de punta a punta, pero no prueba que el
-      algoritmo coincida con el de Wompi. Para eso hace falta un aviso suyo: es E2E-01.</li>
+      <li><strong>Los avisos de las pruebas de ataque se fabrican aquí</strong> y se firman con el
+      secreto de eventos real, porque hay que poder manipularlos a voluntad. Pero
+      <strong>el circuito se cerró con avisos emitidos por Wompi</strong>: E2E-01 comprueba
+      la bitácora de lo que llegó de verdad al webhook.</li>
+      <li><strong>Los pagos se hicieron conduciendo el checkout real</strong> en un navegador:
+      elegir medio de pago, teclear la tarjeta, aceptar los términos y enviar.</li>
       <li><strong>Las pruebas limpian lo que ensucian.</strong> Las reservas que crean se liberan al
       terminar por la vía normal del servicio, sin escribir el stock a mano.</li>
     </ul>

@@ -23,7 +23,8 @@
     "setup": "npm run db:up && npm run api:install && npm --prefix server run prisma:generate && npm --prefix server run prisma:deploy && npm run api:seed",
     "payments:test": "npm --prefix server run payments:test",
     "webhook:tunnel": "npm --prefix server run webhook:tunnel",
-    "payments:report": "npm --prefix server run payments:report"
+    "payments:report": "npm --prefix server run payments:report",
+    "payments:show": "npm --prefix server run payments:show --"
   },
   "dependencies": {
     "framer-motion": "^11.11.0",

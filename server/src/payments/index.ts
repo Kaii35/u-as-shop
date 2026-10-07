@@ -61,6 +61,31 @@ export function assertPaymentsReady(log: (msg: string) => void): void {
     }
   }
 
+  /*
+     APP_URL apuntando a localhost con Wompi activo: el checkout NO ABRE.
+
+     Comprobado contra el checkout real: Wompi rechaza con un 403 de CloudFront
+     («Request blocked») cualquier `redirect-url` que apunte a localhost o a
+     127.0.0.1, con http y con https. Un dominio cualquiera pasa, incluso por
+     http. Se aisló parámetro a parámetro: con los otros doce la URL responde
+     200 y basta añadir el redirect-url a localhost para que devuelva 403.
+
+     Esto merece un aviso a gritos porque el síntoma no se parece a la causa:
+     la clienta no ve un error de la tienda, ve una página de error de Amazon
+     sin una sola pista de qué pasó, y en el servidor no queda ni rastro.
+
+     Para probar en local, APP_URL tiene que ser un dominio público: sirve la
+     URL del mismo túnel con el que se reciben los avisos.
+  */
+  if (gateway.id === 'WOMPI' && /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/i.test(env.appUrl)) {
+    const detalle =
+      `APP_URL es ${env.appUrl} y Wompi está activo: EL CHECKOUT NO VA A ABRIR. ` +
+      'Wompi rechaza con 403 cualquier URL de retorno que apunte a localhost o 127.0.0.1. ' +
+      'Pon un dominio público en APP_URL (vale la URL del túnel de webhook:tunnel).';
+    if (env.isProduction) throw new Error(detalle);
+    log(`AVISO: ${detalle}`);
+  }
+
   if (gateway.configured) {
     if (gateway.id === 'MOCK') {
       log('Pagos en modo SIMULADO: no se cobra de verdad. PAYMENT_PROVIDER=wompi para activarlo.');

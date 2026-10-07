@@ -353,6 +353,31 @@ async function grupoIntegridad(): Promise<void> {
   );
 
   await prueba(
+    'FIRM-06', G, 'La URL de retorno no apunta a localhost', 'critica',
+    'Wompi rechaza con un 403 de CloudFront cualquier redirect-url que apunte a localhost o 127.0.0.1, con http y con https. Con APP_URL en localhost el checkout NO ABRE, y la clienta ve una página de error de Amazon sin ninguna pista.',
+    'La URL de retorno que viaja al checkout usa un dominio público, y el checkout responde 200.',
+    async () => {
+      const r = await crearIntento([{ productId: 'p1', quantity: 1 }]);
+      exigir(r.estado === 201, `El intento devolvió ${r.estado}.`);
+      const url = new URL((r.cuerpo as { checkoutUrl: string }).checkoutUrl);
+      const retorno = url.searchParams.get('redirect-url') ?? '';
+      exigir(
+        !/^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/i.test(retorno),
+        `La URL de retorno es ${retorno}: Wompi la rechazará con 403 y el checkout no abrirá.`,
+      );
+
+      // Y se comprueba de verdad, no solo la forma.
+      const checkout = await fetch(url.toString(), {
+        redirect: 'manual',
+        headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0 Safari/537.36' },
+        signal: AbortSignal.timeout(20_000),
+      });
+      exigir(checkout.status === 200, `El checkout real respondió ${checkout.status}.`);
+      return `Retorno a ${new URL(retorno).host}; el checkout de Wompi responde 200 con la URL completa.`;
+    },
+  );
+
+  await prueba(
     'FIRM-02', G, 'Cambiar el monto invalida la firma', 'critica',
     'Es el ataque concreto: rebajar amount-in-cents en la URL antes de pagar.',
     'La firma del monto rebajado es distinta de la original.',

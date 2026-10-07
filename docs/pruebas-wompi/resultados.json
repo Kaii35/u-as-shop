@@ -1,15 +1,15 @@
 {
-  "generado": "2026-10-07T15:37:07.518Z",
+  "generado": "2026-10-07T15:56:08.690Z",
   "ambiente": "sandbox",
   "comercio": null,
   "pasarela": "WOMPI",
   "resumen": {
-    "pasan": 42,
+    "pasan": 44,
     "fallan": 0,
-    "sinAplicar": 1,
-    "total": 43
+    "sinAplicar": 0,
+    "total": 44
   },
-  "limpieza": "15 cobros de prueba caducados; {\"checked\":14,\"expired\":14,\"rescued\":0}",
+  "limpieza": "13 cobros de prueba caducados; {\"checked\":12,\"expired\":12,\"rescued\":0}",
   "resultados": [
     {
       "id": "CRED-01",
@@ -77,8 +77,18 @@
       "nombre": "La firma que viaja al checkout es reproducible",
       "esperado": "Recalculada por fuera del código del servidor, la firma coincide byte a byte.",
       "estado": "PASA",
-      "observado": "Referencia AU-11665-cc7b, 8070000 centavos. Firma recalculada idéntica.",
+      "observado": "Referencia AU-11684-5ce6, 8070000 centavos. Firma recalculada idéntica.",
       "porque": "Es lo único que impide que alguien edite el monto en el navegador y pague $1.000 un pedido de $300.000.",
+      "severidad": "critica"
+    },
+    {
+      "id": "FIRM-06",
+      "grupo": "B · Firma de integridad del checkout",
+      "nombre": "La URL de retorno no apunta a localhost",
+      "esperado": "La URL de retorno que viaja al checkout usa un dominio público, y el checkout responde 200.",
+      "estado": "PASA",
+      "observado": "Retorno a directory-inquiries-appraisal-commander.trycloudflare.com; el checkout de Wompi responde 200 con la URL completa.",
+      "porque": "Wompi rechaza con un 403 de CloudFront cualquier redirect-url que apunte a localhost o 127.0.0.1, con http y con https. Con APP_URL en localhost el checkout NO ABRE, y la clienta ve una página de error de Amazon sin ninguna pista.",
       "severidad": "critica"
     },
     {
@@ -227,7 +237,7 @@
       "nombre": "Un aviso sin firma válida no mueve el pago",
       "esperado": "La API responde 401 y el pago sigue pendiente.",
       "estado": "PASA",
-      "observado": "401 y el pago AU-11666-b8c2 sigue PENDING.",
+      "observado": "401 y el pago AU-11686-c279 sigue PENDING.",
       "porque": "Es el ataque que vacía el inventario: mandar «APROBADO» al webhook y recoger la mercancía sin pagar.",
       "severidad": "critica"
     },
@@ -417,7 +427,7 @@
       "nombre": "Hay límite de peticiones en la creación de intentos",
       "esperado": "Una ráfaga acaba recibiendo 429 en vez de seguir aceptando indefinidamente.",
       "estado": "PASA",
-      "observado": "De 40 peticiones seguidas, 9 pasaron y 31 recibieron 429.",
+      "observado": "De 40 peticiones seguidas, 6 pasaron y 32 recibieron 429.",
       "porque": "Crear un intento aparta stock sin pedir cuenta ni pago. Sin freno, un bucle desde una IP deja el catálogo sin unidades disponibles: medido antes del arreglo, 10 reservas en 355 ms.",
       "severidad": "alta"
     },
@@ -436,8 +446,8 @@
       "grupo": "G · Pendiente de un aviso real",
       "nombre": "Un aviso emitido por Wompi pasa nuestra verificación",
       "esperado": "Un aviso real de sandbox llega al webhook y se acepta.",
-      "estado": "NO_APLICA",
-      "observado": "Todavía no ha llegado ningún aviso real de Wompi. La bitácora tiene 9 entradas (2 son sondas de verificación del túnel, sin forma de aviso). Falta registrar la URL de eventos en el Dashboard y pagar una transacción de prueba.",
+      "estado": "PASA",
+      "observado": "2 de 2 avisos reales de Wompi aceptados con 200.",
       "porque": "Todo lo anterior prueba que verificamos BIEN el algoritmo que implementamos. Que ese algoritmo sea el de Wompi solo lo demuestra un aviso suyo, y hay un motivo concreto para dudar: el ejemplo resuelto de su documentación NO reproduce su propio checksum (comprobado: la cadena que publican, hasheada con el secreto que publican, da otro hash).",
       "severidad": "critica"
     }

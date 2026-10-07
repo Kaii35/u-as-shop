@@ -113,32 +113,50 @@
       <div><dt>Comercio</dt><dd>Natalia Andrea Sánchez Pérez</dd></div>
       <div><dt>Ambiente</dt><dd>Pruebas (sandbox)</dd></div>
       <div><dt>Pasarela</dt><dd>WOMPI</dd></div>
-      <div><dt>Fecha</dt><dd>7 de octubre de 2026, 10:37 a. m.</dd></div>
+      <div><dt>Fecha</dt><dd>7 de octubre de 2026, 10:56 a. m.</dd></div>
     </dl>
   </header>
 
   <section>
     <h2>Resumen</h2>
     <div class="marcador">
-      <div class="caja bien"><span class="n">42</span><div class="l">Pasan</div></div>
+      <div class="caja bien"><span class="n">44</span><div class="l">Pasan</div></div>
       <div class="caja "><span class="n">0</span><div class="l">Fallan</div></div>
-      <div class="caja na"><span class="n">1</span><div class="l">Sin aplicar</div></div>
+      <div class="caja na"><span class="n">0</span><div class="l">Sin aplicar</div></div>
     </div>
 
-    <p>Se ejecutaron <strong>43 pruebas</strong> sobre la integración de pagos: credenciales,
+    <p>Se ejecutaron <strong>44 pruebas</strong> sobre la integración de pagos: credenciales,
     firma de integridad del checkout, verificación de los avisos de la pasarela, intentos de abuso,
     máquina de estados, reconciliación, superficie expuesta y límites de uso.</p>
 
     <div class="destacado">
-      <p><strong>Veredicto.</strong> La integración resiste los ataques que se le probaron: no se puede
-      cambiar el monto de un pedido, no se puede falsificar un aviso de pago, un aviso repetido no
-      duplica nada y dos compras simultáneas no venden la misma unidad. Durante las pruebas
-      aparecieron <strong>tres defectos reales que se corrigieron</strong> y queda
+      <p><strong>Veredicto: la pasarela funciona de punta a punta.</strong> Se completaron pagos
+      reales en el sandbox de Wompi, con tarjeta aprobada y con tarjeta rechazada, conduciendo el
+      checkout real en un navegador. En los dos casos llegó el aviso de Wompi,
+      <strong>nuestra verificación del checksum lo aceptó</strong>, el pedido cambió de estado y el
+      inventario se movió —o no se movió— como correspondía.</p>
+      <p>Eso cierra la única duda de fondo que quedaba: el algoritmo del checksum que implementamos
+      <strong>es</strong> el de Wompi, pese a que el ejemplo resuelto de su documentación no
+      reproduzca su propio hash (H-4).</p>
+      <p>La integración además resiste los ataques que se le probaron: no se puede cambiar el monto
+      de un pedido, no se puede falsificar un aviso, un aviso repetido no duplica nada y dos compras
+      simultáneas no venden la misma unidad. Durante las pruebas aparecieron
+      <strong>cuatro defectos reales, los cuatro corregidos</strong>, y queda
       <strong>un riesgo abierto</strong> que no es de configuración sino de diseño (R-1).</p>
-      <p>La prueba <strong>E2E-01 sigue sin ejecutarse</strong>, y es la más importante que falta:
-      hasta que un aviso emitido por Wompi pase por nuestra verificación, lo demostrado es que
-      verificamos bien el algoritmo que implementamos, no que ese algoritmo sea el suyo.</p>
     </div>
+
+    <h3 style="margin:6mm 0 2mm; color:var(--clay)">Pagos reales completados en sandbox</h3>
+    <table>
+      <thead><tr><th>Referencia</th><th>Tarjeta</th><th>Wompi</th><th>Pedido</th><th>Inventario</th></tr></thead>
+      <tbody>
+        <tr><td class="id">AU-11682-b7c7</td><td>4242…4242</td><td>APPROVED</td>
+            <td>PAID</td><td>SALE −1 · stock 20 → 19</td></tr>
+        <tr><td class="id">AU-11683-93c1</td><td>4111…1111</td><td>DECLINED</td>
+            <td>CANCELLED</td><td>sin movimiento · reserva liberada</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:8.5pt;color:#5c4042;margin-top:2mm">En los dos casos el aviso de Wompi
+    quedó registrado con <code>checksumOk = true</code> y <code>aplicado = true</code>.</p>
   </section>
 
   <section class="evitar">
@@ -150,9 +168,12 @@
       <code>sandbox.wompi.co</code>; no hay simulación de la pasarela en ninguna prueba.</li>
       <li><strong>Nuestra API es real.</strong> Las pruebas entran por HTTP igual que lo haría el
       navegador, contra el servidor corriendo, y comprueban el efecto en la base de datos.</li>
-      <li><strong>Los avisos de webhook se fabrican aquí</strong> y se firman con el secreto de
-      eventos real. Eso prueba nuestra verificación de punta a punta, pero no prueba que el
-      algoritmo coincida con el de Wompi. Para eso hace falta un aviso suyo: es E2E-01.</li>
+      <li><strong>Los avisos de las pruebas de ataque se fabrican aquí</strong> y se firman con el
+      secreto de eventos real, porque hay que poder manipularlos a voluntad. Pero
+      <strong>el circuito se cerró con avisos emitidos por Wompi</strong>: E2E-01 comprueba
+      la bitácora de lo que llegó de verdad al webhook.</li>
+      <li><strong>Los pagos se hicieron conduciendo el checkout real</strong> en un navegador:
+      elegir medio de pago, teclear la tarjeta, aceptar los términos y enviar.</li>
       <li><strong>Las pruebas limpian lo que ensucian.</strong> Las reservas que crean se liberan al
       terminar por la vía normal del servicio, sin escribir el stock a mano.</li>
     </ul>
@@ -226,6 +247,19 @@
     <p>Lo que apareció al probar. Los tres primeros eran defectos reales y están corregidos;
     los dos últimos son constancia de cosas que conviene no olvidar.</p>
     
+    <div class="hallazgo">
+      <div class="cab">
+        <span class="cod">H-0</span>
+        <span class="pill corregido">corregido</span>
+        <h3>Con APP_URL en localhost el checkout no abre, en absoluto</h3>
+      </div>
+      <dl>
+        <dt>Qué pasaba</dt><dd>Wompi rechaza con un 403 de CloudFront («Request blocked») cualquier redirect-url que apunte a localhost o 127.0.0.1, con http y con https. La configuración por defecto del proyecto era APP_URL=http://localhost:5173.</dd>
+        <dt>Evidencia</dt><dd>Aislado parámetro a parámetro contra el checkout real: con los otros doce parámetros la URL responde 200, y basta añadir el redirect-url a localhost para que devuelva 403. Un dominio cualquiera pasa, incluso por http simple. Esta es la razón de que la integración nunca se hubiera completado de punta a punta.</dd>
+        <dt>Qué se hizo</dt><dd>El arranque lo detecta y avisa a gritos; en producción aborta. Para probar en local, APP_URL apunta al mismo túnel con el que se reciben los avisos. La prueba FIRM-06 no se conforma con mirar la forma de la URL: pide el checkout de verdad y exige un 200.</dd>
+      </dl>
+      <div class="nota">El síntoma no se parece a la causa: la clienta ve una página de error de Amazon sin una sola pista, y en nuestro servidor no queda ni rastro.</div>
+    </div>
     <div class="hallazgo">
       <div class="cab">
         <span class="cod">H-1</span>
@@ -456,7 +490,17 @@
     <td>
       <div class="nombre">La firma que viaja al checkout es reproducible</div>
       <div class="porque"><span class="rot">Por qué</span> Es lo único que impide que alguien edite el monto en el navegador y pague $1.000 un pedido de $300.000.</div>
-      <div class="obs"><span class="rot">Observado</span> Referencia AU-11665-cc7b, 8070000 centavos. Firma recalculada idéntica.</div>
+      <div class="obs"><span class="rot">Observado</span> Referencia AU-11684-5ce6, 8070000 centavos. Firma recalculada idéntica.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">FIRM-06</td>
+    <td>
+      <div class="nombre">La URL de retorno no apunta a localhost</div>
+      <div class="porque"><span class="rot">Por qué</span> Wompi rechaza con un 403 de CloudFront cualquier redirect-url que apunte a localhost o 127.0.0.1, con http y con https. Con APP_URL en localhost el checkout NO ABRE, y la clienta ve una página de error de Amazon sin ninguna pista.</div>
+      <div class="obs"><span class="rot">Observado</span> Retorno a directory-inquiries-appraisal-commander.trycloudflare.com; el checkout de Wompi responde 200 con la URL completa.</div>
     </td>
     <td class="sev sev-critica">critica</td>
     <td class="res">Pasa</td>
@@ -620,7 +664,7 @@
     <td>
       <div class="nombre">Un aviso sin firma válida no mueve el pago</div>
       <div class="porque"><span class="rot">Por qué</span> Es el ataque que vacía el inventario: mandar «APROBADO» al webhook y recoger la mercancía sin pagar.</div>
-      <div class="obs"><span class="rot">Observado</span> 401 y el pago AU-11666-b8c2 sigue PENDING.</div>
+      <div class="obs"><span class="rot">Observado</span> 401 y el pago AU-11686-c279 sigue PENDING.</div>
     </td>
     <td class="sev sev-critica">critica</td>
     <td class="res">Pasa</td>
@@ -831,7 +875,7 @@
     <td>
       <div class="nombre">Hay límite de peticiones en la creación de intentos</div>
       <div class="porque"><span class="rot">Por qué</span> Crear un intento aparta stock sin pedir cuenta ni pago. Sin freno, un bucle desde una IP deja el catálogo sin unidades disponibles: medido antes del arreglo, 10 reservas en 355 ms.</div>
-      <div class="obs"><span class="rot">Observado</span> De 40 peticiones seguidas, 9 pasaron y 31 recibieron 429.</div>
+      <div class="obs"><span class="rot">Observado</span> De 40 peticiones seguidas, 6 pasaron y 32 recibieron 429.</div>
     </td>
     <td class="sev sev-alta">alta</td>
     <td class="res">Pasa</td>
@@ -853,15 +897,15 @@
       <table>
         <thead><tr><th>Id</th><th>Prueba</th><th>Grav.</th><th>Result.</th></tr></thead>
         <tbody>
-  <tr class="estado-NO_APLICA">
+  <tr class="estado-PASA">
     <td class="id">E2E-01</td>
     <td>
       <div class="nombre">Un aviso emitido por Wompi pasa nuestra verificación</div>
       <div class="porque"><span class="rot">Por qué</span> Todo lo anterior prueba que verificamos BIEN el algoritmo que implementamos. Que ese algoritmo sea el de Wompi solo lo demuestra un aviso suyo, y hay un motivo concreto para dudar: el ejemplo resuelto de su documentación NO reproduce su propio checksum (comprobado: la cadena que publican, hasheada con el secreto que publican, da otro hash).</div>
-      <div class="obs"><span class="rot">Observado</span> Todavía no ha llegado ningún aviso real de Wompi. La bitácora tiene 9 entradas (2 son sondas de verificación del túnel, sin forma de aviso). Falta registrar la URL de eventos en el Dashboard y pagar una transacción de prueba.</div>
+      <div class="obs"><span class="rot">Observado</span> 2 de 2 avisos reales de Wompi aceptados con 200.</div>
     </td>
     <td class="sev sev-critica">critica</td>
-    <td class="res">Sin aplicar</td>
+    <td class="res">Pasa</td>
   </tr></tbody>
       </table>
     </div>
@@ -870,7 +914,7 @@
   <div class="pie">
     Generado automáticamente desde <code>docs/pruebas-wompi/resultados.json</code> ·
     Banco de pruebas: <code>server/scripts/pruebas-wompi.ts</code> ·
-    Limpieza tras la ejecución: 15 cobros de prueba caducados; {&quot;checked&quot;:14,&quot;expired&quot;:14,&quot;rescued&quot;:0}
+    Limpieza tras la ejecución: 13 cobros de prueba caducados; {&quot;checked&quot;:12,&quot;expired&quot;:12,&quot;rescued&quot;:0}
   </div>
 
 </div>
