@@ -18,6 +18,7 @@
  * alimenta el informe.
  */
 import { createHash, randomUUID } from 'node:crypto';
+import { PaymentEventSource } from '@prisma/client';
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
@@ -33,7 +34,7 @@ import {
   verifyEventChecksum,
 } from '../src/payments/wompi.js';
 import { canTransition, toCents } from '../src/payments/types.js';
-import { expireStale } from '../src/payments/service.js';
+import { applySnapshot, expireStale } from '../src/payments/service.js';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const RAIZ = resolve(AQUI, '../..');
@@ -815,6 +816,49 @@ async function grupoEstados(): Promise<void> {
       const r = await gateway.fetchByReference('AU-000000-noexiste');
       exigir(r === null, `Devolvió algo para una referencia inexistente: ${JSON.stringify(r)}`);
       return 'GET /v1/transactions?reference=… autenticado con la llave privada; referencia inexistente → null.';
+    },
+  );
+
+  await prueba(
+    'REC-04', G, 'Conciliar un cobro que no cambió igual guarda lo que se aprendió', 'media',
+    'El momento en que más falta hace saber el medio de pago es justo aquel en que el estado NO cambió: un cobro pendiente que seguimos sin resolver. Antes se tiraba ese dato, porque PENDING→PENDING no es una transición y el evento se cerraba como repetido. Visto con un pago real de DaviPlata: la pasarela decía DAVIPLATA y nosotros guardábamos null.',
+    'Tras aplicar una instantánea con el mismo estado pero con medio de pago, el cobro queda con el medio guardado.',
+    async () => {
+      const intento = await crearIntento([{ productId: 'p1', quantity: 1 }]);
+      exigir(intento.estado === 201, `El intento devolvió ${intento.estado}.`);
+      const cuerpo = intento.cuerpo as { reference: string; amountInCents: number };
+
+      const antes = await prisma.payment.findUnique({
+        where: { reference: cuerpo.reference }, select: { status: true, methodType: true },
+      });
+      exigir(antes?.status === 'PENDING', `El cobro nació en ${antes?.status}.`);
+      exigir(antes?.methodType === null, `Ya traía medio de pago: ${antes?.methodType}.`);
+
+      // Misma situación: sigue PENDING, pero ahora sabemos por dónde paga.
+      await applySnapshot(
+        {
+          status: 'PENDING',
+          providerTransactionId: '01-' + Date.now() + '-met',
+          reference: cuerpo.reference,
+          amountInCents: cuerpo.amountInCents,
+          methodType: 'NEQUI',
+          providerStatus: 'PENDING',
+          raw: { prueba: 'REC-04' },
+        },
+        PaymentEventSource.POLL,
+        'rec04-' + randomUUID().slice(0, 12),
+        {},
+      );
+
+      const despues = await prisma.payment.findUnique({
+        where: { reference: cuerpo.reference }, select: { status: true, methodType: true },
+      });
+      exigir(
+        despues?.methodType === 'NEQUI',
+        `El medio quedó en ${despues?.methodType} en vez de NEQUI: se perdió el dato.`,
+      );
+      exigir(despues?.status === 'PENDING', `El estado cambió a ${despues?.status}, y no debía.`);
+      return 'Estado intacto en PENDING y medio de pago guardado como NEQUI.';
     },
   );
 

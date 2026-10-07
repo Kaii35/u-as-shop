@@ -147,31 +147,31 @@
     <dl class="meta">
       <div><dt>Pasarela</dt><dd>WOMPI</dd></div>
       <div><dt>Ambiente</dt><dd>Pruebas (sandbox)</dd></div>
-      <div><dt>Cobros</dt><dd>79</dd></div>
-      <div><dt>Generado</dt><dd>7/10/26, 11:12 a. m.</dd></div>
+      <div><dt>Cobros</dt><dd>93</dd></div>
+      <div><dt>Generado</dt><dd>7/10/26, 11:36 a. m.</dd></div>
     </dl>
   </header>
 
   <section>
     <h2>Resumen</h2>
     <div class="marcador cuatro">
-      <div class="caja bien"><span class="n chico">$286.800</span><div class="l">Cobrado</div></div>
-      <div class="caja"><span class="n">6</span><div class="l">Aprobados</div></div>
+      <div class="caja bien"><span class="n chico">$430.200</span><div class="l">Cobrado</div></div>
+      <div class="caja"><span class="n">9</span><div class="l">Aprobados</div></div>
       <div class="caja bien"><span class="n">0</span><div class="l">Descuadres</div></div>
       <div class="caja bien"><span class="n">0</span><div class="l">Alarmas</div></div>
     </div>
 
     <div class="destacado">
-      <p><strong>El dinero cuadra.</strong> Los 2 cobros que llegaron a tener
+      <p><strong>El dinero cuadra.</strong> Los 6 cobros que llegaron a tener
       transacción en la pasarela coinciden con ella en estado y en monto, uno a uno. No hay ningún
       cobro aprobado sin pedido que entregar, que es el único descuadre que cuesta dinero de verdad.</p>
-      <p>Hay 10 cobros con un id de transacción que Wompi
+      <p>Hay 13 cobros con un id de transacción que Wompi
       no conoce. No son un descuadre: son los que fabricó el banco de pruebas con avisos firmados a
       mano para comprobar la verificación. Aparecen identificados más abajo.</p>
     </div>
 
-    <p style="font-size:8.5pt;color:var(--mist)">Periodo cubierto: 7/10/26, 10:17 a. m. — 7/10/26, 10:56 a. m..
-    Se consultó a la pasarela por 12 transacciones, una a una.</p>
+    <p style="font-size:8.5pt;color:var(--mist)">Periodo cubierto: 7/10/26, 10:17 a. m. — 7/10/26, 11:35 a. m..
+    Se consultó a la pasarela por 19 transacciones, una a una.</p>
   </section>
 
   <section class="evitar">
@@ -276,11 +276,60 @@
           <td>—</td>
           <td class="num">$47.800</td>
           <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11697-53c9</td>
+          <td class="id">1111672-1791390275-96000</td>
+          <td>APPROVED</td>
+          <td>APPROVED</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq v">Cuadra</span></td>
+        </tr><tr>
+          <td class="id">AU-11698-eb35</td>
+          <td class="id">1111672-1791390369-57424</td>
+          <td>APPROVED</td>
+          <td>APPROVED</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq v">Cuadra</span></td>
+        </tr><tr>
+          <td class="id">AU-11699-7a82</td>
+          <td class="id">1111672-1791390590-14932</td>
+          <td>PENDING</td>
+          <td>PENDING</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq v">Cuadra</span></td>
+        </tr><tr>
+          <td class="id">AU-11700-6aac</td>
+          <td class="id">1111672-1791390868-96607</td>
+          <td>PENDING</td>
+          <td>PENDING</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq v">Cuadra</span></td>
+        </tr><tr>
+          <td class="id">AU-11704-b03a</td>
+          <td class="id">01-1791390933099-mn01</td>
+          <td>EXPIRED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11705-4b34</td>
+          <td class="id">01-1791390933153-idem</td>
+          <td>APPROVED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11707-5646</td>
+          <td class="id">01-1791390933501-met</td>
+          <td>EXPIRED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
         </tr></tbody></table>
 
     
     <div class="destacado" style="margin-top:4mm">
-      <p><strong>Sobre los 10 que Wompi no conoce.</strong> No son dinero perdido ni
+      <p><strong>Sobre los 13 que Wompi no conoce.</strong> No son dinero perdido ni
       un fallo de la integración: son los cobros que fabricó el banco de pruebas, firmando avisos a
       mano con el secreto de eventos real para comprobar que la verificación los acepta. Sus ids de
       transacción se los inventó la prueba, así que la pasarela no tiene por qué conocerlos.</p>
@@ -331,14 +380,14 @@
     verificación de la firma: un aviso con <code>checksumOk = false</code> es alguien intentando
     mover un cobro sin conocer el secreto.</p>
     <div class="marcador tres">
-      <div class="caja"><span class="n">89</span><div class="l">Avisos registrados</div></div>
-      <div class="caja"><span class="n">17</span><div class="l">Por webhook</div></div>
-      <div class="caja mal"><span class="n">5</span><div class="l">Firma inválida</div></div>
+      <div class="caja"><span class="n">106</span><div class="l">Avisos registrados</div></div>
+      <div class="caja"><span class="n">22</span><div class="l">Por webhook</div></div>
+      <div class="caja mal"><span class="n">6</span><div class="l">Firma inválida</div></div>
     </div>
 
     
     <div class="destacado">
-      <p><strong>Sobre los 5 avisos con firma inválida.</strong> Que estén
+      <p><strong>Sobre los 6 avisos con firma inválida.</strong> Que estén
       registrados es deliberado y no un fallo: un aviso rechazado sin dejar rastro no deja nada que
       investigar después. Ninguno movió un solo cobro —ese es justo el punto— pero quedan guardados
       con su contenido para poder mirarlos.</p>
@@ -384,9 +433,24 @@
         <td class="id">p1</td>
         <td>SALE</td>
         <td class="num">-1</td>
+      </tr><tr>
+        <td class="id">AU-11697</td>
+        <td class="id">p1</td>
+        <td>SALE</td>
+        <td class="num">-1</td>
+      </tr><tr>
+        <td class="id">AU-11698</td>
+        <td class="id">p1</td>
+        <td>SALE</td>
+        <td class="num">-1</td>
+      </tr><tr>
+        <td class="id">AU-11705</td>
+        <td class="id">p1</td>
+        <td>SALE</td>
+        <td class="num">-1</td>
       </tr></tbody></table>
-      <p style="font-size:8.5pt;color:var(--mist);margin-top:2mm">6 movimientos
-      para 6 cobros aprobados.</p>
+      <p style="font-size:8.5pt;color:var(--mist);margin-top:2mm">9 movimientos
+      para 9 cobros aprobados.</p>
   </section>
 
   <section class="salto">
@@ -396,14 +460,19 @@
       <tbody>
         <tr>
             <td><span class="etq g">EXPIRED</span></td>
-            <td class="num">72</td>
-            <td class="num">$9.248.500</td>
+            <td class="num">81</td>
+            <td class="num">$10.833.500</td>
             <td style="font-size:8.3pt">Pasó el plazo sin resolverse. Las unidades apartadas se liberaron.</td>
           </tr><tr>
             <td><span class="etq v">APPROVED</span></td>
-            <td class="num">6</td>
-            <td class="num">$286.800</td>
+            <td class="num">9</td>
+            <td class="num">$430.200</td>
             <td style="font-size:8.3pt">Dinero recibido y confirmado por la pasarela.</td>
+          </tr><tr>
+            <td><span class="etq a">PENDING</span></td>
+            <td class="num">2</td>
+            <td class="num">$95.600</td>
+            <td style="font-size:8.3pt">Todavía sin resolver. Mantiene unidades apartadas.</td>
           </tr><tr>
             <td><span class="etq r">DECLINED</span></td>
             <td class="num">1</td>
@@ -416,7 +485,7 @@
     <h3 style="margin-top:6mm">Medios de pago usados</h3>
     <table>
       <thead><tr><th>Medio</th><th class="num">Cobros</th><th class="num">Importe</th></tr></thead>
-      <tbody><tr><td>CARD</td><td class="num">6</td><td class="num">$286.800</td></tr>
+      <tbody><tr><td>CARD</td><td class="num">7</td><td class="num">$334.600</td></tr><tr><td>NEQUI</td><td class="num">1</td><td class="num">$47.800</td></tr><tr><td>PSE</td><td class="num">1</td><td class="num">$47.800</td></tr>
       </tbody></table>
   </section>
 
@@ -490,12 +559,57 @@
     <td class="id">01-1791388567531-idem</td>
     <td class="num">1</td>
     <td class="id">7/10/26, 10:56 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11697-53c9</td>
+    <td class="id">AU-11697<br><span style="font-size:7pt">PAID</span></td>
+    <td><span class="etq v">APPROVED</span></td>
+    <td class="num">$47.800</td>
+    <td>NEQUI</td>
+    <td class="id">1111672-1791390275-96000</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 11:23 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11698-eb35</td>
+    <td class="id">AU-11698<br><span style="font-size:7pt">PAID</span></td>
+    <td><span class="etq v">APPROVED</span></td>
+    <td class="num">$47.800</td>
+    <td>PSE</td>
+    <td class="id">1111672-1791390369-57424</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 11:25 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11699-7a82</td>
+    <td class="id">AU-11699<br><span style="font-size:7pt">PENDING</span></td>
+    <td><span class="etq a">PENDING</span></td>
+    <td class="num">$47.800</td>
+    <td>—</td>
+    <td class="id">1111672-1791390590-14932</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 11:29 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11700-6aac</td>
+    <td class="id">AU-11700<br><span style="font-size:7pt">PENDING</span></td>
+    <td><span class="etq a">PENDING</span></td>
+    <td class="num">$47.800</td>
+    <td>DAVIPLATA</td>
+    <td class="id">1111672-1791390868-96607</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 11:34 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11705-4b34</td>
+    <td class="id">AU-11705<br><span style="font-size:7pt">PAID</span></td>
+    <td><span class="etq v">APPROVED</span></td>
+    <td class="num">$47.800</td>
+    <td>CARD</td>
+    <td class="id">01-1791390933153-idem</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 11:35 a. m.</td>
   </tr></tbody>
     </table>
 
     
     <h3 style="margin-top:6mm">Caducados</h3>
-    <p style="font-size:9pt">72 intentos por $9.248.500
+    <p style="font-size:9pt">81 intentos por $10.833.500
     que vencieron sin resolverse. Ninguno llegó a tener transacción en la pasarela, así que no hay
     nada que conciliar y las unidades ya volvieron al inventario. En esta instalación son, en su
     mayoría, el rastro que deja el banco de pruebas al ejercitar el flujo de compra.</p>
@@ -504,7 +618,7 @@
   <div class="pie">
     Generado por <code>server/scripts/informe-pagos.ts</code> ·
     Conciliado contra sandbox.wompi.co ·
-    12 transacciones consultadas
+    19 transacciones consultadas
   </div>
 
 </div>

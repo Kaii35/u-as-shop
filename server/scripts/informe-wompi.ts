@@ -117,6 +117,16 @@ const CAPAS = [
 
 const HALLAZGOS = [
   {
+    id: 'H-6',
+    estado: 'corregido',
+    titulo: 'Conciliar un cobro que no había cambiado tiraba lo aprendido',
+    gravedad: 'Media',
+    que: 'Al aplicar una instantánea de la pasarela, el medio de pago solo se guardaba si el estado cambiaba. Un cobro que sigue PENDING no es una transición, así que el evento se cerraba como repetido y el dato se perdía.',
+    evidencia: 'Visto con un pago real de DaviPlata que se quedó pendiente: la pasarela decía DAVIPLATA, nosotros preguntamos por referencia, guardamos el id de la transacción y el medio se quedó en null. Y es justo el caso en que más falta hace: cuando una clienta escribe diciendo que pagó, lo primero que hay que poder contestar es por dónde.',
+    arreglo: 'El medio pasa al bloque de metadatos que se refresca siempre, aplique o no el cambio de estado. No se pisa un medio ya conocido con UNKNOWN: ahí la pasarela no dice «otro», dice «no sé».',
+    nota: 'Comprobado sobre un cobro real: de null a DAVIPLATA preguntando solo por referencia. Regresión cubierta por REC-04.',
+  },
+  {
     id: 'H-0',
     estado: 'corregido',
     titulo: 'Con APP_URL en localhost el checkout no abre, en absoluto',
@@ -279,7 +289,7 @@ ${FUENTES}
       <p>La integración además resiste los ataques que se le probaron: no se puede cambiar el monto
       de un pedido, no se puede falsificar un aviso, un aviso repetido no duplica nada y dos compras
       simultáneas no venden la misma unidad. Durante las pruebas aparecieron
-      <strong>cuatro defectos reales, los cuatro corregidos</strong>, y queda
+      <strong>cinco defectos reales, los cinco corregidos</strong>, y queda
       <strong>un riesgo abierto</strong> que no es de configuración sino de diseño (R-1).</p>
     </div>
 
@@ -287,14 +297,22 @@ ${FUENTES}
     <table>
       <thead><tr><th>Referencia</th><th>Tarjeta</th><th>Wompi</th><th>Pedido</th><th>Inventario</th></tr></thead>
       <tbody>
-        <tr><td class="id">AU-11682-b7c7</td><td>4242…4242</td><td>APPROVED</td>
+        <tr><td class="id">AU-11682-b7c7</td><td>Tarjeta 4242…4242</td><td>APPROVED</td>
             <td>PAID</td><td>SALE −1 · stock 20 → 19</td></tr>
-        <tr><td class="id">AU-11683-93c1</td><td>4111…1111</td><td>DECLINED</td>
+        <tr><td class="id">AU-11683-93c1</td><td>Tarjeta 4111…1111</td><td>DECLINED</td>
             <td>CANCELLED</td><td>sin movimiento · reserva liberada</td></tr>
+        <tr><td class="id">AU-11697-53c9</td><td>Nequi 3991111111</td><td>APPROVED</td>
+            <td>PAID</td><td>SALE −1 · stock 18 → 17</td></tr>
+        <tr><td class="id">AU-11698-eb35</td><td>PSE · banco que aprueba</td><td>APPROVED</td>
+            <td>PAID</td><td>SALE −1 · stock 17 → 16</td></tr>
+        <tr><td class="id">AU-11700-6aac</td><td>DaviPlata</td><td>PENDING</td>
+            <td>PENDING</td><td>unidades apartadas · recuperado por referencia</td></tr>
       </tbody>
     </table>
-    <p style="font-size:8.5pt;color:#5c4042;margin-top:2mm">En los dos casos el aviso de Wompi
-    quedó registrado con <code>checksumOk = true</code> y <code>aplicado = true</code>.</p>
+    <p style="font-size:8.5pt;margin-top:2mm">En los cuatro que se resolvieron, el aviso de Wompi
+    quedó registrado con <code>checksumOk = true</code> y <code>aplicado = true</code>. DaviPlata no
+    se resuelve solo en sandbox —espera aprobación en la app— y se dejó a propósito en ese estado:
+    sirvió para probar la recuperación de un cobro del que no sabíamos ni el id de la transacción.</p>
   </section>
 
   <section class="evitar">
@@ -311,7 +329,9 @@ ${FUENTES}
       <strong>el circuito se cerró con avisos emitidos por Wompi</strong>: E2E-01 comprueba
       la bitácora de lo que llegó de verdad al webhook.</li>
       <li><strong>Los pagos se hicieron conduciendo el checkout real</strong> en un navegador:
-      elegir medio de pago, teclear la tarjeta, aceptar los términos y enviar.</li>
+      elegir medio de pago, teclear los datos, aceptar los términos y enviar. Se probaron los
+      <strong>cuatro medios que anuncia la tienda</strong> —tarjeta, Nequi, PSE y DaviPlata—, no
+      solo tarjeta.</li>
       <li><strong>Las pruebas limpian lo que ensucian.</strong> Las reservas que crean se liberan al
       terminar por la vía normal del servicio, sin escribir el stock a mano.</li>
     </ul>

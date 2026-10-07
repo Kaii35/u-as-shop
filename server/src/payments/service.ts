@@ -550,6 +550,26 @@ export async function applySnapshot(
         ...(payment.providerTransactionId === null && snapshot.providerTransactionId
           ? { providerTransactionId: snapshot.providerTransactionId }
           : {}),
+        /**
+         * El medio de pago también, y aquí es donde más falta hacía.
+         *
+         * Antes solo se guardaba al APLICAR el cambio de estado, así que en el
+         * caso en que de verdad se necesita —reconciliar un cobro que sigue
+         * igual que estaba— se tiraba. Visto en una prueba real con DaviPlata:
+         * la pasarela decía DAVIPLATA, nosotros preguntábamos por referencia,
+         * guardábamos el id de la transacción… y el medio se quedaba en null,
+         * porque PENDING→PENDING no es una transición y el evento se cerraba
+         * como repetido.
+         *
+         * Importa para lo más terrenal: cuando una clienta escribe diciendo que
+         * pagó, lo primero que hay que poder contestar es por dónde.
+         *
+         * No se pisa un medio conocido con UNKNOWN: ahí la pasarela no está
+         * diciendo «otro», está diciendo «no sé».
+         */
+        ...(snapshot.methodType && snapshot.methodType !== 'UNKNOWN'
+          ? { methodType: snapshot.methodType }
+          : {}),
       };
 
       // --- 2. Desorden ------------------------------------------------------
