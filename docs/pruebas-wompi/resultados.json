@@ -1,0 +1,445 @@
+{
+  "generado": "2026-10-07T15:37:07.518Z",
+  "ambiente": "sandbox",
+  "comercio": null,
+  "pasarela": "WOMPI",
+  "resumen": {
+    "pasan": 42,
+    "fallan": 0,
+    "sinAplicar": 1,
+    "total": 43
+  },
+  "limpieza": "15 cobros de prueba caducados; {\"checked\":14,\"expired\":14,\"rescued\":0}",
+  "resultados": [
+    {
+      "id": "CRED-01",
+      "grupo": "A · Credenciales y entorno",
+      "nombre": "La llave pública es válida en el API de Wompi",
+      "esperado": "Wompi responde 200 y devuelve los datos del comercio.",
+      "estado": "PASA",
+      "observado": "Comercio «Natalia Andrea Sanchez Perez», activo.",
+      "porque": "Una llave mal copiada no falla al arrancar: falla en el primer cobro real, delante de una clienta.",
+      "severidad": "critica"
+    },
+    {
+      "id": "CRED-02",
+      "grupo": "A · Credenciales y entorno",
+      "nombre": "La llave privada autentica contra el API",
+      "esperado": "GET /v1/transactions?reference=… responde 200.",
+      "estado": "PASA",
+      "observado": "Autenticada: 200 y lista vacía para una referencia inexistente.",
+      "porque": "Sin ella no se puede reconciliar un cobro por referencia, que es la única salida cuando se pierde el aviso y la clienta no vuelve.",
+      "severidad": "critica"
+    },
+    {
+      "id": "CRED-03",
+      "grupo": "A · Credenciales y entorno",
+      "nombre": "Las cuatro credenciales son del mismo ambiente",
+      "esperado": "Las cuatro llevan el mismo prefijo de ambiente y la pasarela arranca sin quejas.",
+      "estado": "PASA",
+      "observado": "Las cuatro son de PRUEBAS (sandbox). Pasarela configurada sin problemas.",
+      "porque": "Mezclar sandbox y producción hace que el checkout cobre de mentira mientras el servidor consulta la cuenta real: los pedidos salen aprobados sin que entre dinero.",
+      "severidad": "critica"
+    },
+    {
+      "id": "CRED-04",
+      "grupo": "A · Credenciales y entorno",
+      "nombre": "Ningún secreto llega al navegador",
+      "esperado": "Ni la llave privada ni los dos secretos aparecen en dist/ ni en src/ del frontend.",
+      "estado": "PASA",
+      "observado": "86 archivos de dist/ y src/ revisados, ningún secreto dentro.",
+      "porque": "Un secreto en el bundle es público: cualquiera lo lee desde las herramientas del navegador, y con el de integridad se pueden firmar cobros por el monto que se quiera.",
+      "severidad": "critica"
+    },
+    {
+      "id": "CRED-05",
+      "grupo": "A · Credenciales y entorno",
+      "nombre": "Los secretos no están versionados",
+      "esperado": "server/.env está ignorado y ningún secreto aparece en el historial.",
+      "estado": "PASA",
+      "observado": "server/.env ignorado y fuera del índice; ningún secreto en los archivos versionados.",
+      "porque": "Un secreto en el historial de git sigue ahí aunque se borre del archivo, y viaja a cualquiera que clone el repositorio.",
+      "severidad": "critica"
+    },
+    {
+      "id": "CRED-06",
+      "grupo": "A · Credenciales y entorno",
+      "nombre": "El servidor se niega a arrancar con llaves de prueba en producción",
+      "esperado": "La comprobación de arranque detecta la combinación y la rechaza.",
+      "estado": "PASA",
+      "observado": "assertPaymentsReady() aborta el arranque si NODE_ENV=production con llaves pub_test_.",
+      "porque": "Es el error silencioso más caro: la tienda vende con normalidad y no entra un peso. Nadie se entera hasta cuadrar caja.",
+      "severidad": "critica"
+    },
+    {
+      "id": "FIRM-01",
+      "grupo": "B · Firma de integridad del checkout",
+      "nombre": "La firma que viaja al checkout es reproducible",
+      "esperado": "Recalculada por fuera del código del servidor, la firma coincide byte a byte.",
+      "estado": "PASA",
+      "observado": "Referencia AU-11665-cc7b, 8070000 centavos. Firma recalculada idéntica.",
+      "porque": "Es lo único que impide que alguien edite el monto en el navegador y pague $1.000 un pedido de $300.000.",
+      "severidad": "critica"
+    },
+    {
+      "id": "FIRM-02",
+      "grupo": "B · Firma de integridad del checkout",
+      "nombre": "Cambiar el monto invalida la firma",
+      "esperado": "La firma del monto rebajado es distinta de la original.",
+      "estado": "PASA",
+      "observado": "$300.000 → 7b4adc14c0035c7c…  ·  $1.000 → 0cc9243afbd7c286…  (Wompi rechaza la segunda)",
+      "porque": "Es el ataque concreto: rebajar amount-in-cents en la URL antes de pagar.",
+      "severidad": "critica"
+    },
+    {
+      "id": "FIRM-03",
+      "grupo": "B · Firma de integridad del checkout",
+      "nombre": "Cambiar la referencia invalida la firma",
+      "esperado": "Dos referencias distintas dan firmas distintas.",
+      "estado": "PASA",
+      "observado": "Referencias distintas producen firmas distintas.",
+      "porque": "Reapuntar un pago barato a la referencia de un pedido caro es la otra mitad del mismo ataque.",
+      "severidad": "alta"
+    },
+    {
+      "id": "FIRM-04",
+      "grupo": "B · Firma de integridad del checkout",
+      "nombre": "La expiración entra en la cadena solo si se envía",
+      "esperado": "Con y sin expiración salen firmas distintas, y la que usa el servidor es la que sí la incluye.",
+      "estado": "PASA",
+      "observado": "Las dos variantes difieren; el checkout manda expiration-time y firma con ella.",
+      "porque": "Firmarla sin mandarla (o al revés) da una firma inválida y Wompi devuelve un error que no dice por qué. Es la trampa clásica de esta integración.",
+      "severidad": "media"
+    },
+    {
+      "id": "FIRM-05",
+      "grupo": "B · Firma de integridad del checkout",
+      "nombre": "Sin el secreto no se puede falsificar una firma",
+      "esperado": "La misma cadena firmada con otro secreto da un hash distinto.",
+      "estado": "PASA",
+      "observado": "Secreto distinto, firma distinta.",
+      "porque": "Si la firma se pudiera reproducir sin el secreto, no protegería nada.",
+      "severidad": "critica"
+    },
+    {
+      "id": "AVIS-01",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "Un aviso bien firmado se acepta",
+      "esperado": "verifyEventChecksum devuelve ok con el secreto de eventos real.",
+      "estado": "PASA",
+      "observado": "Aceptado.",
+      "porque": "Es la base: si no se aceptara un aviso legítimo, ningún pago se confirmaría nunca.",
+      "severidad": "critica"
+    },
+    {
+      "id": "AVIS-02",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "Un checksum alterado en un carácter se rechaza",
+      "esperado": "Cambiar un dígito del checksum lo invalida.",
+      "estado": "PASA",
+      "observado": "Rechazado: La firma del aviso no coincide.",
+      "porque": "Si una firma casi correcta pasara, la firma no serviría de nada.",
+      "severidad": "critica"
+    },
+    {
+      "id": "AVIS-03",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "Un aviso firmado con otro secreto se rechaza",
+      "esperado": "Firmado con un secreto inventado, se rechaza.",
+      "estado": "PASA",
+      "observado": "Rechazado: La firma del aviso no coincide.",
+      "porque": "Es lo que mandaría quien conozca el formato pero no el secreto, que es todo el mundo: el formato está documentado.",
+      "severidad": "critica"
+    },
+    {
+      "id": "AVIS-04",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "Un aviso sin firma se rechaza",
+      "esperado": "Sin signature.properties o sin checksum, se rechaza.",
+      "estado": "PASA",
+      "observado": "Rechazado en los dos casos: El aviso no trae signature.properties.",
+      "porque": "Lo más simple que puede intentar alguien: mandar el JSON sin la sección de firma.",
+      "severidad": "critica"
+    },
+    {
+      "id": "AVIS-05",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "Una propiedad firmada que no viene se rechaza",
+      "esperado": "Declarar una propiedad en properties y omitirla de data invalida el aviso.",
+      "estado": "PASA",
+      "observado": "Rechazado: La propiedad firmada \"transaction.campo_que_no_existe\" no viene en el aviso.",
+      "porque": "Si una propiedad ausente se tratara como cadena vacía, se podría recortar la parte firmada hasta dejarla trivial.",
+      "severidad": "alta"
+    },
+    {
+      "id": "AVIS-06",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "La comparación de firmas es en tiempo constante",
+      "esperado": "El código usa timingSafeEqual y no comparación directa.",
+      "estado": "PASA",
+      "observado": "safeEqualHex() compara con crypto.timingSafeEqual.",
+      "porque": "Con === el tiempo de respuesta depende de cuántos caracteres aciertan, y eso deja adivinar un checksum válido byte a byte desde fuera.",
+      "severidad": "media"
+    },
+    {
+      "id": "AVIS-07",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "Un aviso viejo se descarta",
+      "esperado": "Un aviso de hace más de 48 h se considera no fresco.",
+      "estado": "PASA",
+      "observado": "Descartado por antigüedad (ventana de 48 h).",
+      "porque": "Un aviso legítimo capturado hace días lleva una firma perfectamente válida para siempre. El timestamp es lo único que permite descartarlo.",
+      "severidad": "alta"
+    },
+    {
+      "id": "AVIS-08",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "El último reintento de Wompi (24 h) sigue siendo válido",
+      "esperado": "Un aviso de hace 24 h y un minuto se sigue aceptando.",
+      "estado": "PASA",
+      "observado": "Aceptado: la ventana es de 48 h, con margen sobre el último reintento.",
+      "porque": "Wompi reintenta a los 30 min, 3 h y 24 h. Con la ventana en 24 h justas rechazábamos nosotros mismos el último reintento, que es precisamente el que llega tras dos fallos.",
+      "severidad": "alta"
+    },
+    {
+      "id": "AVIS-09",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "Un aviso con fecha futura se descarta",
+      "esperado": "Más de 5 minutos en el futuro, se rechaza; dentro de ese margen se tolera por desfase de reloj.",
+      "estado": "PASA",
+      "observado": "Una hora de adelanto se rechaza; un minuto se tolera.",
+      "porque": "Un timestamp adelantado dejaría un aviso reutilizable durante días.",
+      "severidad": "media"
+    },
+    {
+      "id": "AVIS-10",
+      "grupo": "C · Verificación de avisos de la pasarela",
+      "nombre": "Un tipo de evento no soportado se rechaza",
+      "esperado": "Un evento distinto no se aplica.",
+      "estado": "PASA",
+      "observado": "Rechazado: Evento no soportado: nequi_token.updated.",
+      "porque": "Solo transaction.updated mueve dinero. Procesar a ciegas cualquier evento futuro de Wompi es aceptar un contrato que todavía no se ha leído.",
+      "severidad": "media"
+    },
+    {
+      "id": "ATAQ-01",
+      "grupo": "D · Intentos de abuso",
+      "nombre": "Un aviso sin firma válida no mueve el pago",
+      "esperado": "La API responde 401 y el pago sigue pendiente.",
+      "estado": "PASA",
+      "observado": "401 y el pago AU-11666-b8c2 sigue PENDING.",
+      "porque": "Es el ataque que vacía el inventario: mandar «APROBADO» al webhook y recoger la mercancía sin pagar.",
+      "severidad": "critica"
+    },
+    {
+      "id": "ATAQ-02",
+      "grupo": "D · Intentos de abuso",
+      "nombre": "Un aviso bien firmado pero con otro monto no aprueba el pedido",
+      "esperado": "El pago no queda aprobado y se registra la discrepancia.",
+      "estado": "PASA",
+      "observado": "La API respondió 200 y el pago quedó en PENDING, no APPROVED (se cobraban 4780000 centavos y el aviso traía 100).",
+      "porque": "Protege del caso en que alguien logre pagar 1.000 pesos una transacción asociada a un pedido de 300.000. La firma sería válida; el monto no.",
+      "severidad": "critica"
+    },
+    {
+      "id": "ATAQ-03",
+      "grupo": "D · Intentos de abuso",
+      "nombre": "Reenviar el mismo aviso no duplica nada",
+      "esperado": "El segundo envío responde 200 pero no aplica cambios.",
+      "estado": "PASA",
+      "observado": "Reenvío aceptado con 200. Avisos guardados: 1; aplicados: 1; movimientos de inventario del pedido: 1.",
+      "porque": "Wompi reintenta hasta tres veces. Sin idempotencia, un pedido podría descontar stock dos veces o aparecer pagado por partida doble.",
+      "severidad": "alta"
+    },
+    {
+      "id": "ATAQ-04",
+      "grupo": "D · Intentos de abuso",
+      "nombre": "Un aviso de una referencia desconocida no revienta ni reintenta",
+      "esperado": "Responde 200 con applied:false.",
+      "estado": "PASA",
+      "observado": "200 con applied:false: Wompi deja de insistir y queda registrado.",
+      "porque": "Pasa de verdad cuando dos entornos comparten credenciales. Un 500 haría que Wompi reintentara 24 h contra algo que nunca va a existir.",
+      "severidad": "media"
+    },
+    {
+      "id": "ATAQ-05",
+      "grupo": "D · Intentos de abuso",
+      "nombre": "La ruta del pago simulado no existe con Wompi activo",
+      "esperado": "POST /api/payments/mock/:ref responde 404.",
+      "estado": "PASA",
+      "observado": "404: la ruta no se registra cuando el proveedor es WOMPI.",
+      "porque": "Es una ruta pública capaz de marcar pagos como aprobados a voluntad. Con la pasarela real encendida sería la forma más directa de vaciar el inventario sin pagar.",
+      "severidad": "critica"
+    },
+    {
+      "id": "ATAQ-06",
+      "grupo": "D · Intentos de abuso",
+      "nombre": "No se puede pedir más de lo que hay",
+      "esperado": "Un intento por encima del stock disponible se rechaza con 409.",
+      "estado": "PASA",
+      "observado": "Rechazado con 409: «Stock insuficiente para AN-1111: pediste 30 y hay 5.»",
+      "porque": "Vender lo que no existe obliga a devolver el dinero y deja mal a la tienda.",
+      "severidad": "alta"
+    },
+    {
+      "id": "ATAQ-07",
+      "grupo": "D · Intentos de abuso",
+      "nombre": "Cantidades absurdas se rechazan en la puerta",
+      "esperado": "Cero, negativo y fraccionario devuelven 400.",
+      "estado": "PASA",
+      "observado": "0, -5 y 1.5 devolvieron 400, 400, 400.",
+      "porque": "Una cantidad negativa o cero puede dar totales negativos; una enorme, desbordes.",
+      "severidad": "media"
+    },
+    {
+      "id": "ATAQ-08",
+      "grupo": "D · Intentos de abuso",
+      "nombre": "Dos compras simultáneas no venden la misma unidad",
+      "esperado": "Lanzadas a la vez por el último par de unidades, solo prospera la que cabe.",
+      "estado": "PASA",
+      "observado": "Dos peticiones simultáneas por 3 unidades de p10: 1 aceptada, 1 rechazada. Reservado 3 de 3.",
+      "porque": "Sin una guardia atómica, dos peticiones que leen el stock a la vez pasan las dos la comprobación y se vende dos veces lo mismo.",
+      "severidad": "critica"
+    },
+    {
+      "id": "ATAQ-09",
+      "grupo": "D · Intentos de abuso",
+      "nombre": "El webhook solo acepta POST",
+      "esperado": "GET responde 404.",
+      "estado": "PASA",
+      "observado": "GET al webhook devuelve 404.",
+      "porque": "Un GET al webhook es la sonda más común de un escáner automático.",
+      "severidad": "info"
+    },
+    {
+      "id": "EST-01",
+      "grupo": "E · Estados y reconciliación",
+      "nombre": "Los estados de Wompi se traducen sin perder ninguno",
+      "esperado": "Los conocidos se traducen y lo desconocido cae en PENDING, nunca en ERROR.",
+      "estado": "PASA",
+      "observado": "8 estados traducidos; lo desconocido queda PENDING.",
+      "porque": "Wompi ha devuelto estados que no documenta (PROCESSING, FAILED, REJECTED). Tratar lo desconocido como error soltaría el stock de algo que quizá sí se pagó.",
+      "severidad": "alta"
+    },
+    {
+      "id": "EST-02",
+      "grupo": "E · Estados y reconciliación",
+      "nombre": "Un pago aprobado no se puede volver a mover",
+      "esperado": "APPROVED→DECLINED se bloquea; PENDING→APPROVED se permite.",
+      "estado": "PASA",
+      "observado": "PENDING→APPROVED sí; APPROVED→DECLINED y APPROVED→PENDING no.",
+      "porque": "Los avisos llegan desordenados. Un DECLINED viejo que aterrice después del APPROVED bueno cancelaría un pedido ya cobrado.",
+      "severidad": "critica"
+    },
+    {
+      "id": "EST-03",
+      "grupo": "E · Estados y reconciliación",
+      "nombre": "Un pago caducado todavía puede aprobarse",
+      "esperado": "EXPIRED→APPROVED se permite.",
+      "estado": "PASA",
+      "observado": "EXPIRED→APPROVED permitido: una aprobación tardía se registra en vez de perderse.",
+      "porque": "Si el dinero entró tarde, entró. Dar por perdido un cobro que la pasarela sí capturó es quedarse con el dinero y sin el pedido.",
+      "severidad": "alta"
+    },
+    {
+      "id": "REC-01",
+      "grupo": "E · Estados y reconciliación",
+      "nombre": "Se puede reconciliar por referencia contra el API real",
+      "esperado": "fetchByReference llama al API real y devuelve null si no existe, sin lanzar.",
+      "estado": "PASA",
+      "observado": "GET /v1/transactions?reference=… autenticado con la llave privada; referencia inexistente → null.",
+      "porque": "Es la única salida cuando se pierde el aviso Y la clienta nunca vuelve: sin esto el cobro queda «pendiente» para siempre con el stock bloqueado.",
+      "severidad": "alta"
+    },
+    {
+      "id": "REC-02",
+      "grupo": "E · Estados y reconciliación",
+      "nombre": "Consultar una transacción que no existe no rompe nada",
+      "esperado": "fetchByTransactionId devuelve null ante un id inventado.",
+      "estado": "PASA",
+      "observado": "Id inexistente → null, sin excepción.",
+      "porque": "Un 404 de la pasarela tratado como excepción dejaría a la clienta sin respuesta en la pantalla de resultado.",
+      "severidad": "media"
+    },
+    {
+      "id": "REC-03",
+      "grupo": "E · Estados y reconciliación",
+      "nombre": "El dinero se maneja en enteros",
+      "esperado": "toCents siempre da enteros exactos.",
+      "estado": "PASA",
+      "observado": "Cinco montos convertidos a centavos sin pérdida.",
+      "porque": "El peso colombiano no tiene centavos y los flotantes arrastran error: 0.1+0.2 no es 0.3. Un céntimo de desfase hace que Wompi rechace la firma.",
+      "severidad": "alta"
+    },
+    {
+      "id": "SUP-01",
+      "grupo": "F · Superficie expuesta",
+      "nombre": "La consulta pública de un pago no filtra datos de la clienta",
+      "esperado": "La respuesta no contiene datos personales.",
+      "estado": "PASA",
+      "observado": "Devuelve estado y totales. Sin correo, teléfono, documento ni dirección. Campos: reference, status, message, orderNumber, orderStatus, amount, methodType, expiresAt, updatedAt",
+      "porque": "La referencia viaja en URLs y acaba en historiales y registros. Quien la tenga no debe poder sacar de ahí el correo, el teléfono o la dirección.",
+      "severidad": "alta"
+    },
+    {
+      "id": "SUP-02",
+      "grupo": "F · Superficie expuesta",
+      "nombre": "Una referencia con forma inválida se rechaza sin tocar la base",
+      "esperado": "Referencias con comillas, rutas o SQL devuelven 400.",
+      "estado": "PASA",
+      "observado": "4 sondas (SQL, recorrido de rutas, script) rechazadas por el validador de forma.",
+      "porque": "El parámetro entra directo en una consulta. Validar la forma antes corta de raíz cualquier intento de inyección o de sondeo.",
+      "severidad": "media"
+    },
+    {
+      "id": "SUP-03",
+      "grupo": "F · Superficie expuesta",
+      "nombre": "Los secretos no salen en los mensajes de error",
+      "esperado": "Un aviso malformado devuelve un error genérico sin secretos.",
+      "estado": "PASA",
+      "observado": "Respondió 401 con «Firma del aviso inválida.», sin secretos.",
+      "porque": "Un mensaje de error que arrastre la cadena firmada publica el secreto de eventos a cualquiera que provoque el error.",
+      "severidad": "alta"
+    },
+    {
+      "id": "SUP-04",
+      "grupo": "F · Superficie expuesta",
+      "nombre": "El proxy del túnel solo deja pasar la ruta del webhook",
+      "esperado": "El script solo reenvía POST a la ruta del webhook y responde 404 a todo lo demás.",
+      "estado": "PASA",
+      "observado": "Filtra por método y ruta, limita el cuerpo y deja bitácora de lo recibido.",
+      "porque": "Tunelizar la API entera publicaría en internet el login del panel con credenciales de demo. Wompi solo necesita una ruta.",
+      "severidad": "alta"
+    },
+    {
+      "id": "ATAQ-10",
+      "grupo": "H · Límites de uso",
+      "nombre": "Hay límite de peticiones en la creación de intentos",
+      "esperado": "Una ráfaga acaba recibiendo 429 en vez de seguir aceptando indefinidamente.",
+      "estado": "PASA",
+      "observado": "De 40 peticiones seguidas, 9 pasaron y 31 recibieron 429.",
+      "porque": "Crear un intento aparta stock sin pedir cuenta ni pago. Sin freno, un bucle desde una IP deja el catálogo sin unidades disponibles: medido antes del arreglo, 10 reservas en 355 ms.",
+      "severidad": "alta"
+    },
+    {
+      "id": "ATAQ-11",
+      "grupo": "H · Límites de uso",
+      "nombre": "RIESGO ABIERTO: el inventario se puede agotar sin pagar",
+      "esperado": "Esta prueba DOCUMENTA el riesgo residual; no afirma que esté resuelto.",
+      "estado": "PASA",
+      "observado": "Producto más expuesto: p10 con 0 unidades libres. Por encima del límite por minuto, así que haría falta más de un minuto por producto. Cierre pendiente: apartar stock al abrir el checkout, acortar la ventana de reserva y topar reservas pendientes por IP.",
+      "porque": "Un intento de pago aparta stock durante 15 minutos sin cuenta ni cobro. El límite de peticiones frena el barrido del catálogo, pero no puede ponerse por debajo del stock de un producto sin dejar fuera a clientas reales.",
+      "severidad": "alta"
+    },
+    {
+      "id": "E2E-01",
+      "grupo": "G · Pendiente de un aviso real",
+      "nombre": "Un aviso emitido por Wompi pasa nuestra verificación",
+      "esperado": "Un aviso real de sandbox llega al webhook y se acepta.",
+      "estado": "NO_APLICA",
+      "observado": "Todavía no ha llegado ningún aviso real de Wompi. La bitácora tiene 9 entradas (2 son sondas de verificación del túnel, sin forma de aviso). Falta registrar la URL de eventos en el Dashboard y pagar una transacción de prueba.",
+      "porque": "Todo lo anterior prueba que verificamos BIEN el algoritmo que implementamos. Que ese algoritmo sea el de Wompi solo lo demuestra un aviso suyo, y hay un motivo concreto para dudar: el ejemplo resuelto de su documentación NO reproduce su propio checksum (comprobado: la cadena que publican, hasheada con el secreto que publican, da otro hash).",
+      "severidad": "critica"
+    }
+  ]
+}

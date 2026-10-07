@@ -53,6 +53,18 @@ export const env = {
     ? ('WOMPI' as const)
     : ('MOCK' as const),
   wompiPublicKey: process.env.WOMPI_PUBLIC_KEY ?? '',
+  /**
+   * Llave privada. Sirve para CONSULTAR transacciones desde el servidor.
+   *
+   * No es opcional por comodidad. Wompi dejó de soportar la consulta de
+   * transacciones desde el frontend y recomienda hacerla en el backend; además,
+   * `GET /v1/transactions?reference=…` —la única forma de reconciliar un cobro
+   * cuando se perdió el webhook Y la clienta nunca volvió a la tienda— solo
+   * responde con esta llave. Con la pública ese camino no existe.
+   *
+   * Vive en el servidor y solo en el servidor: con ella se pueden crear cobros.
+   */
+  wompiPrivateKey: process.env.WOMPI_PRIVATE_KEY ?? '',
   wompiIntegritySecret: process.env.WOMPI_INTEGRITY_SECRET ?? '',
   wompiEventsSecret: process.env.WOMPI_EVENTS_SECRET ?? '',
   /** Solo si se quiere forzar; por defecto se deduce del prefijo de la llave. */
@@ -69,6 +81,13 @@ export const env = {
 
   /** Base pública del sitio. Con esto se arma la URL de retorno del pago. */
   appUrl: process.env.APP_URL ?? 'http://localhost:5173',
+
+  /**
+   * Creer o no la cabecera X-Forwarded-For para saber de quién es cada
+   * petición. Solo se enciende si DE VERDAD hay un proxy delante: encendido
+   * sin proxy, cualquiera falsea su IP y se salta el límite de peticiones.
+   */
+  trustProxy: process.env.TRUST_PROXY === 'true',
 
   /**
    * Minutos que se apartan las unidades mientras la clienta paga.

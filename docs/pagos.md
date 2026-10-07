@@ -76,17 +76,29 @@ forma más rápida de regalar la tienda.
 
 | Llave | Prefijo | Dónde vive | Para qué | Si se filtra |
 |---|---|---|---|---|
-| Pública | `pub_test_` / `pub_prod_` | Navegador y servidor | Abrir el checkout, consultar transacciones | Poco: es de lectura y va en la URL del checkout de todas formas |
-| Privada | `prv_…` | **Solo servidor** | Crear transacciones por API. **Aquí no se usa** | Grave: permite mover dinero en nombre del comercio. Rotar de inmediato |
+| Pública | `pub_test_` / `pub_prod_` | Navegador y servidor | Abrir el checkout | Poco: es de lectura y va en la URL del checkout de todas formas |
+| Privada | `prv_…` | **Solo servidor** | Consultar transacciones y **buscar por referencia** | Grave: permite mover dinero en nombre del comercio. Rotar de inmediato |
 | Secreto de integridad | — | **Solo servidor** | Firmar el monto para que no lo puedan cambiar | Grave: cualquiera puede firmar un checkout de $1.000 para un pedido de $300.000 |
 | Secreto de eventos | — | **Solo servidor** | Verificar que un webhook lo mandó Wompi | Crítico: permite fabricar avisos de "pago aprobado" y sacar mercancía sin pagarla |
 
-El código solo usa tres: `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET` y
-`WOMPI_EVENTS_SECRET`. La llave privada **no aparece en el repositorio**, porque
-con Checkout Web no hace falta: el checkout se abre por URL firmada y las
-consultas de transacción van autenticadas con la llave pública
-(`Authorization: Bearer <publicKey>` en `getTransaction`, en
-`server/src/payments/wompi.ts`).
+El código usa las cuatro. La llave privada se añadió después de comprobar dos
+cosas contra el API real:
+
+1. `GET /v1/transactions?reference=…` —la única forma de reconciliar un cobro
+   cuando se pierde el webhook **y** la clienta nunca vuelve a la tienda— solo
+   responde autenticado con la privada. Con la pública ese camino no existe.
+2. Wompi retiró el soporte a consultar transacciones desde el frontend y
+   recomienda hacerlo en el backend.
+
+Por eso `wompiGet` autentica con `Authorization: Bearer <privateKey>`. Como la
+llamada sale del servidor, usar la privada no expone nada.
+
+Las cuatro credenciales tienen que ser **del mismo comercio y del mismo
+ambiente**. El adaptador compara los prefijos de la pública y la privada al
+arrancar y se niega a funcionar si no coinciden: con la pública de sandbox y la
+privada de producción, el checkout cobra de mentira mientras el servidor
+consulta la cuenta real, y los pedidos salen aprobados contra transacciones que
+no existen.
 
 ### Nada que empiece por `VITE_` es secreto
 
@@ -200,11 +212,13 @@ Detalles que importan:
 - El `transactionId` lo añade Wompi a la URL de retorno como `id`. El frontend lo
   reenvía como `?transactionId=`. No se confía en él para nada más que para
   preguntar: el estado lo dicta la respuesta de Wompi, no el parámetro.
-- `fetchByReference` del adaptador de Wompi **siempre devuelve `null`**: Wompi no
-  expone una búsqueda pública por referencia. Si no hay `transactionId` y el
-  webhook no llegó, no hay forma automática de preguntar. Queda la tercera vía:
-  `POST /api/admin/payments/:id/sync` desde el panel, que necesita un
-  `providerTransactionId` ya conocido.
+- `fetchByReference` **sí funciona**, autenticado con la llave privada contra
+  `GET /v1/transactions?reference=…`. Es la salida cuando no hay `transactionId`
+  y el webhook no llegó. Una referencia puede tener varias transacciones (cada
+  reintento de la clienta crea otra): manda la aprobada si la hay —si alguna vez
+  se cobró, se cobró— y si no, la más reciente. La referencia del snapshot se
+  fuerza a la que se preguntó, para que el dato con el que se localiza el cobro
+  en nuestra base no venga de lo que conteste un tercero.
 - Si el webhook llega **después** de que la consulta ya aplicó el resultado, no
   pasa nada: la fingerprint es distinta (fuente distinta, momento distinto) pero
   `canTransition(APPROVED, APPROVED)` devuelve `false` y el evento se registra
@@ -445,11 +459,18 @@ Dos detalles que no son adorno:
 - **Comparación en tiempo constante** (`timingSafeEqual`). Con `===`, el tiempo de
   comparación depende de cuántos caracteres coinciden, y eso deja adivinar un
   checksum válido byte a byte. Es un ataque remoto, lento y real.
-- **Ventana de frescura** (`eventIsFresh`, `EVENT_MAX_AGE_SECONDS` = 24 h). Un
+- **Ventana de frescura** (`eventIsFresh`, `EVENT_MAX_AGE_SECONDS` = 48 h). Un
   aviso legítimo de hace tres días, reenviado por alguien que lo capturó,
   llevaría una firma perfectamente válida. El timestamp es lo único que permite
-  descartarlo. La ventana es holgada porque Wompi reintenta durante horas, y
-  tolera 300 segundos de reloj adelantado del lado de Wompi.
+  descartarlo. Tolera 300 segundos de reloj adelantado del lado de Wompi.
+
+  **Son 48 h y no 24 por un motivo medido.** Wompi reintenta un aviso no
+  confirmado hasta tres veces —a los 30 min, a las 3 h y a las 24 h— y el último
+  reintento sale exactamente a las 24 horas del original. Con la ventana en 24 h
+  justas, ese reintento caía fuera por segundos y lo rechazábamos nosotros
+  mismos: precisamente el que llega después de dos fallos. Ensanchar no debilita
+  nada, porque un aviso repetido ya rebota antes por la unicidad de
+  `(paymentId, fingerprint)`. Regresión cubierta por la prueba `AVIS-08`.
 
 Solo se acepta el evento `transaction.updated`. Cualquier otro se rechaza con su
 razón.
@@ -650,3 +671,87 @@ Sin adornos. Quien mantenga esto va a tropezar con estas cosas.
    varios `Payment` por `Order`, que es lo que se quiere para los reintentos,
    pero nada impide abrir dos checkouts simultáneos del mismo pedido y reservar
    el stock dos veces.
+
+---
+
+## Límites de uso y agotamiento de inventario
+
+Crear un intento de pago **aparta stock** durante `RESERVATION_MINUTES` y no
+exige cuenta, pago ni nada. Sin freno eso es un ataque de denegación de
+inventario: medido contra esta misma tienda antes del arreglo, **10 reservas
+aceptadas en 355 ms desde una sola IP**, dejando el producto sin unidades
+disponibles un cuarto de hora. Repetido sobre el catálogo apaga la tienda sin
+que entre un peso.
+
+Hay límite de peticiones por IP (`@fastify/rate-limit`), declarado por ruta:
+
+| Ruta | Tope | Por qué ese número |
+|---|---|---|
+| `POST /api/payments/intent` | 20/min | Deja reintentar a quien se equivoca de tarjeta y a un salón entero tras una misma salida a internet |
+| `GET /api/payments/:reference` | 60/min | La pantalla de resultado consulta en bucle mientras el pago se resuelve |
+| `POST /api/payments/webhook/wompi` | 300/min | **Muy alto a propósito**: un 429 no es 200, así que Wompi lo cuenta como entrega fallida y gasta uno de sus tres reintentos. Un tope apretado convertiría una ráfaga en pagos perdidos |
+
+Además: cuerpo limitado a 256 KB y `trustProxy` **apagado por defecto**
+(`TRUST_PROXY=true` para encenderlo). Esto último es una decisión de seguridad,
+no de despliegue, y falla en las dos direcciones: encendido sin proxy delante
+cualquiera falsea `X-Forwarded-For` y se salta el límite cambiando el valor en
+cada petición; apagado con proxy delante todas las peticiones parecen venir del
+proxy, se cuentan juntas y un visitante activo deja fuera a toda la tienda.
+
+### Lo que esto NO resuelve
+
+El límite **no cierra el agotamiento de inventario**, y decirlo importa más que
+el propio límite. Un producto con diez unidades se sigue vaciando en menos de un
+minuto desde una sola IP, porque poner el tope por debajo del stock de un
+artículo dejaría fuera a clientas de verdad. Lo que sí hace es frenar el barrido
+del catálogo entero —de segundos a varios minutos— y quitar de encima el coste
+de CPU y de base de datos de una ráfaga.
+
+Lo que de verdad lo cierra, y está sin hacer:
+
+1. Apartar stock al **abrir el checkout**, no al crear el intento.
+2. Acortar la ventana de reserva.
+3. Topar las reservas pendientes por IP.
+
+Las tres son cambios de producto, no de configuración. Queda como riesgo abierto
+`R-1` en `docs/pruebas-wompi/informe-pruebas-wompi.pdf`.
+
+---
+
+## Pruebas
+
+```bash
+npm run payments:test      # 43 pruebas contra el API real de Wompi y la nuestra
+npm run payments:report    # arma docs/pruebas-wompi/informe.html desde los resultados
+npm run webhook:tunnel     # expone SOLO el webhook, para recibir avisos reales
+```
+
+El banco de pruebas devuelve código de salida distinto de cero si algo falla, así
+que sirve tal cual en integración continua. Cubre credenciales, firma de
+integridad, verificación de avisos, intentos de abuso, máquina de estados,
+reconciliación, superficie expuesta y límites de uso.
+
+**Lo que las pruebas no demuestran.** Los avisos de webhook se fabrican en el
+banco y se firman con el secreto de eventos real: eso prueba nuestra verificación
+de punta a punta, pero no prueba que el algoritmo sea el de Wompi. Hay motivo
+concreto para dudar —el ejemplo resuelto de su documentación **no reproduce su
+propio checksum**, comprobado— y por eso existe la prueba `E2E-01`, que queda
+«sin aplicar» hasta que llegue un aviso emitido por ellos.
+
+### Exponer el webhook para probar
+
+Wompi necesita una URL pública HTTPS. **No se tuneliza la API entera**: eso
+publicaría en internet el login del panel con credenciales de demo, y «URL
+difícil de adivinar» no es un control de acceso. `npm run webhook:tunnel` levanta
+un proxy que solo deja pasar `POST /api/payments/webhook/wompi`, limita el cuerpo
+a 64 KB y deja bitácora de todo lo que llega; cualquier otra ruta recibe 404 sin
+tocar el servidor real.
+
+```bash
+npm run webhook:tunnel
+cloudflared tunnel --url http://localhost:4199
+```
+
+La URL que imprime cloudflared, con `/api/payments/webhook/wompi` al final, va al
+Dashboard de Wompi en **Configuración → URL de eventos**. Sandbox y producción
+llevan URLs distintas; la del túnel cambia en cada reinicio.

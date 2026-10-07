@@ -2,6 +2,7 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import type { FastifyError } from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import { env } from './env.js';
 import { prisma } from './db.js';
 import { InsufficientStockError } from './inventory.js';
@@ -26,9 +27,55 @@ const app = Fastify({
           options: { translateTime: 'HH:MM:ss', ignore: 'pid,hostname' },
         },
       },
+  /**
+   * Si se cree o no la cabecera X-Forwarded-For.
+   *
+   * Decide de quién es la IP que ve el límite de peticiones, así que es una
+   * decisión de seguridad y no de despliegue, y va en las dos direcciones:
+   *
+   * - Encendido sin un proxy delante, cualquiera manda `X-Forwarded-For: lo
+   *   que sea` y se salta el límite cambiando el valor en cada petición.
+   * - Apagado CON un proxy delante, todas las peticiones parecen venir del
+   *   proxy, el límite las cuenta juntas y basta un visitante activo para
+   *   dejar fuera a toda la tienda.
+   *
+   * Por eso es explícito y por defecto no. Quien ponga la API detrás de un
+   * balanceador tiene que encenderlo a mano, que es el momento en que sabe que
+   * hay un proxy.
+   */
+  trustProxy: env.trustProxy,
+  /**
+   * Tope de cuerpo. Un intento de pago con 50 líneas no llega a 20 KB y un
+   * aviso de Wompi son unos pocos. 256 KB deja margen de sobra y corta el
+   * envío de cuerpos enormes contra rutas públicas, que no exigen cuenta.
+   */
+  bodyLimit: 256 * 1024,
 });
 
 await app.register(cors, { origin: env.corsOrigins, credentials: true });
+
+/**
+ * Límite de peticiones.
+ *
+ * No es precaución genérica: sin él, las rutas públicas de pago permiten
+ * AGOTAR EL INVENTARIO SIN PAGAR NADA. Crear un intento de pago aparta stock
+ * durante `RESERVATION_MINUTES`, no pide cuenta y no costaba nada repetirlo.
+ * Medido sobre esta misma tienda antes del arreglo: 10 reservas aceptadas en
+ * 355 ms desde una sola IP, dejando el producto sin unidades disponibles un
+ * cuarto de hora. Repetido sobre el catálogo apaga la tienda entera.
+ *
+ * El límite se declara global pero cada ruta pública fija el suyo; las del
+ * panel van con sesión y no necesitan este freno.
+ */
+await app.register(rateLimit, {
+  global: false,
+  // La respuesta sale con la forma del contrato ({ error }), no con la del
+  // plugin, para que el frontend no tenga que distinguir dos formatos.
+  errorResponseBuilder: (_request, contexto) => ({
+    statusCode: 429,
+    error: `Demasiadas peticiones. Espera ${Math.ceil(contexto.ttl / 1000)} segundos e inténtalo de nuevo.`,
+  }),
+});
 
 app.get('/health', async () => {
   // Comprueba la base de verdad: un 200 sin base no le sirve a nadie, y es

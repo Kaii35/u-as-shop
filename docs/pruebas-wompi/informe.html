@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Informe de pruebas · Pasarela de pagos Wompi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600;6..96,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2A1215; --clay:#521317; --canvas:#fff; --sand:#F1DFDA;
+    --line:#E8D8D3; --mist:#937B79; --ok:#2F6B4F; --warn:#8F631C; --danger:#B3261E;
+  }
+  @page{ size:A4; margin:17mm 15mm 16mm; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--canvas); color:var(--ink);
+    font:10.5pt/1.5 Inter,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .hoja{ max-width:186mm; margin:0 auto; padding:10mm 0; }
+  h1,h2,h3{ font-family:"Bodoni Moda",Georgia,serif; font-weight:600; letter-spacing:-.015em; margin:0; }
+  h1{ font-size:30pt; line-height:1.1; }
+  h2{ font-size:16pt; margin:0 0 3mm; padding-bottom:2mm; border-bottom:1.5px solid var(--ink); }
+  h3{ font-size:11.5pt; margin:0 0 1.5mm; }
+  p{ margin:0 0 2.5mm; }
+  section{ margin-bottom:9mm; }
+  .salto{ break-before:page; }
+  .evitar{ break-inside:avoid; }
+
+  /* Portada */
+  .portada{ border-bottom:3px solid var(--clay); padding-bottom:6mm; margin-bottom:7mm; }
+  .marca{ font-family:"Bodoni Moda",Georgia,serif; font-size:11pt; letter-spacing:.18em;
+          text-transform:uppercase; color:var(--clay); margin-bottom:3mm; }
+  .sub{ font-size:11pt; color:var(--mist); margin-top:2mm; }
+  .meta{ display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin-top:6mm; }
+  .meta div{ border-left:2px solid var(--line); padding-left:3mm; }
+  .meta dt{ font-size:7.5pt; text-transform:uppercase; letter-spacing:.1em; color:var(--mist); margin-bottom:1mm; }
+  .meta dd{ margin:0; font-size:10pt; font-weight:500; }
+
+  /* Marcador */
+  .marcador{ display:grid; grid-template-columns:repeat(3,1fr); gap:4mm; margin:5mm 0; }
+  .caja{ border:1.5px solid var(--line); border-radius:3px; padding:4mm; text-align:center; }
+  .caja .n{ font-family:"Bodoni Moda",Georgia,serif; font-size:26pt; line-height:1; display:block; }
+  .caja .l{ font-size:8pt; text-transform:uppercase; letter-spacing:.09em; color:var(--mist); margin-top:1.5mm; }
+  .caja.bien{ border-color:var(--ok); } .caja.bien .n{ color:var(--ok); }
+  .caja.mal .n{ color:var(--danger); }
+  .caja.na .n{ color:var(--warn); }
+
+  .destacado{ background:var(--sand); border-left:3px solid var(--clay); padding:4mm 5mm; margin:4mm 0; border-radius:0 3px 3px 0; }
+  .destacado p:last-child{ margin-bottom:0; }
+
+  /* Tablas */
+  table{ width:100%; border-collapse:collapse; font-size:9pt; }
+  thead th{ text-align:left; font-size:7.5pt; text-transform:uppercase; letter-spacing:.09em;
+            color:var(--mist); border-bottom:1.5px solid var(--ink); padding:0 2mm 1.5mm; font-weight:600; }
+  tbody td{ border-bottom:1px solid var(--line); padding:2.5mm 2mm; vertical-align:top; }
+  tbody tr{ break-inside:avoid; }
+  td.id{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:8pt; color:var(--mist); white-space:nowrap; width:17mm; }
+  .nombre{ font-weight:600; margin-bottom:1mm; }
+  .porque,.obs{ font-size:8.5pt; color:#5c4042; margin-top:1mm; }
+  .rot{ font-size:7pt; text-transform:uppercase; letter-spacing:.08em; color:var(--mist); margin-right:1.5mm; }
+  td.res{ white-space:nowrap; font-weight:600; width:20mm; }
+  .estado-PASA td.res{ color:var(--ok); }
+  .estado-FALLA td.res{ color:var(--danger); }
+  .estado-NO_APLICA td.res{ color:var(--warn); }
+  td.sev{ font-size:8pt; text-transform:capitalize; width:17mm; }
+  .sev-critica{ color:var(--danger); font-weight:600; }
+  .sev-alta{ color:var(--warn); font-weight:600; }
+
+  /* Capas y hallazgos */
+  .capa{ border:1px solid var(--line); border-radius:3px; padding:3.5mm 4mm; margin-bottom:3mm; break-inside:avoid; }
+  .capa .cab{ display:flex; justify-content:space-between; align-items:baseline; gap:4mm; margin-bottom:1.5mm; }
+  .capa .donde{ font-size:8pt; color:var(--mist); white-space:nowrap; }
+  .capa .protege{ font-size:9pt; font-weight:500; margin-bottom:1.5mm; }
+  .capa .como{ font-size:8.5pt; color:#5c4042; }
+  .capa .refs{ font-size:7.5pt; font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--mist); margin-top:2mm; }
+
+  .hallazgo{ border:1px solid var(--line); border-left:3px solid var(--clay); border-radius:0 3px 3px 0;
+             padding:4mm 4.5mm; margin-bottom:4mm; break-inside:avoid; }
+  .hallazgo.abierto{ border-left-color:var(--danger); }
+  .hallazgo .cab{ display:flex; align-items:baseline; gap:3mm; margin-bottom:2mm; }
+  .hallazgo .cod{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:8.5pt; color:var(--clay); font-weight:600; }
+  .pill{ font-size:7pt; text-transform:uppercase; letter-spacing:.08em; padding:.8mm 2mm;
+         border-radius:2px; font-weight:600; white-space:nowrap; }
+  .pill.corregido{ background:#E3F0E8; color:var(--ok); }
+  .pill.verificado{ background:var(--sand); color:var(--clay); }
+  .pill.abierto{ background:#FBE4E2; color:var(--danger); }
+  .hallazgo dl{ margin:0; font-size:9pt; }
+  .hallazgo dt{ font-size:7pt; text-transform:uppercase; letter-spacing:.08em; color:var(--mist); margin-top:2mm; }
+  .hallazgo dd{ margin:.5mm 0 0; }
+  .hallazgo .nota{ margin-top:2.5mm; padding-top:2mm; border-top:1px solid var(--line);
+                   font-size:8.5pt; color:var(--clay); font-weight:500; }
+
+  code{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:8.5pt;
+        background:var(--sand); padding:.4mm 1.2mm; border-radius:2px; }
+  .url{ display:block; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:8.5pt;
+        background:var(--ink); color:#fff; padding:3mm; border-radius:3px; word-break:break-all; margin:2mm 0; }
+  ol,ul{ margin:0 0 2.5mm; padding-left:5mm; }
+  li{ margin-bottom:1.2mm; }
+  .pie{ margin-top:8mm; padding-top:3mm; border-top:1px solid var(--line);
+        font-size:8pt; color:var(--mist); }
+</style>
+</head>
+<body>
+<div class="hoja">
+
+  <header class="portada">
+    <div class="marca">Natalia Sánchez · Insumos de belleza profesional</div>
+    <h1>Informe de pruebas<br>de la pasarela de pagos</h1>
+    <p class="sub">Integración con Wompi · Verificación funcional y de seguridad</p>
+    <dl class="meta">
+      <div><dt>Comercio</dt><dd>Natalia Andrea Sánchez Pérez</dd></div>
+      <div><dt>Ambiente</dt><dd>Pruebas (sandbox)</dd></div>
+      <div><dt>Pasarela</dt><dd>WOMPI</dd></div>
+      <div><dt>Fecha</dt><dd>7 de octubre de 2026, 10:37 a. m.</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <h2>Resumen</h2>
+    <div class="marcador">
+      <div class="caja bien"><span class="n">42</span><div class="l">Pasan</div></div>
+      <div class="caja "><span class="n">0</span><div class="l">Fallan</div></div>
+      <div class="caja na"><span class="n">1</span><div class="l">Sin aplicar</div></div>
+    </div>
+
+    <p>Se ejecutaron <strong>43 pruebas</strong> sobre la integración de pagos: credenciales,
+    firma de integridad del checkout, verificación de los avisos de la pasarela, intentos de abuso,
+    máquina de estados, reconciliación, superficie expuesta y límites de uso.</p>
+
+    <div class="destacado">
+      <p><strong>Veredicto.</strong> La integración resiste los ataques que se le probaron: no se puede
+      cambiar el monto de un pedido, no se puede falsificar un aviso de pago, un aviso repetido no
+      duplica nada y dos compras simultáneas no venden la misma unidad. Durante las pruebas
+      aparecieron <strong>tres defectos reales que se corrigieron</strong> y queda
+      <strong>un riesgo abierto</strong> que no es de configuración sino de diseño (R-1).</p>
+      <p>La prueba <strong>E2E-01 sigue sin ejecutarse</strong>, y es la más importante que falta:
+      hasta que un aviso emitido por Wompi pase por nuestra verificación, lo demostrado es que
+      verificamos bien el algoritmo que implementamos, no que ese algoritmo sea el suyo.</p>
+    </div>
+  </section>
+
+  <section class="evitar">
+    <h2>Qué es real en estas pruebas</h2>
+    <p>Un informe de seguridad vale lo que valga su metodología, así que conviene ser explícito
+    sobre dónde termina lo comprobado:</p>
+    <ul>
+      <li><strong>El API de Wompi es real.</strong> Las credenciales se validan contra
+      <code>sandbox.wompi.co</code>; no hay simulación de la pasarela en ninguna prueba.</li>
+      <li><strong>Nuestra API es real.</strong> Las pruebas entran por HTTP igual que lo haría el
+      navegador, contra el servidor corriendo, y comprueban el efecto en la base de datos.</li>
+      <li><strong>Los avisos de webhook se fabrican aquí</strong> y se firman con el secreto de
+      eventos real. Eso prueba nuestra verificación de punta a punta, pero no prueba que el
+      algoritmo coincida con el de Wompi. Para eso hace falta un aviso suyo: es E2E-01.</li>
+      <li><strong>Las pruebas limpian lo que ensucian.</strong> Las reservas que crean se liberan al
+      terminar por la vía normal del servicio, sin escribir el stock a mano.</li>
+    </ul>
+    <p>El banco de pruebas es reproducible con <code>npm run payments:test</code> y devuelve código de
+    salida distinto de cero si algo falla, así que sirve tal cual en una tubería de integración continua.</p>
+  </section>
+
+  <section class="salto">
+    <h2>Arquitectura de seguridad</h2>
+    <p>Nueve capas, cada una contra una forma concreta de perder dinero o mercancía.
+    Ninguna depende de que las demás funcionen.</p>
+    
+    <div class="capa">
+      <div class="cab"><h3>Firma de integridad</h3><span class="donde">Al abrir el checkout</span></div>
+      <div class="protege">Impide: Que nadie cambie el monto del pedido en el navegador antes de pagar.</div>
+      <div class="como">SHA-256 sobre referencia + monto + moneda + expiración + secreto de integridad. Wompi recalcula la firma y rechaza la transacción si el monto no es el firmado. El secreto nunca sale del servidor.</div>
+      <div class="refs">FIRM-01 a FIRM-05</div>
+    </div>
+    <div class="capa">
+      <div class="cab"><h3>Checksum del aviso</h3><span class="donde">Al recibir un webhook</span></div>
+      <div class="protege">Impide: Que cualquiera pueda mandarnos «pagado» y llevarse la mercancía.</div>
+      <div class="como">SHA-256 sobre las propiedades firmadas + timestamp + secreto de eventos, comparado en tiempo constante para que no se pueda adivinar byte a byte midiendo tiempos de respuesta.</div>
+      <div class="refs">AVIS-01 a AVIS-06, ATAQ-01</div>
+    </div>
+    <div class="capa">
+      <div class="cab"><h3>Verificación del monto</h3><span class="donde">Al aplicar un aviso</span></div>
+      <div class="protege">Impide: Que una transacción legítima de $1.000 confirme un pedido de $300.000.</div>
+      <div class="como">Antes de aprobar nada se compara el monto que dice la pasarela con el que nosotros cobramos. Si no coinciden, el pago no se aprueba y la discrepancia queda registrada.</div>
+      <div class="refs">ATAQ-02</div>
+    </div>
+    <div class="capa">
+      <div class="cab"><h3>Ventana de frescura</h3><span class="donde">Al recibir un webhook</span></div>
+      <div class="protege">Impide: Que un aviso legítimo capturado hace días se reenvíe como si fuera nuevo.</div>
+      <div class="como">Se descarta todo aviso de más de 48 h, con 5 minutos de tolerancia hacia el futuro por desfase de relojes. La ventana cubre con margen los tres reintentos de Wompi.</div>
+      <div class="refs">AVIS-07 a AVIS-09</div>
+    </div>
+    <div class="capa">
+      <div class="cab"><h3>Idempotencia</h3><span class="donde">Al aplicar un aviso</span></div>
+      <div class="protege">Impide: Que los reintentos de Wompi descuenten el stock dos veces o cobren por partida doble.</div>
+      <div class="como">Cada aviso lleva una huella y la pareja (pago, huella) es única en la base. Un reenvío se reconoce, se responde 200 para que Wompi deje de insistir, y no se vuelve a aplicar.</div>
+      <div class="refs">ATAQ-03, ATAQ-04</div>
+    </div>
+    <div class="capa">
+      <div class="cab"><h3>Guardia de transiciones</h3><span class="donde">Al cambiar de estado</span></div>
+      <div class="protege">Impide: Que un aviso desordenado cancele un pedido ya cobrado.</div>
+      <div class="como">Los avisos llegan fuera de orden. Un pago aprobado no admite volver a pendiente ni pasar a rechazado; en cambio un pago caducado sí admite aprobación tardía, porque si el dinero entró, entró.</div>
+      <div class="refs">EST-01 a EST-03</div>
+    </div>
+    <div class="capa">
+      <div class="cab"><h3>Reserva atómica de stock</h3><span class="donde">Al crear el intento</span></div>
+      <div class="protege">Impide: Que dos compras simultáneas vendan la misma unidad.</div>
+      <div class="como">La condición de stock va DENTRO del UPDATE, no en una lectura previa. La base decide quién gana; el perdedor recibe 409. El stock nunca se escribe a mano: todo cambio es un movimiento de inventario dentro de una transacción.</div>
+      <div class="refs">ATAQ-06, ATAQ-08</div>
+    </div>
+    <div class="capa">
+      <div class="cab"><h3>Superficie mínima</h3><span class="donde">En todo el perímetro</span></div>
+      <div class="protege">Impide: Que haya más puerta de la que hace falta.</div>
+      <div class="como">La ruta de pago simulado no se registra con Wompi activo. La consulta pública de un pago no devuelve datos personales. Las referencias se validan por forma antes de tocar la base. Al exponer el webhook a internet solo se publica esa ruta, no la API.</div>
+      <div class="refs">ATAQ-05, SUP-01 a SUP-04</div>
+    </div>
+    <div class="capa">
+      <div class="cab"><h3>Límite de peticiones</h3><span class="donde">En las rutas públicas</span></div>
+      <div class="protege">Impide: Que una ráfaga aparte todo el inventario sin pagar nada.</div>
+      <div class="como">20 intentos por minuto y 60 consultas por minuto, por IP. El webhook va con un tope muy alto (300/min) a propósito: un 429 gastaría uno de los tres reintentos de Wompi y eso perdería pagos de verdad.</div>
+      <div class="refs">ATAQ-10, ATAQ-11</div>
+    </div>
+  </section>
+
+  <section class="salto">
+    <h2>Hallazgos</h2>
+    <p>Lo que apareció al probar. Los tres primeros eran defectos reales y están corregidos;
+    los dos últimos son constancia de cosas que conviene no olvidar.</p>
+    
+    <div class="hallazgo">
+      <div class="cab">
+        <span class="cod">H-1</span>
+        <span class="pill corregido">corregido</span>
+        <h3>Las reservas de stock no tenían ningún freno</h3>
+      </div>
+      <dl>
+        <dt>Qué pasaba</dt><dd>Crear un intento de pago aparta unidades durante 15 minutos y no exige cuenta, pago ni nada. No había límite de peticiones.</dd>
+        <dt>Evidencia</dt><dd>Medido contra esta misma tienda: 10 reservas aceptadas en 355 ms desde una sola IP, dejando el producto sin unidades disponibles durante un cuarto de hora. Repetido sobre el catálogo, apaga la tienda sin que entre un peso.</dd>
+        <dt>Qué se hizo</dt><dd>Se añadió límite de peticiones por IP en las rutas públicas de pago (20/min en intentos, 60/min en consultas, 300/min en el webhook), más un tope de 256 KB de cuerpo y una decisión explícita sobre si creer la cabecera X-Forwarded-For.</dd>
+      </dl>
+      <div class="nota">MITIGADO, NO CERRADO. Ver R-1 en riesgos abiertos.</div>
+    </div>
+    <div class="hallazgo">
+      <div class="cab">
+        <span class="cod">H-2</span>
+        <span class="pill corregido">corregido</span>
+        <h3>La ventana de frescura rechazaba el último reintento de Wompi</h3>
+      </div>
+      <dl>
+        <dt>Qué pasaba</dt><dd>Los avisos de más de 24 h se descartaban por viejos. Wompi reintenta un aviso no confirmado a los 30 minutos, a las 3 horas y a las 24 horas.</dd>
+        <dt>Evidencia</dt><dd>El tercer reintento sale exactamente a las 24 h del original, así que caía fuera de la ventana por segundos y lo rechazábamos nosotros mismos. Es justo el que más falta hace: el que llega después de dos fallos.</dd>
+        <dt>Qué se hizo</dt><dd>Ventana ampliada a 48 h. No debilita la defensa: un aviso repetido ya rebota antes por la unicidad de (pago, huella), y la ventana solo sirve para descartar capturas viejas.</dd>
+      </dl>
+      <div class="nota">Prueba de regresión permanente: AVIS-08.</div>
+    </div>
+    <div class="hallazgo">
+      <div class="cab">
+        <span class="cod">H-3</span>
+        <span class="pill corregido">corregido</span>
+        <h3>No se podía reconciliar un cobro por referencia</h3>
+      </div>
+      <dl>
+        <dt>Qué pasaba</dt><dd>El adaptador solo sabía consultar por id de transacción, que llega en el webhook o en la URL de retorno. Si se perdían los dos, el cobro se quedaba pendiente para siempre con el stock bloqueado.</dd>
+        <dt>Evidencia</dt><dd>Es el caso real de quien paga y cierra el navegador, o se queda sin batería. Se comprobó contra el API de Wompi que GET /v1/transactions?reference= sí responde, pero solo autenticado con la llave privada, que no estaba configurada.</dd>
+        <dt>Qué se hizo</dt><dd>Se añadió WOMPI_PRIVATE_KEY y se implementó la búsqueda por referencia. Las consultas al API pasan a usar la llave privada, que además es lo que Wompi recomienda desde que retiró el soporte a consultar transacciones desde el frontend.</dd>
+      </dl>
+      <div class="nota">Si una referencia tiene varios intentos, manda el aprobado; si no, el más reciente. Prueba REC-01.</div>
+    </div>
+    <div class="hallazgo">
+      <div class="cab">
+        <span class="cod">H-4</span>
+        <span class="pill verificado">verificado</span>
+        <h3>El ejemplo resuelto de la documentación de Wompi no reproduce su propio checksum</h3>
+      </div>
+      <dl>
+        <dt>Qué pasaba</dt><dd>La documentación publica una cadena de ejemplo, un secreto de ejemplo y el checksum resultante. Hasheando la cadena que publican con el secreto que publican sale otro hash.</dd>
+        <dt>Evidencia</dt><dd>Comprobado en esta sesión. Esperado 3476DDA5…8BD0; calculado 5A18EC5E…EFBE. La explicación más probable es que anonimizaran el secreto pero dejaran el hash real.</dd>
+        <dt>Qué se hizo</dt><dd>Ninguno posible por nuestra parte. Se implementa la regla en prosa, que sí es coherente entre la documentación en español, la inglesa y las implementaciones de terceros.</dd>
+      </dl>
+      <div class="nota">Por esto existe E2E-01: solo un aviso emitido por Wompi demuestra que nuestro algoritmo es el suyo.</div>
+    </div>
+    <div class="hallazgo">
+      <div class="cab">
+        <span class="cod">H-5</span>
+        <span class="pill corregido">corregido</span>
+        <h3>La primera versión de la prueba E2E daba falsas alarmas</h3>
+      </div>
+      <dl>
+        <dt>Qué pasaba</dt><dd>E2E-01 contaba como «aviso real de Wompi» cualquier petición que pasara por el proxy del túnel.</dd>
+        <dt>Evidencia</dt><dd>Las sondas con las que se verifica que el túnel funciona ({&quot;x&quot;:1}) entraban como avisos reales rechazados, y la prueba concluía que el algoritmo del checksum estaba roto. Lo estaba midiendo contra nuestro propio tráfico de verificación.</dd>
+        <dt>Qué se hizo</dt><dd>Ahora solo cuentan las entradas con forma de aviso de Wompi: event, timestamp, signature.properties y signature.checksum. Las sondas se reportan aparte.</dd>
+      </dl>
+      <div class="nota">Una prueba de seguridad que grita sin motivo acaba ignorándose, que es peor que no tenerla.</div>
+    </div>
+  </section>
+
+  <section class="salto">
+    <h2>Riesgos abiertos</h2>
+    <p>Lo que sigue sin resolver, con lo que haría falta para cerrarlo. R-1 es el que de verdad importa.</p>
+    
+    <div class="hallazgo abierto">
+      <div class="cab">
+        <span class="cod">R-1</span>
+        <span class="pill abierto">Alta</span>
+        <h3>El inventario se puede agotar sin pagar</h3>
+      </div>
+      <dl>
+        <dt>Situación</dt><dd>El límite de peticiones frena el barrido del catálogo entero —de segundos a varios minutos— pero no salva a un producto concreto: poner el tope por debajo del stock de un artículo dejaría fuera a clientas reales. Un producto con diez unidades sigue siendo vaciable en menos de un minuto desde una sola IP, y repartido entre muchas IPs el problema escala.</dd>
+        <dt>Cómo se cierra</dt><dd>Apartar stock al abrir el checkout en vez de al crear el intento; acortar la ventana de reserva; topar las reservas pendientes por IP. Las tres son cambios de producto, no de configuración.</dd>
+      </dl>
+    </div>
+    <div class="hallazgo abierto">
+      <div class="cab">
+        <span class="cod">R-2</span>
+        <span class="pill abierto">Media</span>
+        <h3>La caducidad de reservas es oportunista, no programada</h3>
+      </div>
+      <dl>
+        <dt>Situación</dt><dd>Las reservas vencidas se liberan aprovechando que alguien compra. En una tienda sin tráfico, las unidades de un carrito abandonado se quedan bloqueadas indefinidamente.</dd>
+        <dt>Cómo se cierra</dt><dd>Una tarea programada cada minuto, o un worker. Hoy está así para que la demo funcione sin infraestructura extra.</dd>
+      </dl>
+    </div>
+    <div class="hallazgo abierto">
+      <div class="cab">
+        <span class="cod">R-3</span>
+        <span class="pill abierto">Media</span>
+        <h3>La URL de eventos es un túnel temporal</h3>
+      </div>
+      <dl>
+        <dt>Situación</dt><dd>La URL de pruebas vive mientras el túnel esté arriba y cambia en cada reinicio. Para producción hace falta un dominio propio con TLS, y registrar URLs distintas para sandbox y para producción.</dd>
+        <dt>Cómo se cierra</dt><dd>Desplegar la API tras un dominio estable y registrar esa URL en el Dashboard de Wompi, ambiente por ambiente.</dd>
+      </dl>
+    </div>
+    <div class="hallazgo abierto">
+      <div class="cab">
+        <span class="cod">R-4</span>
+        <span class="pill abierto">Media</span>
+        <h3>Sin devoluciones ni anulaciones desde el panel</h3>
+      </div>
+      <dl>
+        <dt>Situación</dt><dd>Un pago aprobado por error solo se puede deshacer desde el Dashboard de Wompi, y esa anulación no vuelve automáticamente al inventario.</dd>
+        <dt>Cómo se cierra</dt><dd>Implementar la anulación contra el API de Wompi y el movimiento de inventario que la acompaña.</dd>
+      </dl>
+    </div>
+    <div class="hallazgo abierto">
+      <div class="cab">
+        <span class="cod">R-5</span>
+        <span class="pill abierto">Media</span>
+        <h3>Las credenciales se compartieron por chat</h3>
+      </div>
+      <dl>
+        <dt>Situación</dt><dd>Las cuatro credenciales de sandbox llegaron por mensaje. Para pruebas el daño posible es acotado —no hay dinero real— pero quedan en un historial de conversación.</dd>
+        <dt>Cómo se cierra</dt><dd>Rotarlas desde el Dashboard cuando termine la integración. Y para las de PRODUCCIÓN: no pasarlas nunca por chat ni por correo; cargarlas directamente en el servidor o en un gestor de secretos.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="salto">
+    <h2>URL de eventos</h2>
+    <p>Wompi avisa de cada cambio de estado de una transacción contra una URL pública nuestra.
+    Es lo que confirma los pagos: sin ella, un cobro aprobado no llega nunca a convertirse en pedido.</p>
+    <p>La ruta es:</p>
+    <div class="url">POST &lt;dominio&gt;/api/payments/webhook/wompi</div>
+    <p>Para probar en local se expone con un túnel, pero <strong>no se tuneliza la API entera</strong>:
+    eso publicaría en internet el login del panel con credenciales de demo. Hay un proxy
+    (<code>npm run webhook:tunnel</code>) que solo deja pasar esa ruta y ese método, limita el cuerpo
+    a 64 KB y deja bitácora de todo lo que llega. Comprobado desde fuera: el webhook responde y
+    el resto de la API devuelve 404.</p>
+    <ol>
+      <li>Arrancar el proxy y el túnel.</li>
+      <li>Pegar la URL resultante en el Dashboard de Wompi, en <strong>Configuración → URL de eventos</strong>,
+      del ambiente que corresponda.</li>
+      <li>Pagar una transacción de prueba y volver a correr <code>npm run payments:test</code>:
+      E2E-01 deja de estar «sin aplicar».</li>
+    </ol>
+    <p>Sandbox y producción llevan URLs distintas. Para producción hace falta un dominio propio
+    con TLS: la URL del túnel cambia en cada reinicio.</p>
+  </section>
+
+  <section class="salto">
+    <h2>Resultados detallados</h2>
+    
+    <div style="margin-bottom:6mm">
+      <h3 style="margin:5mm 0 2mm; color:var(--clay)">A · Credenciales y entorno</h3>
+      <table>
+        <thead><tr><th>Id</th><th>Prueba</th><th>Grav.</th><th>Result.</th></tr></thead>
+        <tbody>
+  <tr class="estado-PASA">
+    <td class="id">CRED-01</td>
+    <td>
+      <div class="nombre">La llave pública es válida en el API de Wompi</div>
+      <div class="porque"><span class="rot">Por qué</span> Una llave mal copiada no falla al arrancar: falla en el primer cobro real, delante de una clienta.</div>
+      <div class="obs"><span class="rot">Observado</span> Comercio «Natalia Andrea Sanchez Perez», activo.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">CRED-02</td>
+    <td>
+      <div class="nombre">La llave privada autentica contra el API</div>
+      <div class="porque"><span class="rot">Por qué</span> Sin ella no se puede reconciliar un cobro por referencia, que es la única salida cuando se pierde el aviso y la clienta no vuelve.</div>
+      <div class="obs"><span class="rot">Observado</span> Autenticada: 200 y lista vacía para una referencia inexistente.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">CRED-03</td>
+    <td>
+      <div class="nombre">Las cuatro credenciales son del mismo ambiente</div>
+      <div class="porque"><span class="rot">Por qué</span> Mezclar sandbox y producción hace que el checkout cobre de mentira mientras el servidor consulta la cuenta real: los pedidos salen aprobados sin que entre dinero.</div>
+      <div class="obs"><span class="rot">Observado</span> Las cuatro son de PRUEBAS (sandbox). Pasarela configurada sin problemas.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">CRED-04</td>
+    <td>
+      <div class="nombre">Ningún secreto llega al navegador</div>
+      <div class="porque"><span class="rot">Por qué</span> Un secreto en el bundle es público: cualquiera lo lee desde las herramientas del navegador, y con el de integridad se pueden firmar cobros por el monto que se quiera.</div>
+      <div class="obs"><span class="rot">Observado</span> 86 archivos de dist/ y src/ revisados, ningún secreto dentro.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">CRED-05</td>
+    <td>
+      <div class="nombre">Los secretos no están versionados</div>
+      <div class="porque"><span class="rot">Por qué</span> Un secreto en el historial de git sigue ahí aunque se borre del archivo, y viaja a cualquiera que clone el repositorio.</div>
+      <div class="obs"><span class="rot">Observado</span> server/.env ignorado y fuera del índice; ningún secreto en los archivos versionados.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">CRED-06</td>
+    <td>
+      <div class="nombre">El servidor se niega a arrancar con llaves de prueba en producción</div>
+      <div class="porque"><span class="rot">Por qué</span> Es el error silencioso más caro: la tienda vende con normalidad y no entra un peso. Nadie se entera hasta cuadrar caja.</div>
+      <div class="obs"><span class="rot">Observado</span> assertPaymentsReady() aborta el arranque si NODE_ENV=production con llaves pub_test_.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr></tbody>
+      </table>
+    </div>
+    <div style="margin-bottom:6mm">
+      <h3 style="margin:5mm 0 2mm; color:var(--clay)">B · Firma de integridad del checkout</h3>
+      <table>
+        <thead><tr><th>Id</th><th>Prueba</th><th>Grav.</th><th>Result.</th></tr></thead>
+        <tbody>
+  <tr class="estado-PASA">
+    <td class="id">FIRM-01</td>
+    <td>
+      <div class="nombre">La firma que viaja al checkout es reproducible</div>
+      <div class="porque"><span class="rot">Por qué</span> Es lo único que impide que alguien edite el monto en el navegador y pague $1.000 un pedido de $300.000.</div>
+      <div class="obs"><span class="rot">Observado</span> Referencia AU-11665-cc7b, 8070000 centavos. Firma recalculada idéntica.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">FIRM-02</td>
+    <td>
+      <div class="nombre">Cambiar el monto invalida la firma</div>
+      <div class="porque"><span class="rot">Por qué</span> Es el ataque concreto: rebajar amount-in-cents en la URL antes de pagar.</div>
+      <div class="obs"><span class="rot">Observado</span> $300.000 → 7b4adc14c0035c7c…  ·  $1.000 → 0cc9243afbd7c286…  (Wompi rechaza la segunda)</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">FIRM-03</td>
+    <td>
+      <div class="nombre">Cambiar la referencia invalida la firma</div>
+      <div class="porque"><span class="rot">Por qué</span> Reapuntar un pago barato a la referencia de un pedido caro es la otra mitad del mismo ataque.</div>
+      <div class="obs"><span class="rot">Observado</span> Referencias distintas producen firmas distintas.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">FIRM-04</td>
+    <td>
+      <div class="nombre">La expiración entra en la cadena solo si se envía</div>
+      <div class="porque"><span class="rot">Por qué</span> Firmarla sin mandarla (o al revés) da una firma inválida y Wompi devuelve un error que no dice por qué. Es la trampa clásica de esta integración.</div>
+      <div class="obs"><span class="rot">Observado</span> Las dos variantes difieren; el checkout manda expiration-time y firma con ella.</div>
+    </td>
+    <td class="sev sev-media">media</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">FIRM-05</td>
+    <td>
+      <div class="nombre">Sin el secreto no se puede falsificar una firma</div>
+      <div class="porque"><span class="rot">Por qué</span> Si la firma se pudiera reproducir sin el secreto, no protegería nada.</div>
+      <div class="obs"><span class="rot">Observado</span> Secreto distinto, firma distinta.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr></tbody>
+      </table>
+    </div>
+    <div style="margin-bottom:6mm">
+      <h3 style="margin:5mm 0 2mm; color:var(--clay)">C · Verificación de avisos de la pasarela</h3>
+      <table>
+        <thead><tr><th>Id</th><th>Prueba</th><th>Grav.</th><th>Result.</th></tr></thead>
+        <tbody>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-01</td>
+    <td>
+      <div class="nombre">Un aviso bien firmado se acepta</div>
+      <div class="porque"><span class="rot">Por qué</span> Es la base: si no se aceptara un aviso legítimo, ningún pago se confirmaría nunca.</div>
+      <div class="obs"><span class="rot">Observado</span> Aceptado.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-02</td>
+    <td>
+      <div class="nombre">Un checksum alterado en un carácter se rechaza</div>
+      <div class="porque"><span class="rot">Por qué</span> Si una firma casi correcta pasara, la firma no serviría de nada.</div>
+      <div class="obs"><span class="rot">Observado</span> Rechazado: La firma del aviso no coincide.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-03</td>
+    <td>
+      <div class="nombre">Un aviso firmado con otro secreto se rechaza</div>
+      <div class="porque"><span class="rot">Por qué</span> Es lo que mandaría quien conozca el formato pero no el secreto, que es todo el mundo: el formato está documentado.</div>
+      <div class="obs"><span class="rot">Observado</span> Rechazado: La firma del aviso no coincide.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-04</td>
+    <td>
+      <div class="nombre">Un aviso sin firma se rechaza</div>
+      <div class="porque"><span class="rot">Por qué</span> Lo más simple que puede intentar alguien: mandar el JSON sin la sección de firma.</div>
+      <div class="obs"><span class="rot">Observado</span> Rechazado en los dos casos: El aviso no trae signature.properties.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-05</td>
+    <td>
+      <div class="nombre">Una propiedad firmada que no viene se rechaza</div>
+      <div class="porque"><span class="rot">Por qué</span> Si una propiedad ausente se tratara como cadena vacía, se podría recortar la parte firmada hasta dejarla trivial.</div>
+      <div class="obs"><span class="rot">Observado</span> Rechazado: La propiedad firmada &quot;transaction.campo_que_no_existe&quot; no viene en el aviso.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-06</td>
+    <td>
+      <div class="nombre">La comparación de firmas es en tiempo constante</div>
+      <div class="porque"><span class="rot">Por qué</span> Con === el tiempo de respuesta depende de cuántos caracteres aciertan, y eso deja adivinar un checksum válido byte a byte desde fuera.</div>
+      <div class="obs"><span class="rot">Observado</span> safeEqualHex() compara con crypto.timingSafeEqual.</div>
+    </td>
+    <td class="sev sev-media">media</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-07</td>
+    <td>
+      <div class="nombre">Un aviso viejo se descarta</div>
+      <div class="porque"><span class="rot">Por qué</span> Un aviso legítimo capturado hace días lleva una firma perfectamente válida para siempre. El timestamp es lo único que permite descartarlo.</div>
+      <div class="obs"><span class="rot">Observado</span> Descartado por antigüedad (ventana de 48 h).</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-08</td>
+    <td>
+      <div class="nombre">El último reintento de Wompi (24 h) sigue siendo válido</div>
+      <div class="porque"><span class="rot">Por qué</span> Wompi reintenta a los 30 min, 3 h y 24 h. Con la ventana en 24 h justas rechazábamos nosotros mismos el último reintento, que es precisamente el que llega tras dos fallos.</div>
+      <div class="obs"><span class="rot">Observado</span> Aceptado: la ventana es de 48 h, con margen sobre el último reintento.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-09</td>
+    <td>
+      <div class="nombre">Un aviso con fecha futura se descarta</div>
+      <div class="porque"><span class="rot">Por qué</span> Un timestamp adelantado dejaría un aviso reutilizable durante días.</div>
+      <div class="obs"><span class="rot">Observado</span> Una hora de adelanto se rechaza; un minuto se tolera.</div>
+    </td>
+    <td class="sev sev-media">media</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">AVIS-10</td>
+    <td>
+      <div class="nombre">Un tipo de evento no soportado se rechaza</div>
+      <div class="porque"><span class="rot">Por qué</span> Solo transaction.updated mueve dinero. Procesar a ciegas cualquier evento futuro de Wompi es aceptar un contrato que todavía no se ha leído.</div>
+      <div class="obs"><span class="rot">Observado</span> Rechazado: Evento no soportado: nequi_token.updated.</div>
+    </td>
+    <td class="sev sev-media">media</td>
+    <td class="res">Pasa</td>
+  </tr></tbody>
+      </table>
+    </div>
+    <div style="margin-bottom:6mm">
+      <h3 style="margin:5mm 0 2mm; color:var(--clay)">D · Intentos de abuso</h3>
+      <table>
+        <thead><tr><th>Id</th><th>Prueba</th><th>Grav.</th><th>Result.</th></tr></thead>
+        <tbody>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-01</td>
+    <td>
+      <div class="nombre">Un aviso sin firma válida no mueve el pago</div>
+      <div class="porque"><span class="rot">Por qué</span> Es el ataque que vacía el inventario: mandar «APROBADO» al webhook y recoger la mercancía sin pagar.</div>
+      <div class="obs"><span class="rot">Observado</span> 401 y el pago AU-11666-b8c2 sigue PENDING.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-02</td>
+    <td>
+      <div class="nombre">Un aviso bien firmado pero con otro monto no aprueba el pedido</div>
+      <div class="porque"><span class="rot">Por qué</span> Protege del caso en que alguien logre pagar 1.000 pesos una transacción asociada a un pedido de 300.000. La firma sería válida; el monto no.</div>
+      <div class="obs"><span class="rot">Observado</span> La API respondió 200 y el pago quedó en PENDING, no APPROVED (se cobraban 4780000 centavos y el aviso traía 100).</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-03</td>
+    <td>
+      <div class="nombre">Reenviar el mismo aviso no duplica nada</div>
+      <div class="porque"><span class="rot">Por qué</span> Wompi reintenta hasta tres veces. Sin idempotencia, un pedido podría descontar stock dos veces o aparecer pagado por partida doble.</div>
+      <div class="obs"><span class="rot">Observado</span> Reenvío aceptado con 200. Avisos guardados: 1; aplicados: 1; movimientos de inventario del pedido: 1.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-04</td>
+    <td>
+      <div class="nombre">Un aviso de una referencia desconocida no revienta ni reintenta</div>
+      <div class="porque"><span class="rot">Por qué</span> Pasa de verdad cuando dos entornos comparten credenciales. Un 500 haría que Wompi reintentara 24 h contra algo que nunca va a existir.</div>
+      <div class="obs"><span class="rot">Observado</span> 200 con applied:false: Wompi deja de insistir y queda registrado.</div>
+    </td>
+    <td class="sev sev-media">media</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-05</td>
+    <td>
+      <div class="nombre">La ruta del pago simulado no existe con Wompi activo</div>
+      <div class="porque"><span class="rot">Por qué</span> Es una ruta pública capaz de marcar pagos como aprobados a voluntad. Con la pasarela real encendida sería la forma más directa de vaciar el inventario sin pagar.</div>
+      <div class="obs"><span class="rot">Observado</span> 404: la ruta no se registra cuando el proveedor es WOMPI.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-06</td>
+    <td>
+      <div class="nombre">No se puede pedir más de lo que hay</div>
+      <div class="porque"><span class="rot">Por qué</span> Vender lo que no existe obliga a devolver el dinero y deja mal a la tienda.</div>
+      <div class="obs"><span class="rot">Observado</span> Rechazado con 409: «Stock insuficiente para AN-1111: pediste 30 y hay 5.»</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-07</td>
+    <td>
+      <div class="nombre">Cantidades absurdas se rechazan en la puerta</div>
+      <div class="porque"><span class="rot">Por qué</span> Una cantidad negativa o cero puede dar totales negativos; una enorme, desbordes.</div>
+      <div class="obs"><span class="rot">Observado</span> 0, -5 y 1.5 devolvieron 400, 400, 400.</div>
+    </td>
+    <td class="sev sev-media">media</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-08</td>
+    <td>
+      <div class="nombre">Dos compras simultáneas no venden la misma unidad</div>
+      <div class="porque"><span class="rot">Por qué</span> Sin una guardia atómica, dos peticiones que leen el stock a la vez pasan las dos la comprobación y se vende dos veces lo mismo.</div>
+      <div class="obs"><span class="rot">Observado</span> Dos peticiones simultáneas por 3 unidades de p10: 1 aceptada, 1 rechazada. Reservado 3 de 3.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-09</td>
+    <td>
+      <div class="nombre">El webhook solo acepta POST</div>
+      <div class="porque"><span class="rot">Por qué</span> Un GET al webhook es la sonda más común de un escáner automático.</div>
+      <div class="obs"><span class="rot">Observado</span> GET al webhook devuelve 404.</div>
+    </td>
+    <td class="sev sev-info">info</td>
+    <td class="res">Pasa</td>
+  </tr></tbody>
+      </table>
+    </div>
+    <div style="margin-bottom:6mm">
+      <h3 style="margin:5mm 0 2mm; color:var(--clay)">E · Estados y reconciliación</h3>
+      <table>
+        <thead><tr><th>Id</th><th>Prueba</th><th>Grav.</th><th>Result.</th></tr></thead>
+        <tbody>
+  <tr class="estado-PASA">
+    <td class="id">EST-01</td>
+    <td>
+      <div class="nombre">Los estados de Wompi se traducen sin perder ninguno</div>
+      <div class="porque"><span class="rot">Por qué</span> Wompi ha devuelto estados que no documenta (PROCESSING, FAILED, REJECTED). Tratar lo desconocido como error soltaría el stock de algo que quizá sí se pagó.</div>
+      <div class="obs"><span class="rot">Observado</span> 8 estados traducidos; lo desconocido queda PENDING.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">EST-02</td>
+    <td>
+      <div class="nombre">Un pago aprobado no se puede volver a mover</div>
+      <div class="porque"><span class="rot">Por qué</span> Los avisos llegan desordenados. Un DECLINED viejo que aterrice después del APPROVED bueno cancelaría un pedido ya cobrado.</div>
+      <div class="obs"><span class="rot">Observado</span> PENDING→APPROVED sí; APPROVED→DECLINED y APPROVED→PENDING no.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">EST-03</td>
+    <td>
+      <div class="nombre">Un pago caducado todavía puede aprobarse</div>
+      <div class="porque"><span class="rot">Por qué</span> Si el dinero entró tarde, entró. Dar por perdido un cobro que la pasarela sí capturó es quedarse con el dinero y sin el pedido.</div>
+      <div class="obs"><span class="rot">Observado</span> EXPIRED→APPROVED permitido: una aprobación tardía se registra en vez de perderse.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">REC-01</td>
+    <td>
+      <div class="nombre">Se puede reconciliar por referencia contra el API real</div>
+      <div class="porque"><span class="rot">Por qué</span> Es la única salida cuando se pierde el aviso Y la clienta nunca vuelve: sin esto el cobro queda «pendiente» para siempre con el stock bloqueado.</div>
+      <div class="obs"><span class="rot">Observado</span> GET /v1/transactions?reference=… autenticado con la llave privada; referencia inexistente → null.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">REC-02</td>
+    <td>
+      <div class="nombre">Consultar una transacción que no existe no rompe nada</div>
+      <div class="porque"><span class="rot">Por qué</span> Un 404 de la pasarela tratado como excepción dejaría a la clienta sin respuesta en la pantalla de resultado.</div>
+      <div class="obs"><span class="rot">Observado</span> Id inexistente → null, sin excepción.</div>
+    </td>
+    <td class="sev sev-media">media</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">REC-03</td>
+    <td>
+      <div class="nombre">El dinero se maneja en enteros</div>
+      <div class="porque"><span class="rot">Por qué</span> El peso colombiano no tiene centavos y los flotantes arrastran error: 0.1+0.2 no es 0.3. Un céntimo de desfase hace que Wompi rechace la firma.</div>
+      <div class="obs"><span class="rot">Observado</span> Cinco montos convertidos a centavos sin pérdida.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr></tbody>
+      </table>
+    </div>
+    <div style="margin-bottom:6mm">
+      <h3 style="margin:5mm 0 2mm; color:var(--clay)">F · Superficie expuesta</h3>
+      <table>
+        <thead><tr><th>Id</th><th>Prueba</th><th>Grav.</th><th>Result.</th></tr></thead>
+        <tbody>
+  <tr class="estado-PASA">
+    <td class="id">SUP-01</td>
+    <td>
+      <div class="nombre">La consulta pública de un pago no filtra datos de la clienta</div>
+      <div class="porque"><span class="rot">Por qué</span> La referencia viaja en URLs y acaba en historiales y registros. Quien la tenga no debe poder sacar de ahí el correo, el teléfono o la dirección.</div>
+      <div class="obs"><span class="rot">Observado</span> Devuelve estado y totales. Sin correo, teléfono, documento ni dirección. Campos: reference, status, message, orderNumber, orderStatus, amount, methodType, expiresAt, updatedAt</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">SUP-02</td>
+    <td>
+      <div class="nombre">Una referencia con forma inválida se rechaza sin tocar la base</div>
+      <div class="porque"><span class="rot">Por qué</span> El parámetro entra directo en una consulta. Validar la forma antes corta de raíz cualquier intento de inyección o de sondeo.</div>
+      <div class="obs"><span class="rot">Observado</span> 4 sondas (SQL, recorrido de rutas, script) rechazadas por el validador de forma.</div>
+    </td>
+    <td class="sev sev-media">media</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">SUP-03</td>
+    <td>
+      <div class="nombre">Los secretos no salen en los mensajes de error</div>
+      <div class="porque"><span class="rot">Por qué</span> Un mensaje de error que arrastre la cadena firmada publica el secreto de eventos a cualquiera que provoque el error.</div>
+      <div class="obs"><span class="rot">Observado</span> Respondió 401 con «Firma del aviso inválida.», sin secretos.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">SUP-04</td>
+    <td>
+      <div class="nombre">El proxy del túnel solo deja pasar la ruta del webhook</div>
+      <div class="porque"><span class="rot">Por qué</span> Tunelizar la API entera publicaría en internet el login del panel con credenciales de demo. Wompi solo necesita una ruta.</div>
+      <div class="obs"><span class="rot">Observado</span> Filtra por método y ruta, limita el cuerpo y deja bitácora de lo recibido.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr></tbody>
+      </table>
+    </div>
+    <div style="margin-bottom:6mm">
+      <h3 style="margin:5mm 0 2mm; color:var(--clay)">H · Límites de uso</h3>
+      <table>
+        <thead><tr><th>Id</th><th>Prueba</th><th>Grav.</th><th>Result.</th></tr></thead>
+        <tbody>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-10</td>
+    <td>
+      <div class="nombre">Hay límite de peticiones en la creación de intentos</div>
+      <div class="porque"><span class="rot">Por qué</span> Crear un intento aparta stock sin pedir cuenta ni pago. Sin freno, un bucle desde una IP deja el catálogo sin unidades disponibles: medido antes del arreglo, 10 reservas en 355 ms.</div>
+      <div class="obs"><span class="rot">Observado</span> De 40 peticiones seguidas, 9 pasaron y 31 recibieron 429.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr>
+  <tr class="estado-PASA">
+    <td class="id">ATAQ-11</td>
+    <td>
+      <div class="nombre">RIESGO ABIERTO: el inventario se puede agotar sin pagar</div>
+      <div class="porque"><span class="rot">Por qué</span> Un intento de pago aparta stock durante 15 minutos sin cuenta ni cobro. El límite de peticiones frena el barrido del catálogo, pero no puede ponerse por debajo del stock de un producto sin dejar fuera a clientas reales.</div>
+      <div class="obs"><span class="rot">Observado</span> Producto más expuesto: p10 con 0 unidades libres. Por encima del límite por minuto, así que haría falta más de un minuto por producto. Cierre pendiente: apartar stock al abrir el checkout, acortar la ventana de reserva y topar reservas pendientes por IP.</div>
+    </td>
+    <td class="sev sev-alta">alta</td>
+    <td class="res">Pasa</td>
+  </tr></tbody>
+      </table>
+    </div>
+    <div style="margin-bottom:6mm">
+      <h3 style="margin:5mm 0 2mm; color:var(--clay)">G · Pendiente de un aviso real</h3>
+      <table>
+        <thead><tr><th>Id</th><th>Prueba</th><th>Grav.</th><th>Result.</th></tr></thead>
+        <tbody>
+  <tr class="estado-NO_APLICA">
+    <td class="id">E2E-01</td>
+    <td>
+      <div class="nombre">Un aviso emitido por Wompi pasa nuestra verificación</div>
+      <div class="porque"><span class="rot">Por qué</span> Todo lo anterior prueba que verificamos BIEN el algoritmo que implementamos. Que ese algoritmo sea el de Wompi solo lo demuestra un aviso suyo, y hay un motivo concreto para dudar: el ejemplo resuelto de su documentación NO reproduce su propio checksum (comprobado: la cadena que publican, hasheada con el secreto que publican, da otro hash).</div>
+      <div class="obs"><span class="rot">Observado</span> Todavía no ha llegado ningún aviso real de Wompi. La bitácora tiene 9 entradas (2 son sondas de verificación del túnel, sin forma de aviso). Falta registrar la URL de eventos en el Dashboard y pagar una transacción de prueba.</div>
+    </td>
+    <td class="sev sev-critica">critica</td>
+    <td class="res">Sin aplicar</td>
+  </tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="pie">
+    Generado automáticamente desde <code>docs/pruebas-wompi/resultados.json</code> ·
+    Banco de pruebas: <code>server/scripts/pruebas-wompi.ts</code> ·
+    Limpieza tras la ejecución: 15 cobros de prueba caducados; {&quot;checked&quot;:14,&quot;expired&quot;:14,&quot;rescued&quot;:0}
+  </div>
+
+</div>
+</body>
+</html>

@@ -13,6 +13,7 @@ function select(): PaymentGateway {
   if (env.paymentProvider === 'WOMPI') {
     return createWompiGateway({
       publicKey: env.wompiPublicKey,
+      privateKey: env.wompiPrivateKey,
       integritySecret: env.wompiIntegritySecret,
       eventsSecret: env.wompiEventsSecret,
       ...(env.wompiApiUrl ? { apiUrl: env.wompiApiUrl } : {}),
@@ -30,6 +31,36 @@ export const gateway: PaymentGateway = select();
  * bloquear a quien esté trabajando en otra cosa.
  */
 export function assertPaymentsReady(log: (msg: string) => void): void {
+  /*
+     Entorno de las llaves contra entorno del servidor.
+
+     Los dos cruces son errores caros y silenciosos, y los dos pasan por lo
+     mismo: copiar un .env de un sitio a otro.
+
+     - Llaves de PRUEBA en producción: la tienda vende, emite pedidos y nunca
+       entra un peso. Nadie se entera hasta que cuadran caja. Se niega a
+       arrancar, que es infinitamente más barato que descubrirlo en el banco.
+     - Llaves de PRODUCCIÓN fuera de producción: cada prueba cobra de verdad a
+       una tarjeta real. Aquí no se puede abortar —puede ser deliberado, en un
+       entorno de preproducción que sí cobra— pero sí se grita.
+  */
+  if (gateway.id === 'WOMPI') {
+    const esDePruebas = env.wompiPublicKey.startsWith('pub_test_');
+    if (env.isProduction && esDePruebas) {
+      throw new Error(
+        'Wompi está con llaves de PRUEBA (pub_test_…) y el servidor arrancó en producción. ' +
+          'La tienda cobraría de mentira: ningún pago llegaría al banco. Pon las credenciales ' +
+          'de producción o baja NODE_ENV.',
+      );
+    }
+    if (!env.isProduction && !esDePruebas) {
+      log(
+        'AVISO: Wompi está con llaves de PRODUCCIÓN fuera de un entorno de producción. ' +
+          'Cada prueba va a cobrar de verdad a una tarjeta real.',
+      );
+    }
+  }
+
   if (gateway.configured) {
     if (gateway.id === 'MOCK') {
       log('Pagos en modo SIMULADO: no se cobra de verdad. PAYMENT_PROVIDER=wompi para activarlo.');

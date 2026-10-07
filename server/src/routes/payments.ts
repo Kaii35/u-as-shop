@@ -146,7 +146,31 @@ export async function paymentRoutes(app: FastifyInstance): Promise<void> {
   // -------------------------------------------------------------------------
   // POST /api/payments/intent
   // -------------------------------------------------------------------------
-  app.post('/api/payments/intent', async (request, reply) => {
+  /**
+   * El límite más estricto de la API, y el que más falta hacía.
+   *
+   * Crear un intento APARTA STOCK durante `RESERVATION_MINUTES` sin pedir
+   * cuenta ni pago. Sin freno, un bucle desde una sola IP deja el catálogo sin
+   * unidades disponibles: medido antes de esto, 10 reservas en 355 ms.
+   *
+   * Veinte por minuto deja respirar a una clienta que se equivoca de tarjeta y
+   * reintenta, y a un salón entero compartiendo una misma salida a internet.
+   *
+   * ESTO NO RESUELVE EL AGOTAMIENTO DE INVENTARIO, y decirlo importa más que
+   * el propio límite. Un producto con diez unidades se sigue vaciando en menos
+   * de un minuto desde una sola IP, porque poner el tope por debajo del stock
+   * sería dejar fuera a clientas de verdad. Lo que sí hace es frenar el barrido
+   * del catálogo entero —de seis segundos a varios minutos— y quitar de encima
+   * el coste de CPU y de base de datos de una ráfaga.
+   *
+   * Las defensas que de verdad lo cierran son otras y están sin hacer: apartar
+   * stock al abrir el checkout en vez de al crear el intento, acortar la
+   * ventana de reserva, y topar las reservas pendientes por IP. Quedan
+   * anotadas como riesgo abierto en el informe y en docs/pagos.md.
+   */
+  app.post('/api/payments/intent', {
+    config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const body = parse(intentBody, request.body);
 
     /**
@@ -180,7 +204,16 @@ export async function paymentRoutes(app: FastifyInstance): Promise<void> {
   // -------------------------------------------------------------------------
   // GET /api/payments/:reference
   // -------------------------------------------------------------------------
-  app.get('/api/payments/:reference', async (request, reply) => {
+  /**
+   * Holgado a propósito: la pantalla de resultado consulta en bucle mientras
+   * el pago se resuelve, y cortarle ahí dejaría a la clienta mirando un
+   * «pendiente» que ya no es verdad. Sesenta por minuto sobra para eso y aun
+   * así pone techo al sondeo masivo de referencias, que además dispara una
+   * llamada nuestra a Wompi por cada consulta con transactionId.
+   */
+  app.get('/api/payments/:reference', {
+    config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const { reference } = parse(referenceParam, request.params);
     const query = parse(referenceQuery, request.query);
 
@@ -230,7 +263,20 @@ export async function paymentRoutes(app: FastifyInstance): Promise<void> {
    * 500 —queremos el reintento— y un aviso repetido como 200, para que deje
    * de insistir con algo que ya aplicamos.
    */
-  app.post('/api/payments/webhook/wompi', async (request, reply) => {
+  /**
+   * Límite muy alto, y bajarlo sería un error.
+   *
+   * Aquí el riesgo está invertido respecto al resto: un 429 no es 200, así que
+   * Wompi lo trata como entrega fallida y gasta uno de sus TRES reintentos. Un
+   * límite apretado convertiría una ráfaga en pagos perdidos de verdad.
+   *
+   * Trescientos por minuto no estorba a ningún volumen que esta tienda vaya a
+   * ver y sigue poniendo techo a quien quiera hacernos calcular SHA-256 y
+   * tocar la base sin parar desde una sola IP.
+   */
+  app.post('/api/payments/webhook/wompi', {
+    config: { rateLimit: { max: 300, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const verified = gateway.verifyEvent(request.body);
 
     if (env.debugPaymentEvents && gateway.id === 'WOMPI') {

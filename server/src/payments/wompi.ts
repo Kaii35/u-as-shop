@@ -23,8 +23,8 @@ import type {
  *
  * | Llave              | Dónde vive | Para qué |
  * |--------------------|------------|----------|
- * | pública `pub_…`    | navegador  | abrir el checkout, consultar transacciones |
- * | privada `prv_…`    | SERVIDOR   | crear transacciones por API (aquí no se usa) |
+ * | pública `pub_…`    | navegador  | abrir el checkout |
+ * | privada `prv_…`    | SERVIDOR   | consultar transacciones y buscar por referencia |
  * | integridad         | SERVIDOR   | firmar el monto para que no lo puedan cambiar |
  * | eventos            | SERVIDOR   | verificar que un webhook lo mandó Wompi |
  *
@@ -37,6 +37,8 @@ const CHECKOUT_BASE = 'https://checkout.wompi.co/p/';
 
 export interface WompiConfig {
   readonly publicKey: string;
+  /** Solo servidor. Sin ella no hay búsqueda por referencia. */
+  readonly privateKey: string;
   readonly integritySecret: string;
   readonly eventsSecret: string;
   /** Se deduce del prefijo de la llave pública si no se fuerza. */
@@ -174,9 +176,18 @@ export function verifyEventChecksum(
  *
  * Un aviso legítimo de hace tres días, reenviado por alguien que lo capturó,
  * llevaría una firma perfectamente válida. El timestamp es lo único que
- * permite descartarlo. Holgado porque Wompi reintenta durante horas.
+ * permite descartarlo.
+ *
+ * 48 h y no 24 h, y el motivo es concreto: Wompi reintenta un aviso no
+ * confirmado hasta tres veces, y el ÚLTIMO reintento sale a las 24 horas del
+ * original. Con la ventana en 24 h justas, ese último reintento —el que más
+ * falta hace, porque es el que queda tras dos fallos— caía fuera por unos
+ * segundos y lo rechazábamos nosotros mismos.
+ *
+ * Ensanchar no debilita la defensa real: un aviso repetido ya rebota antes por
+ * la unicidad de (pago, huella), y esta ventana solo descarta capturas viejas.
  */
-export const EVENT_MAX_AGE_SECONDS = 24 * 60 * 60;
+export const EVENT_MAX_AGE_SECONDS = 48 * 60 * 60;
 
 export function eventIsFresh(timestamp: number, now = Date.now()): boolean {
   const ageSeconds = now / 1000 - timestamp;
@@ -267,21 +278,52 @@ export function createWompiGateway(config: WompiConfig): PaymentGateway {
   if (!config.publicKey) problems.push('Falta WOMPI_PUBLIC_KEY.');
   else if (!/^pub_(test|prod)_/.test(config.publicKey))
     problems.push('WOMPI_PUBLIC_KEY no parece una llave pública de Wompi.');
+  if (!config.privateKey) problems.push('Falta WOMPI_PRIVATE_KEY.');
+  else if (!/^prv_(test|prod)_/.test(config.privateKey))
+    problems.push('WOMPI_PRIVATE_KEY no parece una llave privada de Wompi.');
   if (!config.integritySecret) problems.push('Falta WOMPI_INTEGRITY_SECRET.');
   if (!config.eventsSecret) problems.push('Falta WOMPI_EVENTS_SECRET.');
 
   const isProduction = config.publicKey.startsWith('pub_prod_');
+
+  /**
+   * Las dos llaves tienen que ser del MISMO entorno.
+   *
+   * Mezclarlas es el error de copiar y pegar más caro que hay: con la pública
+   * de sandbox y la privada de producción, el checkout cobra de mentira y el
+   * servidor consulta la cuenta real, así que los pedidos salen aprobados
+   * contra transacciones que no existen. Se detecta aquí, al arrancar, y no a
+   * la tercera venta.
+   */
+  const privateIsProduction = config.privateKey.startsWith('prv_prod_');
+  if (config.publicKey && config.privateKey && isProduction !== privateIsProduction) {
+    problems.push(
+      'WOMPI_PUBLIC_KEY y WOMPI_PRIVATE_KEY son de entornos distintos ' +
+        `(${isProduction ? 'producción' : 'pruebas'} y ${privateIsProduction ? 'producción' : 'pruebas'}). ` +
+        'Las cuatro credenciales tienen que salir del mismo comercio y del mismo ambiente.',
+    );
+  }
   const apiUrl =
     config.apiUrl ??
     (isProduction ? 'https://production.wompi.co/v1' : 'https://sandbox.wompi.co/v1');
 
-  async function getTransaction(path: string): Promise<unknown> {
+  /**
+   * Consulta al API de Wompi con la llave PRIVADA.
+   *
+   * Antes iba con la pública. Se cambió porque Wompi retiró el soporte a la
+   * consulta de transacciones desde el frontend y porque la búsqueda por
+   * referencia solo responde autenticada con la privada. Como esta llamada
+   * sale del servidor, usar la privada no expone nada.
+   */
+  async function wompiGet(path: string): Promise<unknown> {
     const response = await fetch(`${apiUrl}${path}`, {
-      headers: { Authorization: `Bearer ${config.publicKey}` },
+      headers: { Authorization: `Bearer ${config.privateKey}` },
       signal: AbortSignal.timeout(15_000),
     });
     if (response.status === 404) return null;
     if (!response.ok) {
+      // El cuerpo del error NO se mete en el mensaje: puede traer de vuelta
+      // fragmentos de lo que enviamos, y de ahí acaba en los logs.
       throw new Error(`Wompi respondió ${response.status} consultando ${path}.`);
     }
     return response.json();
@@ -333,19 +375,42 @@ export function createWompiGateway(config: WompiConfig): PaymentGateway {
     },
 
     async fetchByTransactionId(transactionId: string): Promise<ProviderSnapshot | null> {
-      const body = await getTransaction(`/transactions/${encodeURIComponent(transactionId)}`);
+      const body = await wompiGet(`/transactions/${encodeURIComponent(transactionId)}`);
       if (!body) return null;
       const tx = (body as { data?: WompiTransaction }).data;
       return tx ? toSnapshot(tx, body) : null;
     },
 
     /**
-     * Wompi no expone una búsqueda pública por referencia. Se devuelve null y
-     * el servicio cae en la vía que sí funciona: el id de transacción que
-     * llega en la URL de retorno o en el webhook.
+     * Busca por NUESTRA referencia, sin depender del id de la pasarela.
+     *
+     * Es la única vía de reconciliación cuando se pierde el webhook y además
+     * la clienta nunca vuelve a la tienda —cierra el navegador al pagar, se le
+     * acaba la batería—, que es justo el caso en el que un cobro aprobado se
+     * queda eternamente «pendiente» con el stock reservado. Requiere la llave
+     * privada; con la pública este endpoint no responde.
+     *
+     * Una referencia puede tener VARIAS transacciones: cada reintento de la
+     * clienta en el checkout crea otra. Por eso no vale coger la primera.
+     * Manda una aprobada si la hay —si alguna vez se cobró, se cobró— y si no,
+     * la más reciente, que es la que refleja el último intento.
      */
-    async fetchByReference(): Promise<ProviderSnapshot | null> {
-      return null;
+    async fetchByReference(reference: string): Promise<ProviderSnapshot | null> {
+      const body = await wompiGet(`/transactions?reference=${encodeURIComponent(reference)}`);
+      const lista = (body as { data?: WompiTransaction[] } | null)?.data;
+      if (!Array.isArray(lista) || lista.length === 0) return null;
+
+      const aprobada = lista.find((tx) => tx.status?.toUpperCase() === 'APPROVED');
+      const elegida = aprobada ?? lista[lista.length - 1];
+      if (!elegida) return null;
+
+      /*
+         La referencia se fuerza a la que preguntamos. Wompi la devuelve igual,
+         pero el snapshot se usa aguas arriba para localizar el cobro en nuestra
+         base, y que ese dato venga de lo que pedimos y no de lo que conteste un
+         tercero cierra la puerta a aplicar un estado al pago equivocado.
+      */
+      return toSnapshot({ ...elegida, reference }, body);
     },
 
     verifyEvent(body: unknown): VerifiedEvent {
