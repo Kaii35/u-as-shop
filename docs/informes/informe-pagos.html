@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Informe de conciliación de cobros</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2A1215; --clay:#521317; --canvas:#fff; --sand:#F6EDEA;
+    --line:#E8D8D3; --mist:#8A7270; --ok:#2F6B4F; --warn:#8F631C; --danger:#B3261E;
+    --texto:#3F2A2C;
+  }
+  @page{ size:A4; margin:17mm 15mm 16mm; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--canvas); color:var(--texto);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:10.5pt; line-height:1.55;
+    font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1;
+    -webkit-font-smoothing:antialiased;
+  }
+  .hoja{ max-width:186mm; margin:0 auto; padding:10mm 0; }
+
+  h1,h2,h3{ font-weight:600; color:var(--ink); margin:0; letter-spacing:-.011em; }
+  h1{ font-size:23pt; line-height:1.18; letter-spacing:-.02em; }
+  h2{ font-size:14pt; margin:0 0 3.5mm; padding-bottom:2mm; border-bottom:1.5px solid var(--ink); }
+  h3{ font-size:11pt; margin:0 0 1.5mm; }
+  p{ margin:0 0 2.5mm; }
+  strong{ font-weight:600; color:var(--ink); }
+  section{ margin-bottom:9mm; }
+  .salto{ break-before:page; }
+  .evitar{ break-inside:avoid; }
+
+  /* Portada */
+  .portada{ border-bottom:3px solid var(--clay); padding-bottom:6mm; margin-bottom:7mm; }
+  .marca{ font-size:8.5pt; font-weight:600; letter-spacing:.17em; text-transform:uppercase;
+          color:var(--clay); margin-bottom:3.5mm; }
+  .sub{ font-size:10.5pt; color:var(--mist); margin-top:2.5mm; }
+  .meta{ display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin-top:6mm; }
+  .meta div{ border-left:2px solid var(--line); padding-left:3mm; }
+  .meta dt{ font-size:7pt; font-weight:600; text-transform:uppercase; letter-spacing:.1em;
+            color:var(--mist); margin-bottom:1mm; }
+  .meta dd{ margin:0; font-size:9.5pt; font-weight:500; color:var(--ink); }
+
+  /* Marcadores */
+  /* Tres columnas por defecto: olvidar el modificador apilaba las fichas en
+     vertical y se comia media pagina sin que nada avisara. */
+  .marcador{ display:grid; gap:4mm; margin:5mm 0; grid-template-columns:repeat(3,1fr); }
+  .marcador.tres{ grid-template-columns:repeat(3,1fr); }
+  .marcador.cuatro{ grid-template-columns:repeat(4,1fr); }
+  .caja{ border:1.5px solid var(--line); border-radius:3px; padding:4mm 3mm; text-align:center; }
+  .caja .n{ font-size:21pt; font-weight:600; line-height:1.1; display:block; color:var(--ink);
+            letter-spacing:-.02em; }
+  .caja .n.chico{ font-size:15pt; }
+  .caja .l{ font-size:7.5pt; font-weight:500; text-transform:uppercase; letter-spacing:.08em;
+            color:var(--mist); margin-top:1.5mm; }
+  .caja.bien{ border-color:var(--ok); } .caja.bien .n{ color:var(--ok); }
+  .caja.mal{ border-color:var(--danger); } .caja.mal .n{ color:var(--danger); }
+  .caja.na .n{ color:var(--warn); }
+
+  .destacado{ background:var(--sand); border-left:3px solid var(--clay); padding:4mm 5mm;
+              margin:4mm 0; border-radius:0 3px 3px 0; }
+  .destacado.alarma{ border-left-color:var(--danger); background:#FCEEEC; }
+  .destacado p:last-child{ margin-bottom:0; }
+
+  /* Tablas */
+  table{ width:100%; border-collapse:collapse; font-size:8.8pt; }
+  thead th{ text-align:left; font-size:7pt; font-weight:600; text-transform:uppercase;
+            letter-spacing:.08em; color:var(--mist); border-bottom:1.5px solid var(--ink);
+            padding:0 2mm 1.5mm; }
+  tbody td{ border-bottom:1px solid var(--line); padding:2.2mm 2mm; vertical-align:top; }
+  tbody tr{ break-inside:avoid; }
+  th.num,td.num{ text-align:right; }
+  td.id,.mono{ font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-size:8pt;
+               color:var(--mist); white-space:nowrap; }
+  .nombre{ font-weight:600; color:var(--ink); margin-bottom:1mm; }
+  .porque,.obs{ font-size:8.3pt; color:var(--texto); margin-top:1mm; }
+  .rot{ font-size:6.8pt; font-weight:600; text-transform:uppercase; letter-spacing:.07em;
+        color:var(--mist); margin-right:1.5mm; }
+  td.res{ white-space:nowrap; font-weight:600; width:20mm; }
+  .estado-PASA td.res,.ok{ color:var(--ok); }
+  .estado-FALLA td.res,.mal{ color:var(--danger); }
+  .estado-NO_APLICA td.res,.ojo{ color:var(--warn); }
+  td.sev{ font-size:8pt; text-transform:capitalize; width:17mm; }
+  .sev-critica{ color:var(--danger); font-weight:600; }
+  .sev-alta{ color:var(--warn); font-weight:600; }
+
+  .etq{ display:inline-block; font-size:7pt; font-weight:600; text-transform:uppercase;
+        letter-spacing:.07em; padding:.7mm 1.8mm; border-radius:2px; white-space:nowrap; }
+  .etq.v{ background:#E3F0E8; color:var(--ok); }
+  .etq.r{ background:#FBE4E2; color:var(--danger); }
+  .etq.a{ background:#FAF0DF; color:var(--warn); }
+  .etq.g{ background:#EFEAE9; color:var(--mist); }
+
+  /* Bloques */
+  .capa,.hallazgo{ border:1px solid var(--line); border-radius:3px; padding:3.5mm 4mm;
+                   margin-bottom:3mm; break-inside:avoid; }
+  .hallazgo{ border-left:3px solid var(--clay); border-radius:0 3px 3px 0; padding:4mm 4.5mm;
+             margin-bottom:4mm; }
+  .hallazgo.abierto{ border-left-color:var(--danger); }
+  .capa .cab,.hallazgo .cab{ display:flex; align-items:baseline; gap:3mm; margin-bottom:2mm;
+                             justify-content:space-between; }
+  .hallazgo .cab{ justify-content:flex-start; flex-wrap:wrap; }
+  .capa .donde{ font-size:8pt; color:var(--mist); white-space:nowrap; }
+  .capa .protege{ font-size:9pt; font-weight:500; color:var(--ink); margin-bottom:1.5mm; }
+  .capa .como{ font-size:8.4pt; }
+  .capa .refs{ font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-size:7.3pt;
+               color:var(--mist); margin-top:2mm; }
+  .hallazgo .cod{ font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-size:8.3pt;
+                  color:var(--clay); font-weight:500; }
+  .pill{ font-size:7pt; font-weight:600; text-transform:uppercase; letter-spacing:.07em;
+         padding:.7mm 1.8mm; border-radius:2px; white-space:nowrap; }
+  .pill.corregido{ background:#E3F0E8; color:var(--ok); }
+  .pill.verificado{ background:var(--sand); color:var(--clay); }
+  .pill.abierto{ background:#FBE4E2; color:var(--danger); }
+  .hallazgo dl{ margin:0; font-size:8.8pt; }
+  .hallazgo dt{ font-size:6.8pt; font-weight:600; text-transform:uppercase; letter-spacing:.07em;
+                color:var(--mist); margin-top:2mm; }
+  .hallazgo dd{ margin:.5mm 0 0; }
+  .hallazgo .nota{ margin-top:2.5mm; padding-top:2mm; border-top:1px solid var(--line);
+                   font-size:8.4pt; color:var(--clay); font-weight:500; }
+
+  code{ font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-size:8.4pt;
+        background:var(--sand); padding:.4mm 1.2mm; border-radius:2px; color:var(--ink); }
+  pre{ font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-size:8pt;
+       background:var(--sand); padding:3mm; border-radius:3px; overflow:hidden;
+       margin:2mm 0; line-height:1.5; }
+  .url{ display:block; font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-size:8.3pt;
+        background:var(--ink); color:#fff; padding:3mm; border-radius:3px; word-break:break-all;
+        margin:2mm 0; }
+  ol,ul{ margin:0 0 2.5mm; padding-left:5mm; }
+  li{ margin-bottom:1.2mm; }
+  .pie{ margin-top:8mm; padding-top:3mm; border-top:1px solid var(--line);
+        font-size:7.8pt; color:var(--mist); }
+</style>
+</head>
+<body>
+<div class="hoja">
+
+  <header class="portada">
+    <div class="marca">Natalia Sánchez · Insumos de belleza profesional</div>
+    <h1>Conciliación de cobros</h1>
+    <p class="sub">Contraste entre nuestra base de datos y lo que dice la pasarela</p>
+    <dl class="meta">
+      <div><dt>Pasarela</dt><dd>WOMPI</dd></div>
+      <div><dt>Ambiente</dt><dd>Pruebas (sandbox)</dd></div>
+      <div><dt>Cobros</dt><dd>79</dd></div>
+      <div><dt>Generado</dt><dd>7/10/26, 11:12 a. m.</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <h2>Resumen</h2>
+    <div class="marcador cuatro">
+      <div class="caja bien"><span class="n chico">$286.800</span><div class="l">Cobrado</div></div>
+      <div class="caja"><span class="n">6</span><div class="l">Aprobados</div></div>
+      <div class="caja bien"><span class="n">0</span><div class="l">Descuadres</div></div>
+      <div class="caja bien"><span class="n">0</span><div class="l">Alarmas</div></div>
+    </div>
+
+    <div class="destacado">
+      <p><strong>El dinero cuadra.</strong> Los 2 cobros que llegaron a tener
+      transacción en la pasarela coinciden con ella en estado y en monto, uno a uno. No hay ningún
+      cobro aprobado sin pedido que entregar, que es el único descuadre que cuesta dinero de verdad.</p>
+      <p>Hay 10 cobros con un id de transacción que Wompi
+      no conoce. No son un descuadre: son los que fabricó el banco de pruebas con avisos firmados a
+      mano para comprobar la verificación. Aparecen identificados más abajo.</p>
+    </div>
+
+    <p style="font-size:8.5pt;color:var(--mist)">Periodo cubierto: 7/10/26, 10:17 a. m. — 7/10/26, 10:56 a. m..
+    Se consultó a la pasarela por 12 transacciones, una a una.</p>
+  </section>
+
+  <section class="evitar">
+    <h2>Cómo se concilia</h2>
+    <p>Este informe <strong>no se fía de nuestra propia base</strong>. Un informe que solo lea lo que
+    ya teníamos guardado no concilia nada: repite lo que creíamos. Por cada cobro con id de
+    transacción se le pregunta a Wompi —autenticados con la llave privada— y se comparan dos cosas:</p>
+    <ol>
+      <li><strong>El estado.</strong> Que lo que nosotros damos por aprobado esté aprobado también allá.</li>
+      <li><strong>El monto.</strong> Que se haya cobrado exactamente lo que facturamos, al peso.</li>
+    </ol>
+    <p>Un cobro sin id de transacción nunca llegó a existir en la pasarela —la clienta abandonó
+    antes de elegir medio de pago— y no hay nada que conciliar: queda registrado como caducado.</p>
+  </section>
+
+  <section>
+    <h2>Resultado de la conciliación</h2>
+    <table>
+      <thead><tr><th>Referencia</th><th>Transacción</th><th>Nuestro estado</th><th>En Wompi</th>
+      <th class="num">Monto</th><th>Veredicto</th></tr></thead>
+      <tbody><tr>
+          <td class="id">AU-11621-bf11</td>
+          <td class="id">01-1791386604019-mn01</td>
+          <td>EXPIRED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11622-8b6e</td>
+          <td class="id">01-1791386604067-idem</td>
+          <td>APPROVED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11637-bc26</td>
+          <td class="id">01-1791386948712-mn01</td>
+          <td>EXPIRED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11638-57af</td>
+          <td class="id">01-1791386948760-idem</td>
+          <td>APPROVED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11652-ec05</td>
+          <td class="id">01-1791387070536-mn01</td>
+          <td>EXPIRED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11653-e244</td>
+          <td class="id">01-1791387070575-idem</td>
+          <td>APPROVED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11667-93f8</td>
+          <td class="id">01-1791387426227-mn01</td>
+          <td>EXPIRED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11668-a84d</td>
+          <td class="id">01-1791387426266-idem</td>
+          <td>APPROVED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11682-b7c7</td>
+          <td class="id">1111672-1791388198-30324</td>
+          <td>APPROVED</td>
+          <td>APPROVED</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq v">Cuadra</span></td>
+        </tr><tr>
+          <td class="id">AU-11683-93c1</td>
+          <td class="id">1111672-1791388377-41009</td>
+          <td>DECLINED</td>
+          <td>DECLINED</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq v">Cuadra</span></td>
+        </tr><tr>
+          <td class="id">AU-11687-07ea</td>
+          <td class="id">01-1791388567484-mn01</td>
+          <td>EXPIRED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr><tr>
+          <td class="id">AU-11688-d253</td>
+          <td class="id">01-1791388567531-idem</td>
+          <td>APPROVED</td>
+          <td>—</td>
+          <td class="num">$47.800</td>
+          <td><span class="etq g">No existe en Wompi</span></td>
+        </tr></tbody></table>
+
+    
+    <div class="destacado" style="margin-top:4mm">
+      <p><strong>Sobre los 10 que Wompi no conoce.</strong> No son dinero perdido ni
+      un fallo de la integración: son los cobros que fabricó el banco de pruebas, firmando avisos a
+      mano con el secreto de eventos real para comprobar que la verificación los acepta. Sus ids de
+      transacción se los inventó la prueba, así que la pasarela no tiene por qué conocerlos.</p>
+      <p>En una tienda en producción, un cobro en este estado sí sería para investigar: significaría
+      que alguien consiguió que diéramos por bueno un aviso de una transacción inexistente.</p>
+    </div>
+  </section>
+
+  <section class="salto">
+    <h2>Señales de alarma</h2>
+    <p>Tres condiciones que no se arreglan solas y que no se ven desde ninguna otra pantalla.</p>
+    
+    <div class="hallazgo ">
+      <div class="cab">
+        <span class="etq v">ninguno</span>
+        <h3>Cobrado y sin entregar</h3>
+      </div>
+      <dl>
+        <dt>Por qué importa</dt><dd>Es el peor descuadre posible: el dinero se movió y el pedido está cancelado, así que no hay nada que despachar. Pasa cuando la aprobación llega después de que el intento venció, con el pedido ya anulado y las unidades sueltas. No se arregla solo a propósito: volver a descontar unidades que quizá ya se vendieron lo decide una persona.</dd>
+        
+      </dl>
+    </div>
+    <div class="hallazgo ">
+      <div class="cab">
+        <span class="etq v">ninguno</span>
+        <h3>Caducados con las unidades todavía apartadas</h3>
+      </div>
+      <dl>
+        <dt>Por qué importa</dt><dd>Mercancía bloqueada para una venta que no va a ocurrir. No se ve por ningún otro lado: el catálogo solo muestra menos disponible, sin decir por qué.</dd>
+        
+      </dl>
+    </div>
+    <div class="hallazgo ">
+      <div class="cab">
+        <span class="etq v">ninguno</span>
+        <h3>Pendientes de más de 15 minutos</h3>
+      </div>
+      <dl>
+        <dt>Por qué importa</dt><dd>Un cobro que lleva un cuarto de hora sin resolverse suele ser un aviso que no llegó. Cada uno mantiene unidades apartadas.</dd>
+        
+      </dl>
+    </div>
+  </section>
+
+  <section class="evitar">
+    <h2>Avisos de la pasarela</h2>
+    <p>Cada cambio de estado llega como un aviso firmado. Lo que cuenta aquí es cuántos pasaron la
+    verificación de la firma: un aviso con <code>checksumOk = false</code> es alguien intentando
+    mover un cobro sin conocer el secreto.</p>
+    <div class="marcador tres">
+      <div class="caja"><span class="n">89</span><div class="l">Avisos registrados</div></div>
+      <div class="caja"><span class="n">17</span><div class="l">Por webhook</div></div>
+      <div class="caja mal"><span class="n">5</span><div class="l">Firma inválida</div></div>
+    </div>
+
+    
+    <div class="destacado">
+      <p><strong>Sobre los 5 avisos con firma inválida.</strong> Que estén
+      registrados es deliberado y no un fallo: un aviso rechazado sin dejar rastro no deja nada que
+      investigar después. Ninguno movió un solo cobro —ese es justo el punto— pero quedan guardados
+      con su contenido para poder mirarlos.</p>
+      <p>En esta instalación son el rastro del banco de pruebas, que manda avisos falsificados a
+      propósito para comprobar que se rechazan. <strong>En una tienda en producción, cualquier
+      número distinto de cero aquí merece una mirada</strong>: significa que alguien está probando a
+      mover cobros sin conocer el secreto de eventos.</p>
+    </div>
+  </section>
+
+  <section class="evitar">
+    <h2>Dinero contra mercancía</h2>
+    <p>Un cobro aprobado tiene que haber movido inventario. Si no, se cobró y no se descontó nada.</p>
+    <table>
+      <thead><tr><th>Pedido</th><th>Producto</th><th>Tipo</th><th class="num">Unidades</th></tr></thead>
+      <tbody><tr>
+        <td class="id">AU-11622</td>
+        <td class="id">p1</td>
+        <td>SALE</td>
+        <td class="num">-1</td>
+      </tr><tr>
+        <td class="id">AU-11638</td>
+        <td class="id">p1</td>
+        <td>SALE</td>
+        <td class="num">-1</td>
+      </tr><tr>
+        <td class="id">AU-11653</td>
+        <td class="id">p1</td>
+        <td>SALE</td>
+        <td class="num">-1</td>
+      </tr><tr>
+        <td class="id">AU-11668</td>
+        <td class="id">p1</td>
+        <td>SALE</td>
+        <td class="num">-1</td>
+      </tr><tr>
+        <td class="id">AU-11682</td>
+        <td class="id">p1</td>
+        <td>SALE</td>
+        <td class="num">-1</td>
+      </tr><tr>
+        <td class="id">AU-11688</td>
+        <td class="id">p1</td>
+        <td>SALE</td>
+        <td class="num">-1</td>
+      </tr></tbody></table>
+      <p style="font-size:8.5pt;color:var(--mist);margin-top:2mm">6 movimientos
+      para 6 cobros aprobados.</p>
+  </section>
+
+  <section class="salto">
+    <h2>Cobros por estado</h2>
+    <table>
+      <thead><tr><th>Estado</th><th class="num">Cobros</th><th class="num">Importe</th><th>Qué significa</th></tr></thead>
+      <tbody>
+        <tr>
+            <td><span class="etq g">EXPIRED</span></td>
+            <td class="num">72</td>
+            <td class="num">$9.248.500</td>
+            <td style="font-size:8.3pt">Pasó el plazo sin resolverse. Las unidades apartadas se liberaron.</td>
+          </tr><tr>
+            <td><span class="etq v">APPROVED</span></td>
+            <td class="num">6</td>
+            <td class="num">$286.800</td>
+            <td style="font-size:8.3pt">Dinero recibido y confirmado por la pasarela.</td>
+          </tr><tr>
+            <td><span class="etq r">DECLINED</span></td>
+            <td class="num">1</td>
+            <td class="num">$47.800</td>
+            <td style="font-size:8.3pt">La pasarela rechazó el cobro. El pedido se cancela y las unidades vuelven.</td>
+          </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:6mm">Medios de pago usados</h3>
+    <table>
+      <thead><tr><th>Medio</th><th class="num">Cobros</th><th class="num">Importe</th></tr></thead>
+      <tbody><tr><td>CARD</td><td class="num">6</td><td class="num">$286.800</td></tr>
+      </tbody></table>
+  </section>
+
+  <section class="salto">
+    <h2>Detalle de cobros</h2>
+    <p>Todos los cobros que llegaron a resolverse. Los caducados van resumidos aparte: son intentos
+    que nunca alcanzaron la pasarela.</p>
+    <table>
+      <thead><tr><th>Referencia</th><th>Pedido</th><th>Estado</th><th class="num">Importe</th>
+      <th>Medio</th><th>Transacción</th><th class="num">Avisos</th><th>Creado</th></tr></thead>
+      <tbody><tr>
+    <td class="id">AU-11622-8b6e</td>
+    <td class="id">AU-11622<br><span style="font-size:7pt">PAID</span></td>
+    <td><span class="etq v">APPROVED</span></td>
+    <td class="num">$47.800</td>
+    <td>CARD</td>
+    <td class="id">01-1791386604067-idem</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 10:23 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11638-57af</td>
+    <td class="id">AU-11638<br><span style="font-size:7pt">PAID</span></td>
+    <td><span class="etq v">APPROVED</span></td>
+    <td class="num">$47.800</td>
+    <td>CARD</td>
+    <td class="id">01-1791386948760-idem</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 10:29 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11653-e244</td>
+    <td class="id">AU-11653<br><span style="font-size:7pt">PAID</span></td>
+    <td><span class="etq v">APPROVED</span></td>
+    <td class="num">$47.800</td>
+    <td>CARD</td>
+    <td class="id">01-1791387070575-idem</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 10:31 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11668-a84d</td>
+    <td class="id">AU-11668<br><span style="font-size:7pt">PAID</span></td>
+    <td><span class="etq v">APPROVED</span></td>
+    <td class="num">$47.800</td>
+    <td>CARD</td>
+    <td class="id">01-1791387426266-idem</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 10:37 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11682-b7c7</td>
+    <td class="id">AU-11682<br><span style="font-size:7pt">PAID</span></td>
+    <td><span class="etq v">APPROVED</span></td>
+    <td class="num">$47.800</td>
+    <td>CARD</td>
+    <td class="id">1111672-1791388198-30324</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 10:46 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11683-93c1</td>
+    <td class="id">AU-11683<br><span style="font-size:7pt">CANCELLED</span></td>
+    <td><span class="etq r">DECLINED</span></td>
+    <td class="num">$47.800</td>
+    <td>CARD</td>
+    <td class="id">1111672-1791388377-41009</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 10:52 a. m.</td>
+  </tr><tr>
+    <td class="id">AU-11688-d253</td>
+    <td class="id">AU-11688<br><span style="font-size:7pt">PAID</span></td>
+    <td><span class="etq v">APPROVED</span></td>
+    <td class="num">$47.800</td>
+    <td>CARD</td>
+    <td class="id">01-1791388567531-idem</td>
+    <td class="num">1</td>
+    <td class="id">7/10/26, 10:56 a. m.</td>
+  </tr></tbody>
+    </table>
+
+    
+    <h3 style="margin-top:6mm">Caducados</h3>
+    <p style="font-size:9pt">72 intentos por $9.248.500
+    que vencieron sin resolverse. Ninguno llegó a tener transacción en la pasarela, así que no hay
+    nada que conciliar y las unidades ya volvieron al inventario. En esta instalación son, en su
+    mayoría, el rastro que deja el banco de pruebas al ejercitar el flujo de compra.</p>
+  </section>
+
+  <div class="pie">
+    Generado por <code>server/scripts/informe-pagos.ts</code> ·
+    Conciliado contra sandbox.wompi.co ·
+    12 transacciones consultadas
+  </div>
+
+</div>
+</body>
+</html>

@@ -14,27 +14,36 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ESTILOS, FUENTES, esc } from './informe-estilos.js';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const RAIZ = resolve(AQUI, '../..');
 const CARPETA = join(RAIZ, 'docs/pruebas-wompi');
 
-const datos = JSON.parse(await readFile(join(CARPETA, 'resultados.json'), 'utf8'));
+interface Resultado {
+  id: string; grupo: string; nombre: string; esperado: string;
+  estado: 'PASA' | 'FALLA' | 'NO_APLICA'; observado: string;
+  porque: string; severidad: string;
+}
+interface Datos {
+  generado: string; ambiente: string; comercio: string | null; pasarela: string;
+  resumen: { pasan: number; fallan: number; sinAplicar: number; total: number };
+  limpieza: string; resultados: Resultado[];
+}
 
-const esc = (v) =>
-  String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const datos: Datos = JSON.parse(await readFile(join(CARPETA, 'resultados.json'), 'utf8'));
 
 const fecha = new Date(datos.generado).toLocaleString('es-CO', {
   dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Bogota',
 });
 
-const porGrupo = new Map();
+const porGrupo = new Map<string, Resultado[]>();
 for (const r of datos.resultados) {
   if (!porGrupo.has(r.grupo)) porGrupo.set(r.grupo, []);
-  porGrupo.get(r.grupo).push(r);
+  porGrupo.get(r.grupo)!.push(r);
 }
 
-const ETIQUETA = { PASA: 'Pasa', FALLA: 'Falla', NO_APLICA: 'Sin aplicar' };
+const ETIQUETA: Record<Resultado['estado'], string> = { PASA: 'Pasa', FALLA: 'Falla', NO_APLICA: 'Sin aplicar' };
 
 // ---------------------------------------------------------------------------
 // Contenido redactado
@@ -211,7 +220,7 @@ const RIESGOS = [
 // Plantilla
 // ---------------------------------------------------------------------------
 
-const fila = (r) => `
+const fila = (r: Resultado): string => `
   <tr class="estado-${r.estado}">
     <td class="id">${esc(r.id)}</td>
     <td>
@@ -228,104 +237,8 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <title>Informe de pruebas · Pasarela de pagos Wompi</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600;6..96,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#2A1215; --clay:#521317; --canvas:#fff; --sand:#F1DFDA;
-    --line:#E8D8D3; --mist:#937B79; --ok:#2F6B4F; --warn:#8F631C; --danger:#B3261E;
-  }
-  @page{ size:A4; margin:17mm 15mm 16mm; }
-  *{ box-sizing:border-box; }
-  body{
-    margin:0; background:var(--canvas); color:var(--ink);
-    font:10.5pt/1.5 Inter,system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  .hoja{ max-width:186mm; margin:0 auto; padding:10mm 0; }
-  h1,h2,h3{ font-family:"Bodoni Moda",Georgia,serif; font-weight:600; letter-spacing:-.015em; margin:0; }
-  h1{ font-size:30pt; line-height:1.1; }
-  h2{ font-size:16pt; margin:0 0 3mm; padding-bottom:2mm; border-bottom:1.5px solid var(--ink); }
-  h3{ font-size:11.5pt; margin:0 0 1.5mm; }
-  p{ margin:0 0 2.5mm; }
-  section{ margin-bottom:9mm; }
-  .salto{ break-before:page; }
-  .evitar{ break-inside:avoid; }
-
-  /* Portada */
-  .portada{ border-bottom:3px solid var(--clay); padding-bottom:6mm; margin-bottom:7mm; }
-  .marca{ font-family:"Bodoni Moda",Georgia,serif; font-size:11pt; letter-spacing:.18em;
-          text-transform:uppercase; color:var(--clay); margin-bottom:3mm; }
-  .sub{ font-size:11pt; color:var(--mist); margin-top:2mm; }
-  .meta{ display:grid; grid-template-columns:repeat(4,1fr); gap:4mm; margin-top:6mm; }
-  .meta div{ border-left:2px solid var(--line); padding-left:3mm; }
-  .meta dt{ font-size:7.5pt; text-transform:uppercase; letter-spacing:.1em; color:var(--mist); margin-bottom:1mm; }
-  .meta dd{ margin:0; font-size:10pt; font-weight:500; }
-
-  /* Marcador */
-  .marcador{ display:grid; grid-template-columns:repeat(3,1fr); gap:4mm; margin:5mm 0; }
-  .caja{ border:1.5px solid var(--line); border-radius:3px; padding:4mm; text-align:center; }
-  .caja .n{ font-family:"Bodoni Moda",Georgia,serif; font-size:26pt; line-height:1; display:block; }
-  .caja .l{ font-size:8pt; text-transform:uppercase; letter-spacing:.09em; color:var(--mist); margin-top:1.5mm; }
-  .caja.bien{ border-color:var(--ok); } .caja.bien .n{ color:var(--ok); }
-  .caja.mal .n{ color:var(--danger); }
-  .caja.na .n{ color:var(--warn); }
-
-  .destacado{ background:var(--sand); border-left:3px solid var(--clay); padding:4mm 5mm; margin:4mm 0; border-radius:0 3px 3px 0; }
-  .destacado p:last-child{ margin-bottom:0; }
-
-  /* Tablas */
-  table{ width:100%; border-collapse:collapse; font-size:9pt; }
-  thead th{ text-align:left; font-size:7.5pt; text-transform:uppercase; letter-spacing:.09em;
-            color:var(--mist); border-bottom:1.5px solid var(--ink); padding:0 2mm 1.5mm; font-weight:600; }
-  tbody td{ border-bottom:1px solid var(--line); padding:2.5mm 2mm; vertical-align:top; }
-  tbody tr{ break-inside:avoid; }
-  td.id{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:8pt; color:var(--mist); white-space:nowrap; width:17mm; }
-  .nombre{ font-weight:600; margin-bottom:1mm; }
-  .porque,.obs{ font-size:8.5pt; color:#5c4042; margin-top:1mm; }
-  .rot{ font-size:7pt; text-transform:uppercase; letter-spacing:.08em; color:var(--mist); margin-right:1.5mm; }
-  td.res{ white-space:nowrap; font-weight:600; width:20mm; }
-  .estado-PASA td.res{ color:var(--ok); }
-  .estado-FALLA td.res{ color:var(--danger); }
-  .estado-NO_APLICA td.res{ color:var(--warn); }
-  td.sev{ font-size:8pt; text-transform:capitalize; width:17mm; }
-  .sev-critica{ color:var(--danger); font-weight:600; }
-  .sev-alta{ color:var(--warn); font-weight:600; }
-
-  /* Capas y hallazgos */
-  .capa{ border:1px solid var(--line); border-radius:3px; padding:3.5mm 4mm; margin-bottom:3mm; break-inside:avoid; }
-  .capa .cab{ display:flex; justify-content:space-between; align-items:baseline; gap:4mm; margin-bottom:1.5mm; }
-  .capa .donde{ font-size:8pt; color:var(--mist); white-space:nowrap; }
-  .capa .protege{ font-size:9pt; font-weight:500; margin-bottom:1.5mm; }
-  .capa .como{ font-size:8.5pt; color:#5c4042; }
-  .capa .refs{ font-size:7.5pt; font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--mist); margin-top:2mm; }
-
-  .hallazgo{ border:1px solid var(--line); border-left:3px solid var(--clay); border-radius:0 3px 3px 0;
-             padding:4mm 4.5mm; margin-bottom:4mm; break-inside:avoid; }
-  .hallazgo.abierto{ border-left-color:var(--danger); }
-  .hallazgo .cab{ display:flex; align-items:baseline; gap:3mm; margin-bottom:2mm; }
-  .hallazgo .cod{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:8.5pt; color:var(--clay); font-weight:600; }
-  .pill{ font-size:7pt; text-transform:uppercase; letter-spacing:.08em; padding:.8mm 2mm;
-         border-radius:2px; font-weight:600; white-space:nowrap; }
-  .pill.corregido{ background:#E3F0E8; color:var(--ok); }
-  .pill.verificado{ background:var(--sand); color:var(--clay); }
-  .pill.abierto{ background:#FBE4E2; color:var(--danger); }
-  .hallazgo dl{ margin:0; font-size:9pt; }
-  .hallazgo dt{ font-size:7pt; text-transform:uppercase; letter-spacing:.08em; color:var(--mist); margin-top:2mm; }
-  .hallazgo dd{ margin:.5mm 0 0; }
-  .hallazgo .nota{ margin-top:2.5mm; padding-top:2mm; border-top:1px solid var(--line);
-                   font-size:8.5pt; color:var(--clay); font-weight:500; }
-
-  code{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:8.5pt;
-        background:var(--sand); padding:.4mm 1.2mm; border-radius:2px; }
-  .url{ display:block; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:8.5pt;
-        background:var(--ink); color:#fff; padding:3mm; border-radius:3px; word-break:break-all; margin:2mm 0; }
-  ol,ul{ margin:0 0 2.5mm; padding-left:5mm; }
-  li{ margin-bottom:1.2mm; }
-  .pie{ margin-top:8mm; padding-top:3mm; border-top:1px solid var(--line);
-        font-size:8pt; color:var(--mist); }
-</style>
+${FUENTES}
+<style>${ESTILOS}</style>
 </head>
 <body>
 <div class="hoja">
@@ -344,7 +257,7 @@ const html = `<!doctype html>
 
   <section>
     <h2>Resumen</h2>
-    <div class="marcador">
+    <div class="marcador tres">
       <div class="caja bien"><span class="n">${datos.resumen.pasan}</span><div class="l">Pasan</div></div>
       <div class="caja ${datos.resumen.fallan > 0 ? 'mal' : ''}"><span class="n">${datos.resumen.fallan}</span><div class="l">Fallan</div></div>
       <div class="caja na"><span class="n">${datos.resumen.sinAplicar}</span><div class="l">Sin aplicar</div></div>
@@ -410,7 +323,7 @@ const html = `<!doctype html>
     <h2>Arquitectura de seguridad</h2>
     <p>Nueve capas, cada una contra una forma concreta de perder dinero o mercancía.
     Ninguna depende de que las demás funcionen.</p>
-    ${CAPAS.map((c) => `
+    ${CAPAS.map((c: (typeof CAPAS)[number]) => `
     <div class="capa">
       <div class="cab"><h3>${esc(c.nombre)}</h3><span class="donde">${esc(c.donde)}</span></div>
       <div class="protege">Impide: ${esc(c.protege)}</div>
@@ -423,7 +336,7 @@ const html = `<!doctype html>
     <h2>Hallazgos</h2>
     <p>Lo que apareció al probar. Los tres primeros eran defectos reales y están corregidos;
     los dos últimos son constancia de cosas que conviene no olvidar.</p>
-    ${HALLAZGOS.map((h) => `
+    ${HALLAZGOS.map((h: (typeof HALLAZGOS)[number]) => `
     <div class="hallazgo">
       <div class="cab">
         <span class="cod">${esc(h.id)}</span>
@@ -442,7 +355,7 @@ const html = `<!doctype html>
   <section class="salto">
     <h2>Riesgos abiertos</h2>
     <p>Lo que sigue sin resolver, con lo que haría falta para cerrarlo. R-1 es el que de verdad importa.</p>
-    ${RIESGOS.map((r) => `
+    ${RIESGOS.map((r: (typeof RIESGOS)[number]) => `
     <div class="hallazgo abierto">
       <div class="cab">
         <span class="cod">${esc(r.id)}</span>

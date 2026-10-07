@@ -17,8 +17,9 @@
     "seed": "tsx prisma/seed.ts",
     "payments:test": "tsx scripts/pruebas-wompi.ts",
     "webhook:tunnel": "node scripts/tunel-webhook.mjs",
-    "payments:report": "node scripts/informe-wompi.mjs",
-    "payments:show": "tsx scripts/ver-pago.ts"
+    "payments:report": "tsx scripts/informe-wompi.ts",
+    "payments:show": "tsx scripts/ver-pago.ts",
+    "payments:reconcile": "tsx scripts/informe-pagos.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
