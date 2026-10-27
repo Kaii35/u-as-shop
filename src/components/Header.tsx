@@ -1,36 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { ChevronRight, Heart, Home, LayoutGrid, Menu, Search, ShoppingBag, Store, User } from 'lucide-react';
-import { categories } from '../data/catalog';
+import { Heart, Home, LayoutGrid, Search, ShoppingBag, Store, User } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useStore } from '../store/StoreContext';
 import { SearchBar } from './SearchBar';
-import { Button, IconButton } from './ui/Button';
-import { CloseButton, Sheet } from './ui/Overlays';
+import { IconButton } from './ui/Button';
+import { MegaMenu, MenuButton, type NavItem } from './MegaMenu';
 import { Logo } from './ui/Primitives';
 import { ThemeToggle } from './ui/ThemeToggle';
 
-export const NAV_ITEMS: Array<{ label: string; to: string; highlight?: boolean }> = [
+export const NAV_ITEMS: NavItem[] = [
   { label: 'Novedades', to: '/tienda?orden=new' },
-  { label: 'Uñas', to: '/tienda?cat=unas-y-manicura' },
-  { label: 'Gel y acrílico', to: '/tienda?cat=gel-acrilico-y-polygel' },
-  { label: 'Nail art', to: '/tienda?cat=nail-art-y-decoracion' },
-  { label: 'Herramientas', to: '/tienda?cat=herramientas-y-equipos' },
+  { label: 'Geles y tips', to: '/tienda?cat=geles-bases-y-esmaltes,tips-y-unas-press-on' },
+  { label: 'Nail art', to: '/tienda?cat=decoracion-y-glitter,pinceles-y-diseno' },
+  { label: 'Herramientas', to: '/tienda?cat=alicates-tijeras-y-cortaunas,limas-y-pulidores,fresas-para-torno,lamparas-y-equipos' },
   { label: 'Pestañas', to: '/tienda?cat=pestanas-y-cejas' },
+  { label: 'Spa', to: '/tienda?cat=spa-manos-y-cuerpo' },
   { label: 'Ofertas', to: '/tienda?oferta=1', highlight: true },
 ];
-
-export function AnnouncementBar() {
-  return (
-    // `slab` es la losa de contraste: oscura en los DOS temas, al contrario que
-    // `ink`. Por eso su texto es `on-slab` y no `on-ink`, que en oscuro se
-    // vuelve tinta oscura y aquí desaparecería.
-    <div className="bg-slab px-4 py-2 text-center text-meta text-on-slab/85 text-balance">
-      Envío gratis desde $250.000 <span className="mx-2 text-on-slab/30">·</span> 10% para profesionales con el código <strong className="font-semibold text-on-slab">PRO10</strong>
-    </div>
-  );
-}
 
 export function Header() {
   const { favs, user, openCart, totals } = useStore();
@@ -79,13 +67,21 @@ export function Header() {
         )}
       >
         {/* Desktop */}
-        <div className="hidden md:block">
+        {/* `relative` para que, en pantallas anchas, el botón del menú se vaya
+            al borde izquierdo de la ventana, lejos del logo. */}
+        <div className="relative hidden md:block">
           <div className="container-x flex items-center gap-6 py-3">
-            <Link to="/" aria-label="Natalia Sánchez, inicio" className="shrink-0"><Logo /></Link>
+            <div className="flex shrink-0 items-center gap-6">
+              <MenuButton
+                open={menuOpen}
+                onClick={() => setMenuOpen(true)}
+                className="min-[1500px]:absolute min-[1500px]:left-6 min-[1500px]:top-1/2 min-[1500px]:-translate-y-1/2"
+              />
+              <Link to="/" aria-label="Natalia Sánchez, inicio" className="shrink-0"><Logo /></Link>
+            </div>
             <div className="min-w-0 flex-1"><SearchBar /></div>
             <div className="flex shrink-0 items-center gap-1">
-              {/* Acceso directo a todo el catalogo: la navegacion de abajo solo
-                  lleva a categorias sueltas. */}
+              {/* Acceso directo a todo el catalogo. */}
               <Link
                 to="/tienda"
                 className="mr-1 hidden h-10 items-center gap-1.5 rounded border border-line px-3 text-body font-medium transition-colors hover:border-ink hover:bg-sand md:flex"
@@ -116,33 +112,12 @@ export function Header() {
               </button>
             </div>
           </div>
-          <nav className="container-x flex items-center gap-1 overflow-x-auto pb-1.5">
-            {NAV_ITEMS.map((n) => {
-              // Marca el enlace activo comparando ruta + query: varios apuntan
-              // a /tienda y solo se distinguen por sus parametros.
-              const active = location.pathname + location.search === n.to;
-              return (
-                <Link
-                  key={n.label}
-                  to={n.to}
-                  aria-current={active ? 'page' : undefined}
-                  className={cn(
-                    'whitespace-nowrap rounded px-2.5 py-1.5 text-body transition-colors hover:bg-sand hover:text-ink',
-                    active ? 'bg-sand font-medium text-ink' : 'text-ash',
-                    n.highlight && !active && 'text-clay hover:text-clay-dark',
-                  )}
-                >
-                  {n.label}
-                </Link>
-              );
-            })}
-          </nav>
         </div>
 
         {/* Móvil */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-2 py-2 md:hidden">
           <div className="flex">
-            <IconButton label="Menú" onClick={() => setMenuOpen(true)}><Menu size={19} strokeWidth={2} /></IconButton>
+            <MenuButton open={menuOpen} onClick={() => setMenuOpen(true)} className="border-transparent" />
             <IconButton label="Buscar" onClick={() => setSearchOpen(true)}><Search size={19} strokeWidth={2} /></IconButton>
           </div>
           <Link to="/" aria-label="Natalia Sánchez, inicio"><Logo size="sm" /></Link>
@@ -153,43 +128,7 @@ export function Header() {
         </div>
       </header>
 
-      <Sheet open={menuOpen} onClose={() => setMenuOpen(false)} side="left" label="Menú">
-        <div className="flex items-center justify-between border-b border-line px-4 py-3"><Logo size="sm" /><CloseButton onClick={() => setMenuOpen(false)} /></div>
-        <div className="flex-1 overflow-auto">
-          <nav className="flex flex-col p-2">
-            <Link to="/tienda" className="mb-1 flex h-11 items-center justify-between rounded bg-sand px-2 text-body font-medium">
-              Todos los productos<ChevronRight size={15} strokeWidth={2} className="text-mist" />
-            </Link>
-            {NAV_ITEMS.map((n) => (
-              <Link key={n.label} to={n.to} className="flex h-11 items-center justify-between rounded px-2 text-body font-medium hover:bg-sand">
-                {n.label}<ChevronRight size={15} strokeWidth={2} className="text-mist" />
-              </Link>
-            ))}
-          </nav>
-          <div className="flex flex-col p-2 pt-4">
-            <span className="kicker px-2 pb-1.5">Todas las categorías</span>
-            {categories.map((c) => (
-              <Link key={c.id} to={`/tienda?cat=${c.slug}`} className="flex h-10 items-center rounded px-2 text-body text-ash hover:bg-sand hover:text-ink">{c.name}</Link>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-2 border-t border-line p-4">
-          {/* El tema también aquí: la barra superior de móvil no tiene sitio para
-              otro icono, y el menú es el único cajón de ajustes que hay. */}
-          <div className="flex items-center justify-between gap-3 pb-1">
-            <span className="text-body font-medium">Tema</span>
-            <ThemeToggle size="md" className="-mr-1.5" />
-          </div>
-          {user ? (
-            <Link to="/cuenta"><Button block>Mi cuenta</Button></Link>
-          ) : (
-            <>
-              <Link to="/ingresar"><Button block>Iniciar sesión</Button></Link>
-              <Link to="/registro"><Button block variant="secondary">Crear cuenta</Button></Link>
-            </>
-          )}
-        </div>
-      </Sheet>
+      <MegaMenu open={menuOpen} onClose={() => setMenuOpen(false)} items={NAV_ITEMS} />
 
       <AnimatePresence>{searchOpen && <SearchBar variant="overlay" onClose={() => setSearchOpen(false)} />}</AnimatePresence>
 

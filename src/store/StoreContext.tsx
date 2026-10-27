@@ -57,6 +57,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const addToCart: Store['addToCart'] = useCallback((productId, { shade = 0, size = 0, qty = 1 } = {}) => {
     const p = getProduct(productId);
     if (!p) return false;
+    if (p.price <= 0) {
+      notify({ title: 'Precio por confirmar', description: 'Este producto estará a la venta muy pronto. Guárdalo en favoritos.' });
+      return false;
+    }
     if (!p.stock) {
       notify({ title: 'Producto agotado', description: 'Guárdalo en favoritos y te avisamos cuando vuelva.' });
       return false;

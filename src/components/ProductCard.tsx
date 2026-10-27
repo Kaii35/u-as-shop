@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Heart, Plus } from 'lucide-react';
 import { getCategory } from '../data/catalog';
-import { cn, discountPct, hasPriceBySize, stockInfo } from '../lib/utils';
+import { availability, canBuy, cn, discountPct, hasPriceBySize } from '../lib/utils';
 import { useStore } from '../store/StoreContext';
 import type { Product } from '../types';
 import { Button } from './ui/Button';
@@ -29,8 +29,8 @@ function FavButton({ product, className }: { product: Product; className?: strin
   );
 }
 
-function StockLine({ stock }: { stock: number }) {
-  const s = stockInfo(stock);
+function StockLine({ product }: { product: Product }) {
+  const s = availability(product);
   return (
     <span className="flex items-center gap-1.5 text-meta text-mist">
       <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', s.dot)} />
@@ -54,16 +54,18 @@ export function ProductCard({ product: p, layout = 'grid' }: { product: Product;
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="label-xs">{p.brand} · {getCategory(p.categoryId)?.name}</span>
           <Link to={href} className="text-body font-medium leading-snug text-pretty hover:text-clay">{p.name}</Link>
-          <span className="flex items-center gap-1.5 text-meta text-mist">
-            <RatingStars rating={p.rating} size={11} />
-            <span className="tnum">{p.rating.toFixed(1)}</span>
-            <span>({p.reviewCount})</span>
-          </span>
-          <StockLine stock={p.stock} />
+          {p.reviewCount > 0 && (
+            <span className="flex items-center gap-1.5 text-meta text-mist">
+              <RatingStars rating={p.rating} size={11} />
+              <span className="tnum">{p.rating.toFixed(1)}</span>
+              <span>({p.reviewCount})</span>
+            </span>
+          )}
+          <StockLine product={p} />
           <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-1.5">
             <PriceDisplay price={p.price} oldPrice={p.oldPrice} from={hasPriceBySize(p)} size="sm" />
             <div className="flex gap-1.5">
-              <Button size="sm" onClick={() => addToCart(p.id)} disabled={p.stock === 0}>Agregar</Button>
+              <Button size="sm" onClick={() => addToCart(p.id)} disabled={!canBuy(p)}>Agregar</Button>
               <FavButton product={p} className="h-9 w-9 rounded border border-line" />
             </div>
           </div>
@@ -103,11 +105,14 @@ export function ProductCard({ product: p, layout = 'grid' }: { product: Product;
       <div className="flex flex-1 flex-col gap-1 pt-2.5">
         <span className="label-xs">{p.brand}</span>
         <Link to={href} className="text-body leading-snug text-pretty transition-colors hover:text-clay">{p.name}</Link>
-        <span className="flex items-center gap-1 text-meta text-mist">
-          <RatingStars rating={p.rating} size={11} />
-          <span className="tnum ml-0.5">{p.rating.toFixed(1)}</span>
-          <span>({p.reviewCount})</span>
-        </span>
+        {/* Sin reseñas no se pintan estrellas: "0.0 (0)" se lee como mala nota. */}
+        {p.reviewCount > 0 && (
+          <span className="flex items-center gap-1 text-meta text-mist">
+            <RatingStars rating={p.rating} size={11} />
+            <span className="tnum ml-0.5">{p.rating.toFixed(1)}</span>
+            <span>({p.reviewCount})</span>
+          </span>
+        )}
         {p.shades && (
           <div className="flex items-center gap-1">
             {p.shades.slice(0, 5).map((s) => (
@@ -119,11 +124,11 @@ export function ProductCard({ product: p, layout = 'grid' }: { product: Product;
         <div className="mt-auto flex items-end justify-between gap-2 pt-2">
           <div className="flex flex-col gap-1">
             <PriceDisplay price={p.price} oldPrice={p.oldPrice} from={hasPriceBySize(p)} size="sm" />
-            <StockLine stock={p.stock} />
+            <StockLine product={p} />
           </div>
           <button
             onClick={() => addToCart(p.id)}
-            disabled={p.stock === 0}
+            disabled={!canBuy(p)}
             aria-label={`Agregar ${p.name} al carrito`}
             className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded border border-line text-ink transition-colors hover:border-ink hover:bg-ink hover:text-on-ink disabled:pointer-events-none disabled:opacity-35"
           >

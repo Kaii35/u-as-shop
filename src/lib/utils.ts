@@ -14,6 +14,27 @@ export const hasPriceBySize = (p: Product) => !!p.sizes?.some((s) => s.price);
 export const variantLabel = (p: Product, shade = 0, size = 0) =>
   [p.shades?.[shade]?.name, p.sizes?.[size]?.label].filter(Boolean).join(' / ');
 
+/**
+ * Un producto con precio 0 está publicado pero aún sin precio (el catálogo
+ * real se cargó antes de tener la lista de precios). Se ve, pero no se vende.
+ */
+export const hasPrice = (p: Product) => p.price > 0;
+
+/** Lo que se pinta bajo el precio. Sin precio no tiene sentido decir "Agotado". */
+export function availability(p: Product) {
+  if (!hasPrice(p)) return { label: 'Disponible pronto', dot: 'bg-mist' };
+  return stockInfo(p.stock);
+}
+
+/** Se puede agregar al carrito: tiene precio y unidades. */
+export const canBuy = (p: Product) => hasPrice(p) && p.stock > 0;
+
+/** Destacados de portada y buscador. Sin ninguno marcado, los primeros del catálogo. */
+export const bestSellers = (list: Product[], n: number) => {
+  const best = list.filter((p) => p.tags.includes('best'));
+  return (best.length ? best : list).slice(0, n);
+};
+
 export function stockInfo(stock: number) {
   // `mist` y no un gris propio: era el unico hex suelto de este archivo y no
   // sabia nada del tema, asi que en oscuro seguia siendo el mismo gris frio.

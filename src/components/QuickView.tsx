@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { getProduct } from '../data/catalog';
-import { cn, hasPriceBySize, stockInfo } from '../lib/utils';
+import { availability, canBuy, cn, hasPrice, hasPriceBySize } from '../lib/utils';
 import { useStore } from '../store/StoreContext';
 import { Button } from './ui/Button';
 import { CloseButton, Modal } from './ui/Overlays';
@@ -10,7 +10,7 @@ export function QuickView() {
   const { quickViewId, closeQuickView, addToCart } = useStore();
   const navigate = useNavigate();
   const p = quickViewId ? getProduct(quickViewId) : undefined;
-  const stock = p ? stockInfo(p.stock) : null;
+  const stock = p ? availability(p) : null;
 
   return (
     <Modal open={!!p} onClose={closeQuickView} className="max-w-[760px]" label="Vista rápida">
@@ -32,7 +32,7 @@ export function QuickView() {
             )}
             <span className="flex items-center gap-1.5 text-cap text-ash"><span className={cn('h-1.5 w-1.5 rounded-full', stock.dot)} />{stock.label}</span>
             <div className="mt-auto flex flex-col gap-2 pt-2">
-              <Button onClick={() => addToCart(p.id)} disabled={!p.stock}>Agregar al carrito</Button>
+              <Button onClick={() => addToCart(p.id)} disabled={!canBuy(p)}>{hasPrice(p) ? 'Agregar al carrito' : 'Disponible pronto'}</Button>
               <Button variant="secondary" onClick={() => { closeQuickView(); navigate(`/producto/${p.slug}`); }}>Ver detalle completo</Button>
             </div>
           </div>

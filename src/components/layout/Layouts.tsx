@@ -1,13 +1,12 @@
 import { Link, Outlet } from 'react-router-dom';
 import { ArrowLeft, Lock } from 'lucide-react';
-import { AnnouncementBar, Header } from '../Header';
+import { Header } from '../Header';
 import { Footer } from '../Footer';
 import { Logo } from '../ui/Primitives';
 
 export function StoreLayout() {
   return (
     <div className="min-h-screen">
-      <AnnouncementBar />
       <Header />
       <main><Outlet /></main>
       <Footer />

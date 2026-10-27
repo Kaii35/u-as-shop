@@ -105,11 +105,12 @@ export default {
          * exactamente como la dibujo el estudio-; lo que hace falta es una
          * cara para los titulares que no desentone con ella.
          *
-         * Bodoni Moda es una didona: alto contraste entre asta y filete y
-         * serifas planas, que es justo lo que define a Lamoric Rowen. Es
-         * variable, asi que trae los pesos que la interfaz necesita.
+         * Poppins: sans geometrica, de trazo parejo y buen peso. Se cambio
+         * la Bodoni Moda (didona de alto contraste) porque en tamanos medios
+         * sus filetes se perdian y los titulares costaba leerlos. Se carga
+         * tambien en cursiva para los `<em>` de los titulares.
          */
-        display: ['Bodoni Moda', 'Georgia', 'serif'],
+        display: ['Poppins', 'system-ui', 'sans-serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {

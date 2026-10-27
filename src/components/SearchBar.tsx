@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock, Search } from 'lucide-react';
 import { brands, categories, normalize, products, searchText, trendingSearches } from '../data/catalog';
-import { cn, formatCOP, usePersistentState } from '../lib/utils';
+import { bestSellers, cn, formatCOP, usePersistentState } from '../lib/utils';
 import { Img } from './ui/Primitives';
 
 interface Props {
@@ -23,7 +23,7 @@ export function SearchBar({ variant = 'inline', onClose }: Props) {
 
   const suggestions = term
     ? products.filter((p) => searchText(p).includes(term)).slice(0, 4)
-    : products.filter((p) => p.tags.includes('best')).slice(0, 4);
+    : bestSellers(products, 4);
   const cats = term ? categories.filter((c) => normalize(c.name).includes(term)).slice(0, 3) : [];
   const brs = term ? brands.filter((b) => normalize(b.name).includes(term)).slice(0, 3) : [];
 
@@ -105,7 +105,7 @@ export function SearchBar({ variant = 'inline', onClose }: Props) {
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="label-xs">{p.brand}</span>
                 <span className="truncate text-body leading-tight">{p.name}</span>
-                <span className="tnum text-cap font-semibold text-ink">{formatCOP(p.price)}</span>
+                <span className="tnum text-cap font-semibold text-ink">{p.price > 0 ? formatCOP(p.price) : 'Precio por confirmar'}</span>
               </span>
             </button>
           ))}

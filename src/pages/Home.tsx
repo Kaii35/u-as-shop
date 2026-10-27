@@ -1,25 +1,19 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, CreditCard, Headset, ShieldCheck, Truck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Check } from 'lucide-react';
 import { brands, categories, media, products } from '../data/catalog';
-import { cn, isEmail } from '../lib/utils';
-import { CategoryCard } from '../components/CategoryCard';
+import type { Brand } from '../types';
+import { BRAND_LOGOS, brandLogoSrc } from '../data/brandLogos';
+import { bestSellers, cn, isEmail } from '../lib/utils';
+import { CategoryBento } from '../components/CategoryBento';
 import { ProductGrid } from '../components/ProductCard';
 import { Button } from '../components/ui/Button';
 import { Reveal } from '../components/ui/Overlays';
 import { Img, SectionHeading } from '../components/ui/Primitives';
-import { MinimalistHero } from '@/components/ui/minimalist-hero';
-import { Component as StackInteractor } from '@/components/ui/connoisseur-stack-interactor';
-import { FeatureCards } from '@/components/ui/feature-cards';
-import { BrandLogo } from '../components/ui/BrandLogo';
-import type { ProductTag } from '../types';
+import HeroAbanico from '../components/HeroAbanico';
+import { SpecialtyShowcase } from '../components/SpecialtyShowcase';
+import { PromisesBento } from '../components/PromisesBento';
 
-const PROMISES = [
-  { kicker: 'Envíos', title: 'Gratis desde $250.000', detail: 'A toda Colombia · Express en ciudades principales', image: '/images/promesas/envios.jpg', Icon: Truck },
-  { kicker: 'Pagos', title: 'Paga como prefieras', detail: 'Tarjeta, PSE, Nequi, Daviplata o contra entrega', image: '/images/promesas/pagos.jpg', Icon: CreditCard },
-  { kicker: 'Garantía', title: 'Producto original', detail: 'Distribuidor autorizado · 12 meses', image: '/images/promesas/garantia.jpg', Icon: ShieldCheck },
-  { kicker: 'Asesoría', title: 'Soporte técnico real', detail: 'Por WhatsApp, de lunes a sábado', image: '/images/promesas/asesoria.jpg', Icon: Headset },
-];
 
 export default function Home() {
   return (
@@ -37,86 +31,16 @@ export default function Home() {
 }
 
 /**
- * Banner de entrada (componente MinimalistHero).
- *
- * Se apagan su cabecera y su pie: la tienda ya tiene header con buscador,
- * carrito y cuenta, y footer propio, así que mostrarlos duplicaría el menú.
- * El círculo va en terracota de marca en vez del amarillo del original, y la
- * foto se enmascara en círculo porque el catálogo son fotos rectangulares,
- * no recortes PNG con fondo transparente.
+ * Banner de entrada: abanico de uñas animado (HeroAbanico). Los números son
+ * los del catálogo real, no fijos.
  */
 function Hero() {
-  const navigate = useNavigate();
-
   return (
-    <section className="relative isolate overflow-hidden">
-      {/* Fondo en tres capas, todas decorativas y por detras del contenido:
-          un degradado calido que arranca en el tinte de marca, dos halos
-          difusos que dan profundidad, y una reticula de puntos muy tenue
-          con mascara para que se desvanezca por los bordes en vez de
-          cortarse en seco.
-
-          El degradado cierra en `canvas`, no en blanco: tiene que fundirse con
-          el fondo de pagina, y en oscuro ese fondo es carbon. */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-clay-soft via-sand to-canvas" />
-      {/* El halo de acento se mide sobre lo que hay detras: en oscuro `clay`
-          sube de luminosidad y al 20% se convertia en una mancha naranja que
-          competia con el titular, asi que ahi pesa la mitad. */}
-      <div className="absolute -left-24 top-0 -z-10 h-[420px] w-[420px] rounded-full bg-clay/20 blur-[130px] dark:bg-clay/10" />
-      {/* El segundo halo va en `clay-soft`, que en oscuro ya es un marron
-          profundo: aporta temperatura sin aclarar la zona. */}
-      <div className="absolute -right-20 bottom-0 -z-10 h-[380px] w-[380px] rounded-full bg-clay-soft blur-[110px]" />
-      {/*
-         La reticula llevaba el hex `#141110` incrustado y en oscuro eran puntos
-         negros sobre carbon: invisibles. Un valor arbitrario no acepta un token
-         de Tailwind, pero si acepta la variable CSS en crudo, asi que el punto
-         es `rgb(var(--ink))` y cambia de tema solo, sin variante `dark:`.
-         La opacidad si sube un punto: un punto claro al 7% sobre carbon se
-         percibe mas tenue que uno oscuro al 7% sobre crema.
-      */}
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 opacity-[0.07] [background-image:radial-gradient(circle,rgb(var(--ink))_1px,transparent_1px)] [background-size:20px_20px] [-webkit-mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)] dark:opacity-[0.1]"
-      />
-
-      <div className="container-x">
-        <MinimalistHero
-          className="h-auto min-h-[520px] px-0 py-8 md:min-h-[600px] md:px-0 md:py-10"
-          showHeader={false}
-          showFooter={false}
-          logoText="Natalia Sánchez"
-          navLinks={[]}
-          socialLinks={[]}
-          locationText=""
-          mainText="Esmaltes, geles, herramientas y nail art de las marcas que usan las profesionales. Envíos a toda Colombia."
-          readMoreLink="/tienda"
-          imageSrc="/images/editorial/hero-portrait.jpg"
-          imageAlt="Manos con manicura profesional"
-          imageShape="circle"
-          // El disco de acento es una superficie, no un blanco literal: en
-          // oscuro tiene que quedar un escalon por encima del fondo, no brillar.
-          accentClassName="bg-surface/70"
-          overlayText={{ part1: 'menos', part2: 'es más.' }}
-          actions={
-            <div className="mt-5 flex flex-col items-center gap-5 md:items-start">
-              <div className="flex flex-wrap justify-center gap-2 md:justify-start">
-                <Link to="/tienda"><Button size="lg">Ver catálogo <ArrowRight size={15} strokeWidth={2} /></Button></Link>
-                <Link to="/tienda?oferta=1"><Button size="lg" variant="secondary">Ofertas</Button></Link>
-              </div>
-              <dl className="flex gap-6">
-                {[[`${products.length}`, 'productos'], [`${categories.length}`, 'categorías'], [`${brands.length}`, 'marcas']].map(([n, l]) => (
-                  <div key={l} className="flex flex-col">
-                    <dt className="tnum display text-h5 leading-none">{n}</dt>
-                    <dd className="text-meta text-mist">{l}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          }
-          onReadMore={() => navigate('/tienda')}
-        />
-      </div>
-    </section>
+    <HeroAbanico
+      catalogHref="/tienda"
+      offersHref="/tienda?oferta=1"
+      stats={[[products.length, 'productos'], [categories.length, 'categorías'], [brands.length, 'marcas']]}
+    />
   );
 }
 
@@ -145,12 +69,7 @@ function Promises() {
             Cuatro cosas que damos por sentadas para que tú solo pienses en el servicio.
           </p>
         </div>
-        <FeatureCards
-          items={PROMISES.map(({ kicker, title, detail, image, Icon }) => ({
-            kicker, title, detail, image,
-            icon: <Icon size={15} strokeWidth={2} />,
-          }))}
-        />
+        <PromisesBento />
       </div>
     </section>
   );
@@ -164,24 +83,13 @@ function Categories() {
         title="Compra por categoría"
         action={<Link to="/tienda" className="link-arrow">Ver toda la tienda <ArrowRight size={14} strokeWidth={2} /></Link>}
       />
-      {/* Nueve categorías en una retícula uniforme de 3×3; todas las fotos
-          comparten proporción 4:3 para que ninguna se recorte de más. */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        {categories.map((c, i) => (
-          <CategoryCard key={c.id} category={c} large={i === 0} className="aspect-[4/3]" />
-        ))}
-      </div>
+      <CategoryBento categories={categories} products={products} />
     </section>
   );
 }
 
-/**
- * Colecciones destacadas (componente StackInteractor). Tres categorías reales
- * del catálogo; el componente sólo admite tres porque sus clipId están
- * cableados a los tres <clipPath> de su SVG.
- */
+/** Vitrina por especialidad (SpecialtyShowcase), con productos reales. */
 function Collections() {
-  const navigate = useNavigate();
   return (
     // Banda de fondo, no una tarjeta: `sand` es recesiva en claro pero ELEVADA
     // en oscuro, y la seccion acabaria mas clara que la pagina. `canvas-sunk` es
@@ -193,14 +101,7 @@ function Collections() {
           title="Explora por especialidad"
           action={<Link to="/tienda" className="link-arrow">Ver toda la tienda <ArrowRight size={14} strokeWidth={2} /></Link>}
         />
-        <StackInteractor
-          items={[
-            { num: '01', name: 'Esmaltes semipermanentes', clipId: 'clip-original', image: '/images/collections/semipermanentes.jpg', href: '/tienda?cat=esmaltes-semipermanentes' },
-            { num: '02', name: 'Nail art y decoración', clipId: 'clip-hexagons', image: '/images/collections/nail-art.jpg', href: '/tienda?cat=nail-art-y-decoracion' },
-            { num: '03', name: 'Herramientas y equipos', clipId: 'clip-pixels', image: '/images/collections/herramientas.jpg', href: '/tienda?cat=herramientas-y-equipos' },
-          ]}
-          onSelect={(item) => item.href && navigate(item.href)}
-        />
+        <SpecialtyShowcase categories={categories} products={products} />
       </div>
     </section>
   );
@@ -212,7 +113,7 @@ function Collections() {
  * porque ya hay accesos a esos filtros en el menú y en los banners.
  */
 function Featured() {
-  const list = products.filter((p) => p.tags.includes('best' as ProductTag)).slice(0, 4);
+  const list = bestSellers(products, 4);
   return (
     <section className="container-x section-y">
       <SectionHeading
@@ -228,7 +129,7 @@ function Featured() {
 /** Dos banners promocionales en fila. Sustituyen al mural de campaña anterior. */
 function Promos() {
   const tiles = [
-    { img: media.editMain, kicker: 'Colección cápsula', title: 'The Nail Art Edit', text: 'Foils cromados, cristales y pinceles de detalle.', to: '/tienda?cat=nail-art-y-decoracion', cta: 'Explorar' },
+    { img: media.editMain, kicker: 'Colección cápsula', title: 'The Nail Art Edit', text: 'Foils cromados, cristales y pinceles de detalle.', to: '/tienda?cat=decoracion-y-glitter', cta: 'Explorar' },
     { img: media.editDetail, kicker: 'Hasta 25% menos', title: 'Ofertas del mes', text: 'Selección de esmaltes y bases con descuento.', to: '/tienda?oferta=1', cta: 'Ver ofertas' },
   ];
   return (
@@ -266,10 +167,24 @@ function Promos() {
 }
 
 /**
- * Muro de logos. Los wordmarks viven en BrandLogo y van en currentColor, así
- * que el estado de reposo (gris) y el de foco (tinta) son una sola clase.
+ * Corrección óptica: el alto máximo de cada logo dentro de su caja. Un
+ * wordmark muy ancho (Cristal Style) llena la caja a lo ancho; un sello
+ * redondo (Vive, The Rose) necesita más alto para pesar lo mismo.
+ */
+const BRAND_HEIGHT: Record<string, string> = {
+  'vive-beauty': 'h-[64px] sm:h-[76px]',
+  'the-rose-beauty': 'h-[64px] sm:h-[76px]',
+  'beauty-plus': 'h-[56px] sm:h-[66px]',
+  ilu: 'h-[52px] sm:h-[62px]',
+};
+
+/**
+ * Muro de logos, a color. Las tarjetas son claras en los dos temas porque los
+ * logos oficiales (tinta negra, dorado, naranja) están hechos para fondo
+ * claro; en oscuro quedan como etiquetas sobre la página.
  */
 function Brands() {
+  const list = BRAND_LOGOS.map(({ slug }) => brands.find((b) => b.slug === slug)).filter((b): b is Brand => !!b);
   return (
     <section id="marcas" className="container-x pb-section scroll-mt-24 md:pb-section-lg">
       <SectionHeading
@@ -277,20 +192,23 @@ function Brands() {
         title="Marcas que distribuimos"
         action={<Link to="/tienda" className="link-arrow">Ver todas <ArrowRight size={14} strokeWidth={2} /></Link>}
       />
-      {/* Sin cuadrícula ni recuentos: solo los wordmarks, centrados en su celda. */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-4">
-        {brands.map((b) => (
-          <Link
-            key={b.slug}
-            to={`/tienda?marca=${b.slug}`}
-            title={b.name}
-            className="flex h-[72px] items-center justify-center px-2 text-mist transition-colors duration-300 hover:text-ink"
-          >
-            {/* A dos columnas en movil la celda deja ~149px utiles y los
-                wordmarks mas anchos (Solenne, Lumiere) rozan ese limite:
-                se reducen en bloque en vez de arriesgar un recorte. */}
-            <BrandLogo name={b.name} className="scale-[0.78] sm:scale-100" />
-          </Link>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {list.map((b) => (
+            <Link
+              key={b.slug}
+              to={`/tienda?marca=${b.slug}`}
+              title={b.name}
+              // tema-ok: tarjeta clara en los dos temas, los logos oficiales son para fondo claro
+              className="group flex h-[104px] items-center justify-center rounded border border-line bg-white px-5 transition-[border-color,box-shadow] duration-300 hover:border-ink/30 hover:shadow-card sm:h-[120px]"
+            >
+              <img
+                src={brandLogoSrc(b.slug)}
+                alt=""
+                loading="lazy"
+                className={cn('w-auto max-w-[72%] object-contain transition-transform duration-300 group-hover:scale-105', BRAND_HEIGHT[b.slug] ?? 'max-h-[46px] sm:max-h-[54px]')}
+              />
+              <span className="sr-only">{b.name}</span>
+            </Link>
         ))}
       </div>
     </section>

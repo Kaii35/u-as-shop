@@ -24,7 +24,9 @@ export function ProductGallery({ product }: { product: Product }) {
   };
 
   return (
-    <div className="flex min-w-0 flex-col-reverse gap-2.5 sm:flex-row">
+    // Sin la base de 480px el contenedor se encoge al ancho de las miniaturas
+    // dentro del `flex-wrap` de la ficha y la foto grande queda en 0 px.
+    <div className="flex min-w-0 flex-[1_1_480px] flex-col-reverse gap-2.5 sm:flex-row">
       <div className="flex gap-2 sm:flex-col">
         {images.map((src, i) => (
           <button

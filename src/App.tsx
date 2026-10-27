@@ -19,6 +19,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Account from './pages/Account';
 import Favorites from './pages/Favorites';
+import Legal from './pages/Legal';
 /**
  * El panel se carga aparte y solo al entrar en /admin.
  *
@@ -107,6 +108,8 @@ function Storefront() {
           <Route path="producto/:slug" element={<ProductPage />} />
           <Route path="favoritos" element={<Favorites />} />
           <Route path="cuenta" element={<Account />} />
+          <Route path="legal" element={<Navigate to="/legal/terminos" replace />} />
+          <Route path="legal/:slug" element={<Legal />} />
         </Route>
         <Route element={<AuthShell />}>
           <Route path="ingresar" element={<Login />} />

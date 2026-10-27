@@ -51,6 +51,7 @@ import { env } from '../src/env.js';
 import { hashPassword } from '../src/auth.js';
 import { SETTING_DEFAULTS } from '../src/settings-defaults.js';
 import { incrementStock } from '../src/inventory.js';
+import { importRealCatalog, REAL_PREFIX } from './importar-catalogo.js';
 
 const prisma = new PrismaClient({ log: ['warn', 'error'] });
 
@@ -1041,7 +1042,9 @@ async function seedCatalog(): Promise<void> {
   for (let i = 0; i < CATS.length; i += 1) {
     const [id, name, description] = CATS[i] as CategoryRow;
     const data = {
-      slug: slugify(name),
+      // Prefijo `demo-`: "Pestañas y cejas" existe también en el catálogo
+      // real y el slug es único. La demo va escondida de la tienda.
+      slug: `demo-${slugify(name)}`,
       name,
       description,
       image: `/images/categories/${id}.jpg`,
@@ -1092,9 +1095,12 @@ async function seedCatalog(): Promise<void> {
 
   // Referencias que ya no están en el catálogo: se van, o el panel seguiría
   // listando productos que la tienda dejó de vender hace dos versiones.
-  await prisma.product.deleteMany({ where: { id: { notIn: PRODUCTS.map((p) => p.id) } } });
-  await prisma.category.deleteMany({ where: { id: { notIn: CATS.map((c) => c[0]) } } });
-  await prisma.brand.deleteMany({ where: { id: { notIn: BRAND_NAMES.map((b) => slugify(b)) } } });
+  // El catálogo real (ids `ns-…`, ver importar-catalogo.ts) no es de la demo
+  // y no se toca.
+  const notReal = { NOT: { id: { startsWith: REAL_PREFIX } } };
+  await prisma.product.deleteMany({ where: { id: { notIn: PRODUCTS.map((p) => p.id) }, ...notReal } });
+  await prisma.category.deleteMany({ where: { id: { notIn: CATS.map((c) => c[0]) }, ...notReal } });
+  await prisma.brand.deleteMany({ where: { id: { notIn: BRAND_NAMES.map((b) => slugify(b)) }, ...notReal } });
 }
 
 async function seedUsers(): Promise<void> {
@@ -1181,6 +1187,9 @@ async function main(): Promise<void> {
   await prisma.promotion.deleteMany({});
 
   await seedCatalog();
+  // Después de la demo: carga el catálogo real y vuelve a esconder la demo de
+  // la tienda (sus pedidos siguen alimentando el panel).
+  await importRealCatalog(prisma);
   await seedUsers();
   await seedSettings();
 

@@ -35,7 +35,7 @@ const PAY_METHODS = [
   'Bancolombia · botón de transferencia',
 ];
 
-const SHIP_LABEL: Record<ShippingMethod, string> = { std: 'Estándar', exp: 'Express', pick: 'Recoger en showroom' };
+const SHIP_LABEL: Record<ShippingMethod, string> = { std: 'Estándar', exp: 'Express', pick: 'Recoger en el local (Caldas)' };
 
 function validate(step: number, f: Form): Errors {
   const e: Errors = {};
@@ -277,6 +277,10 @@ export default function Checkout() {
                   <Checkbox checked={f.terms} onChange={(v) => set('terms', v)}>
                     Acepto los términos y condiciones, la política de privacidad y el tratamiento de mis datos personales.
                   </Checkbox>
+                  {/* Los enlaces van fuera: la casilla es un <button> y no puede llevar enlaces dentro. */}
+                  <span className="text-meta text-mist">
+                    Lee los <Link to="/legal/terminos" target="_blank" className="underline underline-offset-2 hover:text-clay">Términos y condiciones</Link> y la <Link to="/legal/privacidad" target="_blank" className="underline underline-offset-2 hover:text-clay">Política de privacidad</Link>.
+                  </span>
                   {errors.terms && <span role="alert" className="text-cap text-danger">{errors.terms}</span>}
                 </>
               )}

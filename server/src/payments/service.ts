@@ -236,6 +236,15 @@ export async function createIntent(input: CreateIntentInput): Promise<CreateInte
             `Ya no vendemos ${inactive.map((p) => p.name).join(', ')}. Quítalo del carrito para continuar.`,
           );
         }
+        // Precio 0 = publicado sin precio todavía (catálogo real recién
+        // cargado). Aunque ya tenga stock, venderlo sería regalarlo.
+        const unpriced = products.filter((p) => p.price <= 0);
+        if (unpriced.length > 0) {
+          throw httpError(
+            400,
+            `${unpriced.map((p) => p.name).join(', ')} aún no tiene precio. Quítalo del carrito para continuar.`,
+          );
+        }
 
         // Precio y costo se congelan en la línea, y el precio sale de la BASE,
         // nunca del cuerpo de la petición: quien controla el navegador

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Facebook, Instagram, Music2, Youtube } from 'lucide-react';
 import { categories } from '../data/catalog';
+import { BUSINESS, fullAddress, whatsappUrl } from '../data/business';
 import { isEmail } from '../lib/utils';
 import { useStore } from '../store/StoreContext';
 import { NAV_ITEMS } from './Header';
@@ -14,12 +15,11 @@ const SOCIAL = [
   { label: 'Facebook', Icon: Facebook },
   { label: 'YouTube', Icon: Youtube },
 ];
-const HELP = [
-  ['WhatsApp +57 310 000 0000', '#'],
-  ['hola@nataliasanchez.co', 'mailto:hola@nataliasanchez.co'],
-  ['Envíos y entregas', '#'],
-  ['Cambios y devoluciones', '#'],
-  ['Preguntas frecuentes', '#'],
+const HELP: Array<[string, string]> = [
+  [`WhatsApp ${BUSINESS.whatsapp}`, whatsappUrl()],
+  [BUSINESS.email, `mailto:${BUSINESS.email}`],
+  ['Envíos y entregas', '/legal/envios'],
+  ['Cambios, devoluciones y garantías', '/legal/cambios'],
 ];
 
 export function Footer() {
@@ -76,8 +76,13 @@ export function Footer() {
         </div>
         <div className={col}>
           <span className={head}>Ayuda</span>
-          {HELP.map(([label, href]) => <a key={label} href={href} className={link}>{label}</a>)}
-          <span className="pt-1 text-meta text-on-slab/45">Lun a sáb · 8:00 a. m. – 7:00 p. m.</span>
+          {HELP.map(([label, href]) =>
+            href.startsWith('/')
+              ? <Link key={label} to={href} className={link}>{label}</Link>
+              : <a key={label} href={href} className={link} {...(href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}>{label}</a>,
+          )}
+          <span className="pt-1 text-meta text-on-slab/45">{BUSINESS.hours}</span>
+          <span className="text-meta text-on-slab/45">{fullAddress}</span>
         </div>
       </div>
 
@@ -88,9 +93,10 @@ export function Footer() {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-meta text-on-slab/45">
-          <a href="#" className="transition-colors hover:text-on-slab">Privacidad</a>
-          <a href="#" className="transition-colors hover:text-on-slab">Términos</a>
-          <span>© {new Date().getFullYear()} Natalia Sánchez</span>
+          <Link to="/legal/terminos" className="transition-colors hover:text-on-slab">Términos</Link>
+          <Link to="/legal/privacidad" className="transition-colors hover:text-on-slab">Privacidad</Link>
+          <Link to="/legal/cookies" className="transition-colors hover:text-on-slab">Cookies</Link>
+          <span>© {new Date().getFullYear()} {BUSINESS.name} · NIT {BUSINESS.nit}</span>
         </div>
       </div>
       {/* Deja sitio para la barra inferior fija de móvil. */}

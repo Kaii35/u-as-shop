@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Heart, RotateCcw, ShieldCheck, ShoppingBag, Truck } from 'lucide-react';
 import { getCategory, getProductBySlug, products, ratingDistribution, reviews, slugify } from '../data/catalog';
-import { cn, discountPct, formatCOP, stockInfo, unitPrice } from '../lib/utils';
+import { availability, canBuy, cn, discountPct, formatCOP, hasPrice, unitPrice } from '../lib/utils';
 import { useStore } from '../store/StoreContext';
 import { ProductGallery } from '../components/ProductGallery';
 import { ProductGrid } from '../components/ProductCard';
@@ -39,7 +39,9 @@ function ProductDetail({ product: p }: { product: Product }) {
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('desc');
   const category = getCategory(p.categoryId);
-  const stock = stockInfo(p.stock);
+  const stock = availability(p);
+  const priced = hasPrice(p);
+  const hasReviews = p.reviewCount > 0;
   const price = unitPrice(p, size);
   const fav = isFav(p.id);
 
@@ -71,13 +73,15 @@ function ProductDetail({ product: p }: { product: Product }) {
               <span className="text-cap text-mist">Ref. {p.ref}</span>
             </div>
             <h1 className="display text-h3 leading-[1.04] text-balance">{p.name}</h1>
-            <a href="#resenas" className="flex items-center gap-2.5 text-cap"><RatingStars rating={p.rating} size={15} />{p.rating.toFixed(1)} <span className="text-mist">· {p.reviewCount} reseñas</span></a>
+            {hasReviews && (
+              <a href="#resenas" className="flex items-center gap-2.5 text-cap"><RatingStars rating={p.rating} size={15} />{p.rating.toFixed(1)} <span className="text-mist">· {p.reviewCount} reseñas</span></a>
+            )}
           </div>
 
           <div className="flex flex-wrap items-baseline gap-3.5">
             <PriceDisplay price={price} oldPrice={p.oldPrice} size="lg" />
             {p.oldPrice && <span className="rounded-full bg-sand px-2.5 py-[5px] text-cap font-semibold text-clay">-{discountPct(p)}%</span>}
-            <span className="text-cap text-mist">IVA incluido</span>
+            {priced && <span className="text-cap text-mist">IVA incluido</span>}
           </div>
 
           {p.shades && (
@@ -113,18 +117,18 @@ function ProductDetail({ product: p }: { product: Product }) {
             </fieldset>
           )}
 
-          <span className="flex items-center gap-2 text-body"><span className={cn('h-2 w-2 rounded-full', stock.dot)} />{stock.label}<span className="text-mist">· Despacho en 24 h hábiles</span></span>
+          <span className="flex items-center gap-2 text-body"><span className={cn('h-2 w-2 rounded-full', stock.dot)} />{stock.label}{canBuy(p) && <span className="text-mist">· Despacho en 24 h hábiles</span>}</span>
 
           <div className="flex flex-wrap gap-2.5">
             <QuantitySelector value={qty} onChange={setQty} max={Math.max(p.stock, 1)} />
-            <Button size="lg" className="flex-[1_1_220px]" disabled={!p.stock} onClick={() => addToCart(p.id, { shade, size, qty })}>
-              <ShoppingBag size={16} strokeWidth={1.5} /> {p.stock ? `Agregar al carrito · ${formatCOP(price * qty)}` : 'Agotado'}
+            <Button size="lg" className="flex-[1_1_220px]" disabled={!canBuy(p)} onClick={() => addToCart(p.id, { shade, size, qty })}>
+              <ShoppingBag size={16} strokeWidth={1.5} /> {!priced ? 'Disponible pronto' : p.stock ? `Agregar al carrito · ${formatCOP(price * qty)}` : 'Agotado'}
             </Button>
             <button onClick={() => toggleFav(p.id)} aria-pressed={fav} aria-label={fav ? 'Quitar de favoritos' : 'Guardar en favoritos'} className="flex h-14 w-14 items-center justify-center rounded-full border border-line text-clay transition-colors hover:border-clay">
               <Heart size={20} strokeWidth={1.5} fill={fav ? 'currentColor' : 'none'} />
             </button>
           </div>
-          <Button size="lg" variant="secondary" disabled={!p.stock} onClick={buyNow}>Comprar ahora</Button>
+          <Button size="lg" variant="secondary" disabled={!canBuy(p)} onClick={buyNow}>Comprar ahora</Button>
 
           <div className="grid grid-cols-3 gap-px overflow-hidden rounded border border-line bg-ink/10">
             {[[Truck, 'Envío gratis desde $250.000'], [RotateCcw, 'Cambios hasta 30 días'], [ShieldCheck, 'Producto original garantizado']].map(([Icon, text]) => {
@@ -169,6 +173,10 @@ function ProductDetail({ product: p }: { product: Product }) {
       <section id="resenas" className="mt-[clamp(56px,6vw,96px)] flex scroll-mt-32 flex-wrap gap-[clamp(32px,5vw,80px)]">
         <div className="flex flex-[0_1_300px] flex-col gap-4">
           <h2 className="display text-h4">Reseñas</h2>
+          {/* Las reseñas de ejemplo solo acompañan a productos con reseñas: en
+              uno real sin ninguna se leerían como opiniones inventadas. */}
+          {!hasReviews && <p className="text-body text-ash">Este producto aún no tiene reseñas. ¡Sé la primera en contarnos qué tal te fue!</p>}
+          {hasReviews && <>
           <div className="flex items-baseline gap-3">
             <span className="display text-h4 leading-none text-clay">{p.rating.toFixed(1)}</span>
             <span className="flex flex-col gap-1.5 text-cap text-mist"><RatingStars rating={p.rating} size={15} />{p.reviewCount} reseñas</span>
@@ -182,10 +190,11 @@ function ProductDetail({ product: p }: { product: Product }) {
               </div>
             ))}
           </div>
+          </>}
           <Button variant="secondary" size="sm" className="mt-2 self-start">Escribir una reseña</Button>
         </div>
         <div className="flex flex-[1_1_460px] flex-col">
-          {reviews.map((r) => (
+          {hasReviews && reviews.map((r) => (
             <article key={r.author} className="flex flex-col gap-2.5 border-t border-line py-[26px]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">

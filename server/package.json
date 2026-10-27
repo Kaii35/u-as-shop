@@ -15,6 +15,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "seed": "tsx prisma/seed.ts",
+    "catalog:import": "tsx prisma/importar-catalogo.ts",
     "payments:test": "tsx scripts/pruebas-wompi.ts",
     "webhook:tunnel": "node scripts/tunel-webhook.mjs",
     "payments:report": "tsx scripts/informe-wompi.ts",

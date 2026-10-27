@@ -18,6 +18,8 @@
     "api:install": "npm --prefix server install",
     "api:migrate": "npm --prefix server run prisma:migrate",
     "api:seed": "npm --prefix server run seed",
+    "catalog:photos": "python scripts/exportar-fotos-catalogo.py",
+    "catalog:import": "npm --prefix server run catalog:import",
     "api:typecheck": "npm --prefix server run typecheck",
     "api:payments-check": "npm --prefix server run payments:check",
     "setup": "npm run db:up && npm run api:install && npm --prefix server run prisma:generate && npm --prefix server run prisma:deploy && npm run api:seed",

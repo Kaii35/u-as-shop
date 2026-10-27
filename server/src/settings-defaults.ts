@@ -27,14 +27,14 @@ export const SETTING_DEFAULTS: readonly SettingDefinition[] = [
     label: 'Correo de contacto',
     group: 'tienda',
     type: 'text',
-    value: 'hola@nataliasanchez.co',
+    value: 'nataliasancheztu@gmail.com',
   },
   {
     key: 'store.phone',
     label: 'WhatsApp de pedidos',
     group: 'tienda',
     type: 'text',
-    value: '+57 300 000 0000',
+    value: '+57 311 350 7700',
   },
   {
     key: 'shipping.fee',

@@ -106,6 +106,9 @@ export default function Register() {
           <Checkbox checked={terms} onChange={(v) => { setTerms(v); setErrors((x) => ({ ...x, terms: undefined })); }} className="text-cap">
             Acepto los términos y la política de tratamiento de datos.
           </Checkbox>
+          <span className="text-meta text-mist">
+            Lee los <Link to="/legal/terminos" target="_blank" className="underline underline-offset-2 hover:text-clay">Términos</Link> y la <Link to="/legal/privacidad" target="_blank" className="underline underline-offset-2 hover:text-clay">Política de privacidad</Link>.
+          </span>
           {errors.terms && <span role="alert" className="text-meta text-danger">{errors.terms}</span>}
         </div>
         <Button type="submit" size="lg" loading={loading}>{loading ? 'Creando tu cuenta…' : 'Crear cuenta'}</Button>

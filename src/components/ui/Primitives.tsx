@@ -42,6 +42,11 @@ export function PriceDisplay({ price, oldPrice, from, size = 'md', className }: 
 }) {
   const main = { sm: 'text-body', md: 'text-h5', lg: 'text-h3' }[size];
   const old = { sm: 'text-meta', md: 'text-cap', lg: 'text-lead' }[size];
+  if (price <= 0) {
+    // Producto publicado sin precio todavía: "$0" parecería un regalo.
+    const pending = { sm: 'text-cap', md: 'text-body', lg: 'text-lead' }[size];
+    return <span className={cn('font-medium leading-none text-ash', pending, className)}>Precio por confirmar</span>;
+  }
   return (
     <span className={cn('flex flex-wrap items-baseline gap-2', className)}>
       <span className={cn('tnum font-display font-semibold leading-none', main, oldPrice ? 'text-clay' : 'text-ink')}>
