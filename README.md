@@ -31,6 +31,19 @@ npm run dev        # tienda y panel en http://localhost:5173
 el cliente de Prisma, aplica las migraciones y siembra los datos. Es idempotente:
 correrlo otra vez deja exactamente la misma base.
 
+**El catálogo real** (161 productos en 11 categorías, sacados de
+`docs/catalogo.pdf`) viene en `server/prisma/catalogo-real.json` y el seed lo
+carga solo. Si ya tenías la base montada de antes, basta con:
+
+```bash
+git pull
+npm run catalog:import   # carga o actualiza los 161 productos sin borrar nada
+```
+
+Las fotos están en `public/images/products/catalogo/` y llegan con el `git pull`.
+Los productos aún no tienen precio: salen como "Precio por confirmar" y no se
+pueden comprar hasta ponérselo desde el panel.
+
 **Sin la API la tienda igual abre.** Si no responde en un segundo y medio,
 arranca con el catálogo de ejemplo de `src/data/catalog.ts`. El panel sí la
 necesita, obviamente.
