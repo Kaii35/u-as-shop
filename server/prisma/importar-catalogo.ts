@@ -10,10 +10,11 @@
  *   - Lo de la demo NO se borra: los pedidos de ejemplo apuntan a esos
  *     productos y el panel perdería su historia. Se apagan (`active: false`),
  *     y la tienda deja de mostrarlos.
- *   - Precio, costo y stock solo se escriben al CREAR un producto (en 0). Si
- *     la dueña ya los llenó desde el panel, volver a importar no los pisa.
- *     Lo que sí se actualiza es lo que sale del PDF: nombre, fotos,
- *     descripción, categoría, marca, presentación, tonos y tallas.
+ *   - Costo y stock solo se escriben al CREAR un producto (en 0). El precio
+ *     sale de la lista (`precio`) y al reimportar solo llena los que siguen en
+ *     0: si la dueña ya lo cambió desde el panel, no se pisa. Lo que sí se
+ *     actualiza siempre es lo que sale del PDF: nombre, fotos, descripción,
+ *     categoría, marca, presentación, tonos y tallas u opciones con precio.
  *
  * Las fotos las genera scripts/exportar-fotos-catalogo.py.
  */
@@ -40,6 +41,10 @@ interface RawProduct {
   desc: string;
   tonos?: Array<[string, string]>;
   tallas?: string[];
+  /** Precio de lista en pesos. Sin él, el producto queda "por confirmar". */
+  precio?: number;
+  /** Referencias con precio propio: [etiqueta, precio]. Reemplazan a `tallas`. */
+  opciones?: Array<[string, number]>;
   revisar?: boolean;
 }
 
@@ -123,24 +128,34 @@ export async function importRealCatalog(prisma: PrismaClient): Promise<{ product
       usage: data.usos[p.uso] as string,
       images: p.fotos.map((_, n) => `/images/products/catalogo/${p.id}-${n + 1}.webp`),
       shades: p.tonos?.length ? p.tonos.map(([name, hex]) => ({ name, hex })) : Prisma.DbNull,
-      sizes: p.tallas?.length ? p.tallas.map((label) => ({ label })) : Prisma.DbNull,
+      sizes: p.opciones?.length
+        ? p.opciones.map(([label, price]) => ({ label, price }))
+        : p.tallas?.length
+          ? p.tallas.map((label) => ({ label }))
+          : Prisma.DbNull,
       active: true,
     };
+    const price = p.precio ?? 0;
     await prisma.product.upsert({
       where: { id: p.id },
       create: {
         id: p.id,
         sku: p.id.slice(REAL_PREFIX.length).toUpperCase(),
         ...fromPdf,
-        // Sin precio todavía: la tienda lo muestra como "Precio por confirmar"
-        // y no deja agregarlo al carrito.
-        price: 0,
+        // Sin precio (0), la tienda lo muestra como "Precio por confirmar" y
+        // no deja agregarlo al carrito.
+        price,
         cost: 0,
         stock: 0,
         tags: [],
       },
       update: fromPdf,
     });
+    // Al reimportar, el precio de la lista solo llena los que siguen en 0:
+    // uno que la dueña ya cambió desde el panel no se pisa.
+    if (price > 0) {
+      await prisma.product.updateMany({ where: { id: p.id, price: 0 }, data: { price } });
+    }
   }
 
   // Productos reales que ya no están en el JSON: se apagan, no se borran, por

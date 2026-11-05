@@ -197,15 +197,42 @@ function shippingFor(
  * queda ni pedido, ni cobro, ni unidades apartadas: mejor no vender que
  * vender lo que no hay.
  */
+/**
+ * Precio de una línea. Si el producto tiene presentaciones con precio propio,
+ * manda el de la presentación elegida, que viene dentro del texto de la
+ * variante ("Tono / Presentación", el mismo que arma la tienda). Si no se
+ * reconoce ninguna, se rechaza: cobrar el precio base por una referencia más
+ * cara sería venderla por debajo.
+ */
+function priceForVariant(
+  product: { name: string; price: number; sizes: Prisma.JsonValue },
+  variant: string | undefined,
+): number {
+  const sizes = Array.isArray(product.sizes)
+    ? (product.sizes as Array<{ label?: unknown; price?: unknown }>)
+    : [];
+  if (!sizes.some((s) => typeof s.price === 'number' && s.price > 0)) return product.price;
+
+  const parts = (variant ?? '').split(' / ').map((part) => part.trim());
+  const chosen = sizes.find((s) => typeof s.label === 'string' && parts.includes(s.label));
+  if (!chosen) {
+    throw httpError(400, `Elige una presentación de ${product.name} para continuar.`);
+  }
+  return typeof chosen.price === 'number' && chosen.price > 0 ? chosen.price : product.price;
+}
+
 export async function createIntent(input: CreateIntentInput): Promise<CreateIntentResult> {
-  const ids = input.items.map((item) => item.productId);
-  const repeated = ids.find((id, index) => ids.indexOf(id) !== index);
-  if (repeated) {
+  // Un mismo producto puede venir en varias líneas si cambia la variante (dos
+  // tonos, dos presentaciones); lo que no puede repetirse es la pareja.
+  const keys = input.items.map((item) => `${item.productId}|${item.variant ?? ''}`);
+  const repeatedIndex = keys.findIndex((key, index) => keys.indexOf(key) !== index);
+  if (repeatedIndex >= 0) {
     throw httpError(
       400,
-      `El producto ${repeated} viene en dos líneas. Súmalo en una sola con la cantidad total.`,
+      `El producto ${input.items[repeatedIndex]?.productId} viene en dos líneas. Súmalo en una sola con la cantidad total.`,
     );
   }
+  const ids = [...new Set(input.items.map((item) => item.productId))];
 
   const write = (): Promise<CreateIntentResult> =>
     prisma.$transaction(
@@ -217,6 +244,7 @@ export async function createIntent(input: CreateIntentInput): Promise<CreateInte
             sku: true,
             name: true,
             price: true,
+            sizes: true,
             cost: true,
             active: true,
             categoryId: true,
@@ -253,15 +281,16 @@ export async function createIntent(input: CreateIntentInput): Promise<CreateInte
         const lines = input.items.map((item) => {
           const product = byId.get(item.productId);
           if (!product) throw httpError(400, `No existe el producto ${item.productId}.`);
+          const unitPrice = priceForVariant(product, item.variant);
           return {
             productId: product.id,
             sku: product.sku,
             name: product.name,
             variant: item.variant ?? null,
-            unitPrice: product.price,
+            unitPrice,
             unitCost: product.cost,
             quantity: item.quantity,
-            lineTotal: product.price * item.quantity,
+            lineTotal: unitPrice * item.quantity,
             categoryId: product.categoryId,
             brandId: product.brandId,
           };
