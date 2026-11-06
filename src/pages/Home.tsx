@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check } from 'lucide-react';
-import { brands, categories, media, products } from '../data/catalog';
+import { brands, categories, hasOffers, media, products } from '../data/catalog';
 import type { Brand } from '../types';
 import { BRAND_LOGOS, brandLogoSrc } from '../data/brandLogos';
 import { bestSellers, cn, isEmail } from '../lib/utils';
@@ -38,7 +38,8 @@ function Hero() {
   return (
     <HeroAbanico
       catalogHref="/tienda"
-      offersHref="/tienda?oferta=1"
+      // Vacío oculta el botón: sin ofertas llevaría a una lista vacía.
+      offersHref={hasOffers() ? '/tienda?oferta=1' : ''}
       stats={[[products.length, 'productos'], [categories.length, 'categorías'], [brands.length, 'marcas']]}
     />
   );
@@ -131,10 +132,10 @@ function Promos() {
   const tiles = [
     { img: media.editMain, kicker: 'Colección cápsula', title: 'The Nail Art Edit', text: 'Foils cromados, cristales y pinceles de detalle.', to: '/tienda?cat=decoracion-y-glitter', cta: 'Explorar' },
     { img: media.editDetail, kicker: 'Hasta 25% menos', title: 'Ofertas del mes', text: 'Selección de esmaltes y bases con descuento.', to: '/tienda?oferta=1', cta: 'Ver ofertas' },
-  ];
+  ].filter((t) => t.to !== '/tienda?oferta=1' || hasOffers());
   return (
     <section className="container-x pb-section md:pb-section-lg">
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className={cn('grid gap-3', tiles.length > 1 && 'md:grid-cols-2')}>
         {tiles.map((t) => (
           <Link key={t.title} to={t.to} className="group relative aspect-[3/2] overflow-hidden rounded-lg border border-line bg-sand md:aspect-[5/2]">
             <div className="absolute inset-0 transition-transform duration-500 ease-soft group-hover:scale-[1.03]">

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { features } from '../config/features';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, MessageCircle, User, X } from 'lucide-react';
 import { categories, products } from '../data/catalog';
@@ -168,12 +169,14 @@ export function MegaMenu({ open, onClose, items }: { open: boolean; onClose: () 
               </nav>
 
               <div className="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3 md:px-8">
-                <Link
-                  to={user ? '/cuenta' : '/ingresar'}
-                  className="flex h-10 items-center gap-2 rounded-full border border-line px-4 text-body font-medium transition-colors hover:border-ink"
-                >
-                  <User size={16} strokeWidth={2} /> {user ? `Hola, ${user.firstName}` : 'Ingresar'}
-                </Link>
+                {features.auth && (
+                  <Link
+                    to={user ? '/cuenta' : '/ingresar'}
+                    className="flex h-10 items-center gap-2 rounded-full border border-line px-4 text-body font-medium transition-colors hover:border-ink"
+                  >
+                    <User size={16} strokeWidth={2} /> {user ? `Hola, ${user.firstName}` : 'Ingresar'}
+                  </Link>
+                )}
                 <a
                   href={whatsappUrl()}
                   target="_blank"

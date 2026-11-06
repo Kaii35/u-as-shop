@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
+import { MessageCircle } from 'lucide-react';
 import { getProduct } from '../data/catalog';
 import { availability, canBuy, cn, hasPrice, hasPriceBySize } from '../lib/utils';
+import { orderWhatsappUrl } from '../lib/whatsappOrder';
+import { features } from '../config/features';
 import { useStore } from '../store/StoreContext';
 import { Button } from './ui/Button';
 import { CloseButton, Modal } from './ui/Overlays';
@@ -32,7 +35,13 @@ export function QuickView() {
             )}
             <span className="flex items-center gap-1.5 text-cap text-ash"><span className={cn('h-1.5 w-1.5 rounded-full', stock.dot)} />{stock.label}</span>
             <div className="mt-auto flex flex-col gap-2 pt-2">
-              <Button onClick={() => addToCart(p.id)} disabled={!canBuy(p)}>{hasPrice(p) ? 'Agregar al carrito' : 'Disponible pronto'}</Button>
+              {features.cart ? (
+                <Button onClick={() => addToCart(p.id)} disabled={!canBuy(p)}>{hasPrice(p) ? 'Agregar al carrito' : 'Disponible pronto'}</Button>
+              ) : (
+                <a href={orderWhatsappUrl(p)} target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center justify-center gap-2 rounded bg-ink px-4 text-body font-medium text-on-ink transition-colors hover:bg-ash">
+                  <MessageCircle size={16} strokeWidth={2} /> Comprar ahora
+                </a>
+              )}
               <Button variant="secondary" onClick={() => { closeQuickView(); navigate(`/producto/${p.slug}`); }}>Ver detalle completo</Button>
             </div>
           </div>

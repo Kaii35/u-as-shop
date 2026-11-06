@@ -44,8 +44,10 @@ Las fotos están en `public/images/products/catalogo/` y llegan con el `git pull
 Los productos aún no tienen precio: salen como "Precio por confirmar" y no se
 pueden comprar hasta ponérselo desde el panel.
 
-**Sin la API la tienda igual abre.** Si no responde en un segundo y medio,
-arranca con el catálogo de ejemplo de `src/data/catalog.ts`. El panel sí la
+**Sin la API la tienda igual abre.** Por defecto (`VITE_CATALOG_SOURCE=static`)
+ni la llama: usa el catálogo real empaquetado. Con `VITE_CATALOG_SOURCE=api`, si
+no responde en un segundo y medio, arranca con el catálogo de ejemplo de
+`src/data/catalog.ts`. El panel sí la
 necesita, obviamente.
 
 ### Comandos
@@ -143,6 +145,38 @@ src/
     StoreContext.tsx      Carrito, favoritos, sesión de clienta
     AdminAuth.tsx         Sesión del panel
 ```
+
+---
+
+## Lanzamiento: interruptores y despliegue en Vercel
+
+La primera versión publicada es **solo la tienda, estática**: sin cuentas de
+clienta, sin carrito ni pagos en línea. Cada compra sale por WhatsApp con el
+botón **Comprar ahora**, que abre un chat con el producto, el tono y la
+presentación elegidos, la cantidad, el precio y el enlace. Nada se borró: se
+apaga con variables de Vite (`src/config/features.ts`), que se leen **al
+compilar** (cambiarlas en Vercel exige redesplegar).
+
+| Variable | Por defecto | Qué hace |
+|---|---|---|
+| `VITE_FEATURE_AUTH` | apagado | `"true"` enciende ingreso, registro y `/cuenta` |
+| `VITE_FEATURE_CART` | apagado | `"true"` enciende carrito, `/checkout`, `/pago/*` y pasarela |
+| `VITE_FEATURE_ADMIN` | apagado | `"true"` enciende `/admin` (necesita la API) |
+| `VITE_CATALOG_SOURCE` | `static` | `static`: catálogo real empaquetado; `api`: lo pide a la API como antes |
+| `VITE_SITE_URL` | — | Dominio para `og:url`/`og:image`. En Vercel se toma solo el de producción |
+
+Apagada una función, sus rutas vuelven a la portada y sus accesos desaparecen
+del header, el menú, la barra móvil y el pie.
+
+En modo `static` el catálogo sale de `server/prisma/catalogo-real.json`,
+convertido por `src/data/realCatalog.ts` igual que lo cargaría el importador
+de la API. No se llama a la API y **nunca** se usa el catálogo de ejemplo: si
+el JSON no cuadra, el build falla. `npm test` lo comprueba (runner de Node,
+hace falta Node 22.18+).
+
+`vercel.json` publica `dist/` con reescritura SPA a `index.html`, caché larga
+en `/assets/*` y cabeceras de seguridad. `.vercelignore` deja fuera `server/`
+(salvo el JSON del catálogo), `docs/` y `scripts/`.
 
 ---
 

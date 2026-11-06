@@ -1,4 +1,6 @@
 import { api } from '../lib/api';
+import rawRealCatalog from '../../server/prisma/catalogo-real.json';
+import { mapRealCatalog, type RawCatalog } from './realCatalog';
 import type { Address, Brand, Category, Order, Product, ProductTag, Review, Shade, SizeOption } from '../types';
 
 export const normalize = (s: string) =>
@@ -98,6 +100,15 @@ export const products: Product[] = ROWS.map(([id, name, brand, categoryId, price
   };
 });
 
+/**
+ * Hay algo en oferta. El catálogo real todavía no trae precios tachados, y un
+ * enlace "Ofertas" que lleva a una lista vacía se ve roto: sin ofertas, los
+ * accesos a ellas no se pintan.
+ */
+export const hasOffers = () => products.some((p) => !!p.oldPrice);
+/** Algún producto tiene reseñas. Sin ninguna, filtrar por estrellas vacía la tienda. */
+export const hasReviews = () => products.some((p) => p.reviewCount > 0);
+
 export const getProduct = (id: string) => products.find((p) => p.id === id);
 export const getProductBySlug = (slug?: string) => products.find((p) => p.slug === slug);
 export const getCategory = (id: string) => categories.find((c) => c.id === id);
@@ -175,4 +186,20 @@ export async function hydrateCatalog(signal?: AbortSignal): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Carga el catálogo real empaquetado en el build (modo `static`).
+ *
+ * A diferencia de `hydrateCatalog`, aquí no hay respaldo: si el JSON no
+ * mapea, `mapRealCatalog` lanza y la tienda NO arranca. Publicar el catálogo
+ * de ejemplo como si fuera el real sería peor que una página caída. El build
+ * ya lo comprueba antes (ver `vite.config.ts`), así que esto no debería pasar
+ * nunca en producción.
+ */
+export function loadStaticCatalog(): void {
+  const data = mapRealCatalog(rawRealCatalog as unknown as RawCatalog);
+  refill(categories, data.categories);
+  refill(brands, data.brands);
+  refill(products, data.products);
 }

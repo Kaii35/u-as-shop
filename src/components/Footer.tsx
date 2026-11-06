@@ -4,17 +4,23 @@ import { ArrowRight, Facebook, Instagram, Music2, Youtube } from 'lucide-react';
 import { categories } from '../data/catalog';
 import { BUSINESS, fullAddress, whatsappUrl } from '../data/business';
 import { isEmail } from '../lib/utils';
+import { features } from '../config/features';
 import { useStore } from '../store/StoreContext';
-import { NAV_ITEMS } from './Header';
+import { navItems } from './Header';
 import { Logo } from './ui/Primitives';
 
 const PAYMENTS = ['VISA', 'Mastercard', 'AMEX', 'PSE', 'Nequi', 'Daviplata'];
-const SOCIAL = [
+/**
+ * Redes del negocio. Solo se pinta la que tenga `href`: un icono que lleva a
+ * "#" en una demo en vivo se lee como enlace roto. Se activan poniendo la URL.
+ */
+const SOCIAL: Array<{ label: string; Icon: typeof Instagram; href?: string }> = [
   { label: 'Instagram', Icon: Instagram },
   { label: 'TikTok', Icon: Music2 },
   { label: 'Facebook', Icon: Facebook },
   { label: 'YouTube', Icon: Youtube },
 ];
+const SOCIAL_LINKS = SOCIAL.filter((s) => s.href);
 const HELP: Array<[string, string]> = [
   [`WhatsApp ${BUSINESS.whatsapp}`, whatsappUrl()],
   [BUSINESS.email, `mailto:${BUSINESS.email}`],
@@ -57,17 +63,17 @@ export function Footer() {
               <ArrowRight size={16} strokeWidth={2} />
             </button>
           </div>
-          <div className="flex gap-1.5 pt-1">
-            {SOCIAL.map(({ label, Icon }) => (
-              <a key={label} href="#" aria-label={label} className="flex h-9 w-9 items-center justify-center rounded border border-on-slab/20 text-on-slab/70 transition-colors hover:border-on-slab hover:text-on-slab">
+          {SOCIAL_LINKS.length > 0 && <div className="flex gap-1.5 pt-1">
+            {SOCIAL_LINKS.map(({ label, Icon, href }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="flex h-9 w-9 items-center justify-center rounded border border-on-slab/20 text-on-slab/70 transition-colors hover:border-on-slab hover:text-on-slab">
                 <Icon size={15} strokeWidth={2} />
               </a>
             ))}
-          </div>
+          </div>}
         </div>
         <div className={col}>
           <span className={head}>Comprar</span>
-          {NAV_ITEMS.map((n) => <Link key={n.label} to={n.to} className={link}>{n.label}</Link>)}
+          {navItems().map((n) => <Link key={n.label} to={n.to} className={link}>{n.label}</Link>)}
         </div>
         <div className={col}>
           <span className={head}>Categorías</span>
@@ -87,11 +93,16 @@ export function Footer() {
       </div>
 
       <div className="container-x flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-on-slab/10 py-5">
-        <div className="flex flex-wrap gap-1">
-          {PAYMENTS.map((p) => (
-            <span key={p} className="rounded-xs border border-on-slab/20 px-2 py-1 text-meta font-semibold text-on-slab/60">{p}</span>
-          ))}
-        </div>
+        {/* Los medios de la pasarela solo tienen sentido con pago en línea. */}
+        {features.cart ? (
+          <div className="flex flex-wrap gap-1">
+            {PAYMENTS.map((p) => (
+              <span key={p} className="rounded-xs border border-on-slab/20 px-2 py-1 text-meta font-semibold text-on-slab/60">{p}</span>
+            ))}
+          </div>
+        ) : (
+          <span className="text-meta text-on-slab/60">Compras, pagos y envíos se coordinan por WhatsApp.</span>
+        )}
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-meta text-on-slab/45">
           <Link to="/legal/terminos" className="transition-colors hover:text-on-slab">Términos</Link>
           <Link to="/legal/privacidad" className="transition-colors hover:text-on-slab">Privacidad</Link>

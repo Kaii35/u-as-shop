@@ -285,7 +285,7 @@ export default function HeroAbanico({
             </p>
             <div style={{ display: 'flex', gap: L.gap, marginTop: 30 * L.m, ...rise(s + 0.25) }}>
               <Link to={catalogHref} style={{ display: 'flex', alignItems: 'center', gap: L.gap, height: L.btnH, padding: `0 ${L.btnPad}px`, borderRadius: 999, background: P.accent, color: P.onAccent, fontSize: L.btnF, fontWeight: 600, textDecoration: 'none', boxShadow: P.btnShadow }}>Ver catálogo <span aria-hidden>→</span></Link>
-              <Link to={offersHref} style={{ display: 'flex', alignItems: 'center', height: L.btnH, padding: `0 ${L.btnPad}px`, borderRadius: 999, border: `${L.m}px solid ${P.outline}`, color: P.text, fontSize: L.btnF, fontWeight: 500, textDecoration: 'none' }}>Ofertas</Link>
+              {offersHref && <Link to={offersHref} style={{ display: 'flex', alignItems: 'center', height: L.btnH, padding: `0 ${L.btnPad}px`, borderRadius: 999, border: `${L.m}px solid ${P.outline}`, color: P.text, fontSize: L.btnF, fontWeight: 500, textDecoration: 'none' }}>Ofertas</Link>}
             </div>
             {stats.length > 0 && (
               <div style={{ display: 'flex', gap: L.statGap, marginTop: 44 * L.m, ...rise(s + 0.5) }}>

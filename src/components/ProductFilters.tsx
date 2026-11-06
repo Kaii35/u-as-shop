@@ -1,4 +1,5 @@
-import { brands, categories, products } from '../data/catalog';
+import { brands, categories, hasOffers, hasReviews, products } from '../data/catalog';
+import { features } from '../config/features';
 import { formatCOP } from '../lib/utils';
 import { Checkbox } from './ui/Input';
 
@@ -54,13 +55,17 @@ export function ProductFilters({ value, onToggleCategory, onToggleBrand, onChang
         />
         <div className="tnum flex justify-between text-meta text-mist"><span>{formatCOP(PRICE_MIN)}</span><span>{formatCOP(PRICE_MAX)}</span></div>
       </Group>
-      <Group title="Valoración">
-        {RATINGS.map(([v, l]) => <Checkbox key={v} radio checked={value.minRating === v} onChange={() => onChange({ minRating: v })}>{l}</Checkbox>)}
-      </Group>
-      <Group title="Disponibilidad">
-        <Checkbox checked={value.onlyStock} onChange={(v) => onChange({ onlyStock: v })}>Solo productos disponibles</Checkbox>
-        <Checkbox checked={value.onlyOffers} onChange={(v) => onChange({ onlyOffers: v })}>Solo en oferta</Checkbox>
-      </Group>
+      {/* Filtros que hoy vaciarían la lista se esconden: sin reseñas, sin
+          inventario publicado (sin carrito) o sin ofertas no hay qué filtrar. */}
+      {hasReviews() && (
+        <Group title="Valoración">
+          {RATINGS.map(([v, l]) => <Checkbox key={v} radio checked={value.minRating === v} onChange={() => onChange({ minRating: v })}>{l}</Checkbox>)}
+        </Group>
+      )}
+      {(features.cart || hasOffers()) && <Group title="Disponibilidad">
+        {features.cart && <Checkbox checked={value.onlyStock} onChange={(v) => onChange({ onlyStock: v })}>Solo productos disponibles</Checkbox>}
+        {hasOffers() && <Checkbox checked={value.onlyOffers} onChange={(v) => onChange({ onlyOffers: v })}>Solo en oferta</Checkbox>}
+      </Group>}
       <button onClick={onClear} className="link-arrow self-start">Limpiar filtros</button>
     </div>
   );

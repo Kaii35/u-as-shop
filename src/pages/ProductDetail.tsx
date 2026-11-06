@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Heart, RotateCcw, ShieldCheck, ShoppingBag, Truck } from 'lucide-react';
+import { Heart, MessageCircle, RotateCcw, ShieldCheck, ShoppingBag, Truck } from 'lucide-react';
 import { getCategory, getProductBySlug, products, ratingDistribution, reviews, slugify } from '../data/catalog';
 import { availability, canBuy, cn, discountPct, formatCOP, hasPrice, unitPrice } from '../lib/utils';
+import { orderWhatsappUrl } from '../lib/whatsappOrder';
+import { features } from '../config/features';
 import { useStore } from '../store/StoreContext';
 import { ProductGallery } from '../components/ProductGallery';
 import { ProductGrid } from '../components/ProductCard';
@@ -120,15 +122,32 @@ function ProductDetail({ product: p }: { product: Product }) {
           <span className="flex items-center gap-2 text-body"><span className={cn('h-2 w-2 rounded-full', stock.dot)} />{stock.label}{canBuy(p) && <span className="text-mist">· Despacho en 24 h hábiles</span>}</span>
 
           <div className="flex flex-wrap gap-2.5">
-            <QuantitySelector value={qty} onChange={setQty} max={Math.max(p.stock, 1)} />
-            <Button size="lg" className="flex-[1_1_220px]" disabled={!canBuy(p)} onClick={() => addToCart(p.id, { shade, size, qty })}>
-              <ShoppingBag size={16} strokeWidth={1.5} /> {!priced ? 'Disponible pronto' : p.stock ? `Agregar al carrito · ${formatCOP(price * qty)}` : 'Agotado'}
-            </Button>
+            {/* Sin carrito no hay inventario publicado que limite la cantidad:
+                las unidades se confirman en el chat. */}
+            <QuantitySelector value={qty} onChange={setQty} max={features.cart ? Math.max(p.stock, 1) : 99} />
+            {features.cart ? (
+              <Button size="lg" className="flex-[1_1_220px]" disabled={!canBuy(p)} onClick={() => addToCart(p.id, { shade, size, qty })}>
+                <ShoppingBag size={16} strokeWidth={1.5} /> {!priced ? 'Disponible pronto' : p.stock ? `Agregar al carrito · ${formatCOP(price * qty)}` : 'Agotado'}
+              </Button>
+            ) : (
+              // Tono y presentación salen de la misma selección que usaba el
+              // carrito (siempre hay una marcada), así que el mensaje va completo.
+              <a
+                href={orderWhatsappUrl(p, { shade: p.shades ? shade : undefined, size: p.sizes ? size : undefined, qty })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-12 flex-[1_1_220px] cursor-pointer items-center justify-center gap-2 rounded bg-ink px-5 text-body font-medium text-on-ink transition-colors duration-200 ease-soft hover:bg-ash"
+              >
+                <MessageCircle size={16} strokeWidth={1.5} /> Comprar ahora{priced ? ` · ${formatCOP(price * qty)}` : ''}
+              </a>
+            )}
             <button onClick={() => toggleFav(p.id)} aria-pressed={fav} aria-label={fav ? 'Quitar de favoritos' : 'Guardar en favoritos'} className="flex h-14 w-14 items-center justify-center rounded-full border border-line text-clay transition-colors hover:border-clay">
               <Heart size={20} strokeWidth={1.5} fill={fav ? 'currentColor' : 'none'} />
             </button>
           </div>
-          <Button size="lg" variant="secondary" disabled={!canBuy(p)} onClick={buyNow}>Comprar ahora</Button>
+          {features.cart
+            ? <Button size="lg" variant="secondary" disabled={!canBuy(p)} onClick={buyNow}>Comprar ahora</Button>
+            : <p className="text-cap text-mist">Te abrimos WhatsApp con el pedido listo. Allí confirmamos disponibilidad, pago y envío.</p>}
 
           <div className="grid grid-cols-3 gap-px overflow-hidden rounded border border-line bg-ink/10">
             {[[Truck, 'Envío gratis desde $250.000'], [RotateCcw, 'Cambios hasta 30 días'], [ShieldCheck, 'Producto original garantizado']].map(([Icon, text]) => {

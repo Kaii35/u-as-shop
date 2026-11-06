@@ -20,6 +20,7 @@ import Register from './pages/Register';
 import Account from './pages/Account';
 import Favorites from './pages/Favorites';
 import Legal from './pages/Legal';
+import { features, usesApi } from './config/features';
 /**
  * El panel se carga aparte y solo al entrar en /admin.
  *
@@ -61,36 +62,45 @@ export default function App() {
     <ThemeProvider>
       <ScrollManager />
       <Routes>
-        <Route
-          path="/admin/ingresar"
-          element={
-            <Suspense fallback={<AdminLoading />}>
-              <AdminAuthProvider>
-                <AdminLogin />
-              </AdminAuthProvider>
-            </Suspense>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <Suspense fallback={<AdminLoading />}>
-              <AdminAuthProvider>
-                <RequireAdmin>
-                  <AdminLayout />
-                </RequireAdmin>
-              </AdminAuthProvider>
-            </Suspense>
-          }
-        >
-          <Route index element={<AdminDashboard />} />
-          <Route path="pedidos" element={<AdminOrders />} />
-          <Route path="pagos" element={<AdminPayments />} />
-          <Route path="productos" element={<AdminProducts />} />
-          <Route path="inventario" element={<AdminInventory />} />
-          <Route path="promociones" element={<AdminPromotions />} />
-          <Route path="ajustes" element={<AdminSettings />} />
-        </Route>
+        {/* Con el panel apagado (no hay API en este despliegue), cualquier
+            /admin vuelve a la portada en vez de mostrar un login que no
+            puede funcionar. */}
+        {features.admin ? (
+          <>
+            <Route
+              path="/admin/ingresar"
+              element={
+                <Suspense fallback={<AdminLoading />}>
+                  <AdminAuthProvider>
+                    <AdminLogin />
+                  </AdminAuthProvider>
+                </Suspense>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <Suspense fallback={<AdminLoading />}>
+                  <AdminAuthProvider>
+                    <RequireAdmin>
+                      <AdminLayout />
+                    </RequireAdmin>
+                  </AdminAuthProvider>
+                </Suspense>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="pedidos" element={<AdminOrders />} />
+              <Route path="pagos" element={<AdminPayments />} />
+              <Route path="productos" element={<AdminProducts />} />
+              <Route path="inventario" element={<AdminInventory />} />
+              <Route path="promociones" element={<AdminPromotions />} />
+              <Route path="ajustes" element={<AdminSettings />} />
+            </Route>
+          </>
+        ) : (
+          <Route path="/admin/*" element={<Navigate to="/" replace />} />
+        )}
 
         <Route path="*" element={<Storefront />} />
       </Routes>
@@ -107,28 +117,37 @@ function Storefront() {
           <Route path="tienda" element={<Shop />} />
           <Route path="producto/:slug" element={<ProductPage />} />
           <Route path="favoritos" element={<Favorites />} />
-          <Route path="cuenta" element={<Account />} />
+          {features.auth && <Route path="cuenta" element={<Account />} />}
           <Route path="legal" element={<Navigate to="/legal/terminos" replace />} />
           <Route path="legal/:slug" element={<Legal />} />
         </Route>
-        <Route element={<AuthShell />}>
-          <Route path="ingresar" element={<Login />} />
-          <Route path="registro" element={<Register />} />
-        </Route>
-        <Route path="checkout" element={<CheckoutLayout />}>
-          <Route index element={<Checkout />} />
-        </Route>
+        {/* Rutas apagadas en este lanzamiento: sin su <Route>, caen en el
+            comodín del final y vuelven a la portada. */}
+        {features.auth && (
+          <Route element={<AuthShell />}>
+            <Route path="ingresar" element={<Login />} />
+            <Route path="registro" element={<Register />} />
+          </Route>
+        )}
+        {features.cart && (
+          <Route path="checkout" element={<CheckoutLayout />}>
+            <Route index element={<Checkout />} />
+          </Route>
+        )}
         {/* El pago sigue siendo checkout: mismo marco minimo, sin header ni
             footer que distraigan de lo unico que importa en esas pantallas. */}
-        <Route path="pago" element={<CheckoutLayout />}>
-          <Route path="respuesta" element={<PaymentResult />} />
-          <Route path="simulado" element={<MockCheckout />} />
-        </Route>
+        {features.cart && (
+          <Route path="pago" element={<CheckoutLayout />}>
+            <Route path="respuesta" element={<PaymentResult />} />
+            <Route path="simulado" element={<MockCheckout />} />
+          </Route>
+        )}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <CartDrawer />
+      {features.cart && <CartDrawer />}
       <QuickView />
-      <PromoPopup />
+      {/* Las promociones salen de la API: sin ella no hay nada que anunciar. */}
+      {usesApi && <PromoPopup />}
       <ToastViewport />
     </StoreProvider>
   );
