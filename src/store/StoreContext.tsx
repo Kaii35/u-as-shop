@@ -31,16 +31,16 @@ interface Store {
 
 const StoreContext = createContext<Store | null>(null);
 
-const DEMO_CART: CartLine[] = [
-  { productId: 'p1', shade: 0, size: 0, qty: 2 },
-  { productId: 'p6', shade: 0, size: 0, qty: 1 },
-];
-
 export function StoreProvider({ children }: { children: ReactNode }) {
   // El prefijo `aurelle.` es herencia del nombre anterior y no se renombra:
   // cambiarlo vaciaría el carrito, los favoritos y la sesión ya guardados.
-  const [cart, setCart] = usePersistentState<CartLine[]>('aurelle.cart', DEMO_CART);
-  const [favs, setFavs] = usePersistentState<string[]>('aurelle.favs', ['p3', 'p5', 'p12']);
+  // Arrancan vacíos: los ids de ejemplo (p1, p3…) no existen en el catálogo real.
+  const [cart, setCart] = usePersistentState<CartLine[]>('aurelle.cart', []);
+  const [storedFavs, setFavs] = usePersistentState<string[]>('aurelle.favs', []);
+  // Ignora favoritos guardados de productos que ya no están en el catálogo
+  // (por ejemplo, los de ejemplo que quedaron en el navegador de una visita
+  // anterior): si no, el contador del header muestra favoritos que no se ven.
+  const favs = useMemo(() => storedFavs.filter((id) => !!getProduct(id)), [storedFavs]);
   const [user, setUser] = usePersistentState<User | null>('aurelle.user', null);
   const [coupon, setCoupon] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
