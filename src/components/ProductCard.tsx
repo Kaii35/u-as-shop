@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
-import { Heart, Plus } from 'lucide-react';
+import { Heart, MessageCircle, Plus } from 'lucide-react';
 import { getCategory } from '../data/catalog';
 import { availability, canBuy, cn, discountPct, hasPriceBySize } from '../lib/utils';
+import { orderWhatsappUrl } from '../lib/whatsappOrder';
+import { features } from '../config/features';
 import { useStore } from '../store/StoreContext';
 import type { Product } from '../types';
 import { Button } from './ui/Button';
@@ -65,7 +67,13 @@ export function ProductCard({ product: p, layout = 'grid' }: { product: Product;
           <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-1.5">
             <PriceDisplay price={p.price} oldPrice={p.oldPrice} from={hasPriceBySize(p)} size="sm" />
             <div className="flex gap-1.5">
-              <Button size="sm" onClick={() => addToCart(p.id)} disabled={!canBuy(p)}>Agregar</Button>
+              {features.cart
+                ? <Button size="sm" onClick={() => addToCart(p.id)} disabled={!canBuy(p)}>Agregar</Button>
+                : (
+                  <a href={orderWhatsappUrl(p)} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center justify-center gap-1.5 rounded bg-ink px-3 text-cap font-medium text-on-ink transition-colors hover:bg-ash">
+                    <MessageCircle size={14} strokeWidth={2} /> Comprar ahora
+                  </a>
+                )}
               <FavButton product={p} className="h-9 w-9 rounded border border-line" />
             </div>
           </div>
@@ -126,14 +134,29 @@ export function ProductCard({ product: p, layout = 'grid' }: { product: Product;
             <PriceDisplay price={p.price} oldPrice={p.oldPrice} from={hasPriceBySize(p)} size="sm" />
             <StockLine product={p} />
           </div>
-          <button
-            onClick={() => addToCart(p.id)}
-            disabled={!canBuy(p)}
-            aria-label={`Agregar ${p.name} al carrito`}
-            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded border border-line text-ink transition-colors hover:border-ink hover:bg-ink hover:text-on-ink disabled:pointer-events-none disabled:opacity-35"
-          >
-            <Plus size={16} strokeWidth={2} />
-          </button>
+          {features.cart ? (
+            <button
+              onClick={() => addToCart(p.id)}
+              disabled={!canBuy(p)}
+              aria-label={`Agregar ${p.name} al carrito`}
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded border border-line text-ink transition-colors hover:border-ink hover:bg-ink hover:text-on-ink disabled:pointer-events-none disabled:opacity-35"
+            >
+              <Plus size={16} strokeWidth={2} />
+            </button>
+          ) : (
+            // Mismo hueco que el "+" del carrito. Sin tono ni presentación
+            // elegidos: eso se precisa en el chat o desde la ficha.
+            <a
+              href={orderWhatsappUrl(p)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Comprar ahora ${p.name} por WhatsApp`}
+              title="Comprar ahora"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded border border-line text-ink transition-colors hover:border-ink hover:bg-ink hover:text-on-ink"
+            >
+              <MessageCircle size={16} strokeWidth={2} />
+            </a>
+          )}
         </div>
       </div>
     </article>

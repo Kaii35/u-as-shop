@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { getProduct } from '../data/catalog';
+import { features } from '../config/features';
 import { useStore } from '../store/StoreContext';
 import { ProductGrid } from '../components/ProductCard';
 import { Button } from '../components/ui/Button';
@@ -16,7 +17,7 @@ export default function Favorites() {
           <span className="kicker">{items.length} {items.length === 1 ? 'producto guardado' : 'productos guardados'}</span>
           <h1 className="display text-h3">Tus <em className="text-clay">favoritos</em></h1>
         </div>
-        {items.length > 0 && <Button onClick={() => items.filter((p) => p.stock).forEach((p) => addToCart(p.id))}>Agregar todo al carrito</Button>}
+        {features.cart && items.length > 0 && <Button onClick={() => items.filter((p) => p.stock).forEach((p) => addToCart(p.id))}>Agregar todo al carrito</Button>}
       </header>
 
       {items.length ? (

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { BUSINESS, whatsappUrl } from '../data/business';
 import { BRAND_LOGOS } from '../data/brandLogos';
 import { FREE_SHIPPING_FROM, cn, formatCOP } from '../lib/utils';
+import { features } from '../config/features';
 
 /**
  * "Por qué comprar aquí", en cuatro tarjetas que muestran la promesa en vez de
@@ -185,10 +186,17 @@ export function PromisesBento() {
         i={1}
         kicker="Pagos"
         icon={<CreditCard size={16} strokeWidth={2} />}
-        title="Paga como prefieras"
-        detail="Pasarela segura de Wompi. Nunca vemos los datos de tu tarjeta."
+        // Sin pago en línea en este lanzamiento: no se promete la pasarela.
+        title={features.cart ? 'Paga como prefieras' : 'Compra por WhatsApp'}
+        detail={features.cart
+          ? 'Pasarela segura de Wompi. Nunca vemos los datos de tu tarjeta.'
+          : 'Toca "Comprar ahora" y coordinamos contigo el pago y el envío por chat.'}
       >
-        <PaymentChips />
+        {features.cart ? <PaymentChips /> : (
+          <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" className={cn('inline-flex w-fit items-center gap-2 rounded-full border border-on-slab/15 bg-on-slab/[0.06] px-3 py-1.5 text-cap font-medium text-on-slab/85 transition-colors hover:border-on-slab/40', ACCENT)}>
+            <MessageCircle size={14} strokeWidth={2} /> {BUSINESS.whatsapp}
+          </a>
+        )}
       </Tile>
       <Tile
         i={2}

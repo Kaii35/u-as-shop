@@ -2,6 +2,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { Mail, MapPin, MessageCircle } from 'lucide-react';
 import { BUSINESS, LEGAL_PAGES, fullAddress, whatsappUrl, type LegalSlug } from '../data/business';
 import { FREE_SHIPPING_FROM, cn, formatCOP } from '../lib/utils';
+import { features } from '../config/features';
 
 /**
  * Políticas de la tienda. Todo el texto vive aquí, con los datos del negocio
@@ -40,7 +41,9 @@ const POLICIES: Record<LegalSlug, Policy> = {
         body: [
           'Las fotos son de nuestros productos reales, pero el color puede verse un poco distinto según la pantalla y la luz. Las presentaciones y tonos pueden cambiar según el lote del fabricante.',
           'Un producto puede agotarse mientras navegas. Solo apartamos las unidades cuando inicias el pago; si no alcanza el inventario, te lo avisamos antes de cobrar.',
-          'Los productos marcados como "Precio por confirmar" aún no están a la venta.',
+          features.cart
+            ? 'Los productos marcados como "Precio por confirmar" aún no están a la venta.'
+            : 'En los productos marcados como "Precio por confirmar" te damos el precio por WhatsApp antes de cualquier pago.',
         ],
       },
       {
@@ -53,9 +56,18 @@ const POLICIES: Record<LegalSlug, Policy> = {
       {
         title: '4. Proceso de compra y pagos',
         body: [
-          'Agregas productos al carrito, ingresas tus datos de contacto y entrega, eliges el envío y pagas en la pasarela segura de Wompi (Bancolombia). Allí puedes usar tarjeta débito o crédito, PSE, Nequi y otros medios que la pasarela habilite.',
-          'Nosotros no vemos ni guardamos los datos de tu tarjeta o de tu cuenta bancaria: los procesa directamente la pasarela de pagos.',
-          'El pedido queda confirmado cuando la pasarela aprueba el pago. Te avisaremos por correo o WhatsApp.',
+          // Sin carrito (este lanzamiento) la compra se hace por WhatsApp: el
+          // texto de la pasarela queda para cuando se encienda.
+          ...(features.cart
+            ? [
+                'Agregas productos al carrito, ingresas tus datos de contacto y entrega, eliges el envío y pagas en la pasarela segura de Wompi (Bancolombia). Allí puedes usar tarjeta débito o crédito, PSE, Nequi y otros medios que la pasarela habilite.',
+                'Nosotros no vemos ni guardamos los datos de tu tarjeta o de tu cuenta bancaria: los procesa directamente la pasarela de pagos.',
+                'El pedido queda confirmado cuando la pasarela aprueba el pago. Te avisaremos por correo o WhatsApp.',
+              ]
+            : [
+                `Por ahora las compras se coordinan por WhatsApp (${BUSINESS.whatsapp}). Desde un producto tocas "Comprar ahora" y se abre un chat con el pedido; allí te confirmamos disponibilidad, precio final, medio de pago y envío.`,
+                'El pedido queda confirmado cuando te lo confirmamos por WhatsApp y recibimos el pago acordado.',
+              ]),
         ],
       },
       {

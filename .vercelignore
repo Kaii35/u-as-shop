@@ -1,0 +1,14 @@
+# Lo que Vercel no necesita subir: este despliegue es solo la tienda estática.
+# La API (server/) no se publica todavía; su catálogo se empaqueta en el build
+# desde server/prisma/catalogo-real.json, que por eso SÍ se sube.
+server/*
+!server/prisma
+server/prisma/*
+!server/prisma/catalogo-real.json
+
+# Fuentes de diseño y documentos pesados (docs/ pesa ~50 MB).
+docs/
+scripts/
+docker-compose.yml
+node_modules/
+dist/

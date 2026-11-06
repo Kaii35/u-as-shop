@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "test": "node --test \"tests/*.test.ts\"",
     "theme:check": "node scripts/verificar-tema.mjs",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",

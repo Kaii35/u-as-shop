@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { Heart, Home, LayoutGrid, Search, ShoppingBag, Store, User } from 'lucide-react';
+import { Heart, Home, LayoutGrid, MessageCircle, Search, ShoppingBag, Store, User } from 'lucide-react';
+import { features } from '../config/features';
+import { whatsappUrl } from '../data/business';
+import { hasOffers } from '../data/catalog';
 import { cn } from '../lib/utils';
 import { useStore } from '../store/StoreContext';
 import { SearchBar } from './SearchBar';
@@ -19,6 +22,9 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Spa', to: '/tienda?cat=spa-manos-y-cuerpo' },
   { label: 'Ofertas', to: '/tienda?oferta=1', highlight: true },
 ];
+
+/** Los del menú, sin "Ofertas" mientras no haya ninguna. Se calcula al pintar: el catálogo se carga después de importar este módulo. */
+export const navItems = () => NAV_ITEMS.filter((n) => !n.to.includes('oferta=1') || hasOffers());
 
 export function Header() {
   const { favs, user, openCart, totals } = useStore();
@@ -88,18 +94,22 @@ export function Header() {
               >
                 <LayoutGrid size={15} strokeWidth={2} /> Productos
               </Link>
-              {user ? (
-                <Link to="/cuenta" className="mr-1 flex h-10 items-center gap-2 rounded px-2.5 text-body transition-colors hover:bg-sand">
-                  <User size={17} strokeWidth={2} /> {user.firstName}
-                </Link>
-              ) : (
-                <div className="mr-1 hidden items-center gap-1 text-body lg:flex">
-                  <Link to="/ingresar" className="rounded px-2 py-2 transition-colors hover:text-clay">Ingresar</Link>
-                  <span className="text-line">|</span>
-                  <Link to="/registro" className="rounded px-2 py-2 transition-colors hover:text-clay">Crear cuenta</Link>
-                </div>
-              )}
-              <Link to={accountTo} aria-label="Mi cuenta" className="flex h-10 w-10 items-center justify-center rounded transition-colors hover:bg-sand lg:hidden"><User size={18} strokeWidth={2} /></Link>
+              {/* Cuentas apagadas en este lanzamiento: sin ingreso, registro ni
+                  "Mi cuenta" (ver config/features.ts). */}
+              {features.auth && (<>
+                {user ? (
+                  <Link to="/cuenta" className="mr-1 flex h-10 items-center gap-2 rounded px-2.5 text-body transition-colors hover:bg-sand">
+                    <User size={17} strokeWidth={2} /> {user.firstName}
+                  </Link>
+                ) : (
+                  <div className="mr-1 hidden items-center gap-1 text-body lg:flex">
+                    <Link to="/ingresar" className="rounded px-2 py-2 transition-colors hover:text-clay">Ingresar</Link>
+                    <span className="text-line">|</span>
+                    <Link to="/registro" className="rounded px-2 py-2 transition-colors hover:text-clay">Crear cuenta</Link>
+                  </div>
+                )}
+                <Link to={accountTo} aria-label="Mi cuenta" className="flex h-10 w-10 items-center justify-center rounded transition-colors hover:bg-sand lg:hidden"><User size={18} strokeWidth={2} /></Link>
+              </>)}
               {/* Con los iconos de acción y no en el pie: es un ajuste, pero es
                   aquí donde se busca, junto a lo demás que no es navegación. */}
               <ThemeToggle size="md" />
@@ -107,9 +117,16 @@ export function Header() {
                 <Heart size={18} strokeWidth={2} />
                 {favs.length > 0 && <span className="tnum absolute right-0.5 top-0.5 min-w-[16px] rounded-full bg-clay px-1 text-center text-[10px] font-semibold leading-4 text-on-accent">{favs.length}</span>}
               </Link>
-              <button onClick={openCart} aria-label={`Carrito, ${count} productos`} className="ml-1 flex h-10 cursor-pointer items-center gap-2 rounded bg-ink pl-3 pr-3.5 text-on-ink transition-colors hover:bg-ash">
-                <ShoppingBag size={17} strokeWidth={2} /><span className="tnum text-body font-medium">{count}</span>
-              </button>
+              {features.cart ? (
+                <button onClick={openCart} aria-label={`Carrito, ${count} productos`} className="ml-1 flex h-10 cursor-pointer items-center gap-2 rounded bg-ink pl-3 pr-3.5 text-on-ink transition-colors hover:bg-ash">
+                  <ShoppingBag size={17} strokeWidth={2} /><span className="tnum text-body font-medium">{count}</span>
+                </button>
+              ) : (
+                // Sin carrito, el botón fuerte del header lleva a donde se compra.
+                <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" className="ml-1 flex h-10 items-center gap-2 rounded bg-ink pl-3 pr-3.5 text-body font-medium text-on-ink transition-colors hover:bg-ash">
+                  <MessageCircle size={17} strokeWidth={2} /> WhatsApp
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -122,13 +139,15 @@ export function Header() {
           </div>
           <Link to="/" aria-label="Natalia Sánchez, inicio"><Logo size="sm" /></Link>
           <div className="flex justify-end">
-            <Link to={accountTo} aria-label="Mi cuenta" className="flex h-10 w-10 items-center justify-center rounded"><User size={19} strokeWidth={2} /></Link>
-            <IconButton label="Carrito" onClick={openCart} badge={count}><ShoppingBag size={19} strokeWidth={2} /></IconButton>
+            {features.auth && <Link to={accountTo} aria-label="Mi cuenta" className="flex h-10 w-10 items-center justify-center rounded"><User size={19} strokeWidth={2} /></Link>}
+            {features.cart
+              ? <IconButton label="Carrito" onClick={openCart} badge={count}><ShoppingBag size={19} strokeWidth={2} /></IconButton>
+              : <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp" className="flex h-10 w-10 items-center justify-center rounded"><MessageCircle size={19} strokeWidth={2} /></a>}
           </div>
         </div>
       </header>
 
-      <MegaMenu open={menuOpen} onClose={() => setMenuOpen(false)} items={NAV_ITEMS} />
+      <MegaMenu open={menuOpen} onClose={() => setMenuOpen(false)} items={navItems()} />
 
       <AnimatePresence>{searchOpen && <SearchBar variant="overlay" onClose={() => setSearchOpen(false)} />}</AnimatePresence>
 
@@ -148,10 +167,17 @@ function MobileBottomBar({ onSearch }: { onSearch: () => void }) {
       <NavLink to="/tienda" className={active}><Store size={18} strokeWidth={2} />Tienda</NavLink>
       <button onClick={onSearch} className={cn(item, 'text-ash')}><Search size={18} strokeWidth={2} />Buscar</button>
       <NavLink to="/favoritos" className={active}><Heart size={18} strokeWidth={2} />Favoritos</NavLink>
-      <button onClick={openCart} className={cn(item, 'text-ash')}>
-        <ShoppingBag size={18} strokeWidth={2} />Carrito
-        {count > 0 && <span className="tnum absolute left-[calc(50%+4px)] top-1 min-w-[15px] rounded-full bg-clay px-1 text-[9px] font-semibold leading-[15px] text-on-accent">{count}</span>}
-      </button>
+      {features.cart ? (
+        <button onClick={openCart} className={cn(item, 'text-ash')}>
+          <ShoppingBag size={18} strokeWidth={2} />Carrito
+          {count > 0 && <span className="tnum absolute left-[calc(50%+4px)] top-1 min-w-[15px] rounded-full bg-clay px-1 text-[9px] font-semibold leading-[15px] text-on-accent">{count}</span>}
+        </button>
+      ) : (
+        // Mismo lugar que el carrito: aquí es donde se compra en este lanzamiento.
+        <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" className={cn(item, 'text-ash')}>
+          <MessageCircle size={18} strokeWidth={2} />WhatsApp
+        </a>
+      )}
     </nav>
   );
 }

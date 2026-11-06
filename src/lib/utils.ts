@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { CartLine, Product, ShippingMethod } from '../types';
+import { features } from '../config/features';
 
 export const cn = (...c: Array<string | false | null | undefined>) => c.filter(Boolean).join(' ');
 
@@ -22,6 +23,9 @@ export const hasPrice = (p: Product) => p.price > 0;
 
 /** Lo que se pinta bajo el precio. Sin precio no tiene sentido decir "Agotado". */
 export function availability(p: Product) {
+  // Sin carrito, el inventario no se publica (el catálogo estático lo trae en
+  // 0): la disponibilidad se confirma por WhatsApp al pedir.
+  if (!features.cart) return { label: 'Pedido por WhatsApp', dot: 'bg-ok' };
   if (!hasPrice(p)) return { label: 'Disponible pronto', dot: 'bg-mist' };
   return stockInfo(p.stock);
 }
