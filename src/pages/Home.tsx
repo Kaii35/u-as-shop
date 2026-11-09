@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check } from 'lucide-react';
-import { brands, categories, hasOffers, media, products } from '../data/catalog';
+import { brands, categories, hasOffers, products } from '../data/catalog';
 import type { Brand } from '../types';
 import { BRAND_LOGOS, brandLogoSrc } from '../data/brandLogos';
 import { bestSellers, cn, isEmail } from '../lib/utils';
@@ -9,10 +9,11 @@ import { CategoryBento } from '../components/CategoryBento';
 import { ProductGrid } from '../components/ProductCard';
 import { Button } from '../components/ui/Button';
 import { Reveal } from '../components/ui/Overlays';
-import { Img, SectionHeading } from '../components/ui/Primitives';
+import { SectionHeading } from '../components/ui/Primitives';
 import HeroAbanico from '../components/HeroAbanico';
 import { SpecialtyShowcase } from '../components/SpecialtyShowcase';
 import { PromisesBento } from '../components/PromisesBento';
+import { PromoBanners } from '../components/LandingPromos';
 
 
 export default function Home() {
@@ -23,7 +24,8 @@ export default function Home() {
       <Categories />
       <Promises />
       <Featured />
-      <Promos />
+      {/* Los banners que se publican en Promociones del panel. */}
+      <PromoBanners />
       <Brands />
       <Newsletter />
     </>
@@ -123,46 +125,6 @@ function Featured() {
         action={<Link to="/tienda" className="link-arrow">Ver todos los productos <ArrowRight size={14} strokeWidth={2} /></Link>}
       />
       <ProductGrid products={list} />
-    </section>
-  );
-}
-
-/** Dos banners promocionales en fila. Sustituyen al mural de campaña anterior. */
-function Promos() {
-  const tiles = [
-    { img: media.editMain, kicker: 'Colección cápsula', title: 'The Nail Art Edit', text: 'Foils cromados, cristales y pinceles de detalle.', to: '/tienda?cat=decoracion-y-glitter', cta: 'Explorar' },
-    { img: media.editDetail, kicker: 'Hasta 25% menos', title: 'Ofertas del mes', text: 'Selección de esmaltes y bases con descuento.', to: '/tienda?oferta=1', cta: 'Ver ofertas' },
-  ].filter((t) => t.to !== '/tienda?oferta=1' || hasOffers());
-  return (
-    <section className="container-x pb-section md:pb-section-lg">
-      <div className={cn('grid gap-3', tiles.length > 1 && 'md:grid-cols-2')}>
-        {tiles.map((t) => (
-          <Link key={t.title} to={t.to} className="group relative aspect-[3/2] overflow-hidden rounded-lg border border-line bg-sand md:aspect-[5/2]">
-            <div className="absolute inset-0 transition-transform duration-500 ease-soft group-hover:scale-[1.03]">
-              {/* Foto real: lleva `.photo` para que en oscuro baje de brillo. */}
-              <Img src={t.img} alt="" label="Promoción" className="photo" />
-            </div>
-            {/*
-               El velo existe para que el texto blanco se lea sobre la foto, asi
-               que tiene que ser oscuro en los DOS temas. `ink` lo es en claro
-               pero se vuelve crema en oscuro, asi que ahi releva `canvas`, que
-               es lo mas oscuro del tema. No es un parche de color: es el mismo
-               significado con el token que lo cumple en cada tema.
-            */}
-            <div className="absolute inset-0 bg-gradient-to-r from-ink/80 via-ink/45 to-transparent dark:from-canvas/85 dark:via-canvas/50" />
-            {/* tema-ok: todo este bloque se queda en blanco: esta sobre el velo, que es
-                oscuro en los dos temas. */}
-            <div className="relative flex h-full max-w-[60%] flex-col items-start justify-center gap-1.5 p-5">
-              <span className="text-meta font-semibold uppercase tracking-[.1em] text-white/70">{t.kicker}</span>
-              <h3 className="display text-h5 text-white md:text-h4">{t.title}</h3>
-              <p className="text-cap text-white/75">{t.text}</p>
-              <span className="mt-1 inline-flex items-center gap-1.5 text-body font-medium text-white underline-offset-4 group-hover:underline">
-                {t.cta} <ArrowRight size={14} strokeWidth={2} />
-              </span>
-            </div>
-          </Link>
-        ))}
-      </div>
     </section>
   );
 }

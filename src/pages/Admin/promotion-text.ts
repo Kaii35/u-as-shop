@@ -35,6 +35,7 @@ export const TYPE_HINT: Record<PromotionType, string> = {
   PERCENTAGE: 'Le baja un porcentaje al precio.',
   FIXED_AMOUNT: 'Le quita una cantidad fija de pesos al carrito.',
   FREE_SHIPPING: 'No baja el precio: regala el envío.',
+  ANNOUNCEMENT: 'No descuenta: solo muestra el flyer y el texto en la tienda.',
 };
 
 /** El color del estado. Vencida sí es roja: es la que hay que mirar. */
@@ -49,6 +50,7 @@ export const STATE_TONE: Record<PromotionState, Tone> = {
 /** El descuento a secas: «20 %», «$15.000», «Envío gratis». */
 export function discountText(type: PromotionType, value: number): string {
   if (type === 'FREE_SHIPPING') return 'Envío gratis';
+  if (type === 'ANNOUNCEMENT') return 'Solo anuncio';
   if (type === 'PERCENTAGE') return `${value.toLocaleString('es-CO')} %`;
   return money(value);
 }
@@ -88,6 +90,8 @@ export function ruleSummary(
   names: Readonly<Record<string, string>> = {},
 ): string {
   const where = targetsText(promotion.scope, promotion.targetIds, names);
+
+  if (promotion.type === 'ANNOUNCEMENT') return 'Anuncio en la tienda, sin descuento';
 
   if (promotion.type === 'FREE_SHIPPING') {
     if (promotion.minPurchase > 0) return `Envío gratis desde ${money(promotion.minPurchase)}`;

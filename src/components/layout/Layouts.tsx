@@ -1,3 +1,5 @@
+import { useLiveCatalog } from '../../lib/useLiveCatalog';
+import { PromoBar } from '../LandingPromos';
 import { Link, Outlet } from 'react-router-dom';
 import { ArrowLeft, Lock } from 'lucide-react';
 import { Header } from '../Header';
@@ -5,10 +7,15 @@ import { Footer } from '../Footer';
 import { Logo } from '../ui/Primitives';
 
 export function StoreLayout() {
+  // Cuando el panel cambia el catálogo, la página se vuelve a dibujar con los
+  // datos nuevos (ver `useLiveCatalog`). El header también, por sus conteos.
+  const version = useLiveCatalog();
   return (
     <div className="min-h-screen">
-      <Header />
-      <main><Outlet /></main>
+      {/* La franja de avisos que se publica en Promociones del panel. */}
+      <PromoBar />
+      <Header key={`h${version}`} />
+      <main><Outlet key={version} /></main>
       <Footer />
     </div>
   );

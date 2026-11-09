@@ -21,6 +21,12 @@ export const features = {
   cart: flag(import.meta.env.VITE_FEATURE_CART, false),
   /** Panel de administración. Necesita la API. */
   admin: flag(import.meta.env.VITE_FEATURE_ADMIN, false),
+  /**
+   * El panel completo: resumen, pedidos, pagos, inventario y ajustes, y las
+   * columnas de costo y existencias. Apagado, el panel deja solo productos y
+   * promociones. No se borra nada: encenderlo devuelve todo como estaba.
+   */
+  adminFull: flag(import.meta.env.VITE_FEATURE_ADMIN_FULL, false),
 } as const;
 
 export type CatalogSource = 'static' | 'api';

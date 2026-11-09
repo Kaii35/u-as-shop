@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Check, Copy, Tag, X } from 'lucide-react';
-import { api } from '../lib/api';
+import { api, assetUrl } from '../lib/api';
+import { features } from '../config/features';
 import type { PopupFrequency, PopupPromotion } from '../lib/admin-types';
 import { useEscape, useLockBody } from '../lib/utils';
 import { Button } from './ui/Button';
-import { Img } from './ui/Primitives';
 
 /**
  * El anuncio de la promoción en la portada.
@@ -158,20 +158,32 @@ export function PromoPopup() {
   const blocked = isBlocked(pathname);
   const visible = open && !blocked;
 
-  // Se pide una sola vez al montar. Si falla —API apagada, sin red— la portada
-  // sigue exactamente igual: no hay estado de error que pintar.
+  // Se pide al montar y otra vez al volver a la pestaña, para que una
+  // promoción recién creada en el panel salga sin recargar. Si falla —API
+  // apagada, sin red— la portada sigue exactamente igual: no hay estado de
+  // error que pintar.
   useEffect(() => {
-    const controller = new AbortController();
-    api
-      .publicGet<{ promotion: PopupPromotion | null }>(
-        '/api/promotions/popup',
-        controller.signal,
-      )
-      .then((response) => {
-        if (!controller.signal.aborted) setPromotion(response?.promotion ?? null);
-      })
-      .catch(() => undefined);
-    return () => controller.abort();
+    let controller: AbortController | null = null;
+    const load = (): void => {
+      if (shownRef.current || document.visibilityState !== 'visible') return;
+      controller?.abort();
+      const current = new AbortController();
+      controller = current;
+      api
+        .publicGet<{ promotion: PopupPromotion | null }>('/api/promotions/popup', current.signal)
+        .then((response) => {
+          if (current.signal.aborted || shownRef.current) return;
+          const next = response?.promotion ?? null;
+          setPromotion(next ? { ...next, image: assetUrl(next.image) } : null);
+        })
+        .catch(() => undefined);
+    };
+    load();
+    document.addEventListener('visibilitychange', load);
+    return () => {
+      document.removeEventListener('visibilitychange', load);
+      controller?.abort();
+    };
   }, []);
 
   // El temporizador se cancela al desmontar y al salir a una ruta prohibida:
@@ -274,7 +286,7 @@ export function PromoPopup() {
         aria-labelledby={TITLE_ID}
         tabIndex={-1}
         onKeyDown={keepFocus}
-        className="relative w-full max-w-[680px] animate-fade-up overflow-hidden rounded-lg bg-surface shadow-pop dark:shadow-edge outline-none"
+        className="relative max-h-[92dvh] w-full max-w-[720px] animate-fade-up overflow-y-auto rounded-lg bg-surface shadow-pop dark:shadow-edge outline-none"
       >
         <button
           type="button"
@@ -286,26 +298,34 @@ export function PromoPopup() {
         </button>
 
         <div className="flex flex-col sm:flex-row">
+          {/* El flyer va entero, sin recortar: suele traer texto propio y un
+              recorte se lo comería. */}
           {promotion.image && (
-            <div className="relative min-h-[150px] shrink-0 bg-sand sm:min-h-[320px] sm:w-[42%]">
-              <div className="absolute inset-0">
-                <Img src={promotion.image} alt="" label="Promoción" />
-              </div>
+            <div className="flex shrink-0 items-center justify-center bg-sand sm:w-1/2">
+              <img
+                src={promotion.image}
+                alt={promotion.title}
+                className="block max-h-[52vh] w-full object-contain sm:max-h-[78vh]"
+              />
             </div>
           )}
 
           <div className="flex min-w-0 flex-1 flex-col gap-3 p-5 sm:p-6">
             {promotion.badge && <span className="kicker">{promotion.badge}</span>}
 
-            <h2 id={TITLE_ID} className="display text-balance text-h4 text-ink">
+            <h2 id={TITLE_ID} className="display text-balance pr-8 text-h4 text-ink">
               {promotion.title}
             </h2>
 
-            {promotion.subtitle && <p className="text-body text-ash">{promotion.subtitle}</p>}
+            {promotion.subtitle && (
+              <p className="whitespace-pre-line text-body text-ash">{promotion.subtitle}</p>
+            )}
 
             {promotion.code && (
               <div className="flex flex-col gap-1">
-                <span className="text-cap text-mist">Usa este cupón al pagar</span>
+                <span className="text-cap text-mist">
+                  {features.cart ? 'Usa este cupón al pagar' : 'Menciónalo al pedir por WhatsApp'}
+                </span>
                 <button
                   type="button"
                   onClick={() => void copyCode()}

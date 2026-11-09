@@ -17,6 +17,7 @@ import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import { useAdminAuth } from '../../store/AdminAuth';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
+import { features } from '../../config/features';
 import type { StockAlert } from '../../lib/admin-types';
 
 /**
@@ -47,6 +48,13 @@ const NAV: NavItem[] = [
   { to: '/admin/ajustes', label: 'Ajustes', icon: SlidersHorizontal, description: 'Envíos, equipo y parámetros' },
 ];
 
+/**
+ * Lo que se ve con el panel reducido (`features.adminFull` apagado): solo
+ * catálogo y anuncios. El resto sigue en `NAV` y en las rutas, escondido.
+ */
+const SIMPLE_NAV = ['/admin/productos', '/admin/promociones'];
+const VISIBLE_NAV = features.adminFull ? NAV : NAV.filter((item) => SIMPLE_NAV.includes(item.to));
+
 export default function AdminLayout() {
   const { user, logout } = useAdminAuth();
   const location = useLocation();
@@ -63,6 +71,7 @@ export default function AdminLayout() {
    * detrás de un clic hace que se descubra cuando ya falta mercancía.
    */
   useEffect(() => {
+    if (!features.adminFull) return;
     let alive = true;
     api
       .get<{ items: StockAlert[] }>('/api/admin/inventory/alerts')
@@ -79,7 +88,7 @@ export default function AdminLayout() {
 
   const nav = (
     <nav className="flex flex-col gap-0.5 p-2.5">
-      {NAV.map((item) => (
+      {VISIBLE_NAV.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}

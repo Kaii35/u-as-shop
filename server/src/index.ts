@@ -16,6 +16,7 @@ import { promotionRoutes } from './routes/promotions.js';
 import { settingRoutes } from './routes/settings.js';
 import { paymentRoutes } from './routes/payments.js';
 import { adminPaymentRoutes } from './routes/admin-payments.js';
+import { uploadRoutes } from './routes/uploads.js';
 import { assertPaymentsReady } from './payments/index.js';
 
 const app = Fastify({
@@ -128,6 +129,7 @@ await app.register(catalogRoutes);
 await app.register(authRoutes);
 await app.register(dashboardRoutes);
 await app.register(productRoutes);
+await app.register(uploadRoutes);
 await app.register(inventoryRoutes);
 await app.register(orderRoutes);
 await app.register(promotionRoutes);

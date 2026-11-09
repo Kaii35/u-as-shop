@@ -1,4 +1,4 @@
-import { api } from '../lib/api';
+import { api, assetUrl } from '../lib/api';
 import rawRealCatalog from '../../server/prisma/catalogo-real.json';
 import { mapRealCatalog, type RawCatalog } from './realCatalog';
 import type { Address, Brand, Category, Order, Product, ProductTag, Review, Shade, SizeOption } from '../types';
@@ -179,14 +179,43 @@ export async function hydrateCatalog(signal?: AbortSignal): Promise<boolean> {
     // que mostrar. Si la base está recién creada y sin sembrar, no se aplica.
     if (!data?.products?.length) return false;
 
-    refill(categories, data.categories);
+    // Si nada cambió desde la última vez, no se toca nada ni se redibuja.
+    const signature = JSON.stringify(data);
+    if (signature === lastSignature) return true;
+    lastSignature = signature;
+
+    // Las fotos subidas desde el panel las sirve la API: aquí se les pone la
+    // dirección completa, así ninguna pantalla tiene que saberlo.
+    refill(categories, data.categories.map((c) => ({ ...c, image: assetUrl(c.image) })));
     refill(brands, data.brands);
-    refill(products, data.products);
+    refill(products, data.products.map((p) => ({ ...p, images: p.images.map((src) => assetUrl(src)) })));
+    catalogVersion += 1;
+    for (const listener of listeners) listener();
     return true;
   } catch {
     return false;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Catálogo en vivo
+// ---------------------------------------------------------------------------
+
+/**
+ * Lo que se cambia en el panel tiene que verse en la tienda sin que nadie
+ * recargue. Cada vez que el catálogo de la API cambia, sube `catalogVersion`
+ * y se avisa a quien escuche (el armazón de la tienda), que vuelve a dibujar
+ * la página con los datos nuevos.
+ */
+let lastSignature = '';
+let catalogVersion = 0;
+const listeners = new Set<() => void>();
+
+export const getCatalogVersion = (): number => catalogVersion;
+export const subscribeCatalog = (listener: () => void): (() => void) => {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+};
 
 /**
  * Carga el catálogo real empaquetado en el build (modo `static`).

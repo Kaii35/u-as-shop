@@ -5,6 +5,8 @@
  * pedidos con un secreto vacío y enterarse en producción.
  */
 
+import { fileURLToPath } from 'node:url';
+
 function required(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -31,6 +33,13 @@ export const env = {
     .map((o) => o.trim())
     .filter(Boolean),
   isProduction,
+
+  /**
+   * Carpeta de las fotos que se suben desde el panel (productos y flyers).
+   * En el servidor de producción tiene que ser un disco que sobreviva a los
+   * reinicios: si se borra, las fotos subidas se pierden.
+   */
+  uploadsDir: process.env.UPLOADS_DIR ?? fileURLToPath(new URL('../uploads', import.meta.url)),
 
   /**
    * Semilla del primer administrador. Solo se usa al sembrar: si el usuario

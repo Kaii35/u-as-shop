@@ -50,8 +50,12 @@ const promotionFields = {
   usageLimit: z.number().int().min(1, 'El límite de usos tiene que ser al menos 1.').nullable().optional(),
 
   showPopup: z.boolean(),
+  showBar: z.boolean(),
+  barText: z.string().trim().max(200).nullable().optional(),
+  showBanner: z.boolean(),
   popupTitle: optionalText,
-  popupSubtitle: optionalText,
+  // El texto del anuncio: con espacio para condiciones y detalles.
+  popupSubtitle: z.string().trim().max(1000).nullable().optional(),
   popupBadge: optionalText,
   popupImage: optionalText,
   popupCtaLabel: optionalText,
@@ -71,6 +75,8 @@ const createSchema = z.object({
   active: promotionFields.active.default(true),
   priority: promotionFields.priority.default(0),
   showPopup: promotionFields.showPopup.default(false),
+  showBar: promotionFields.showBar.default(false),
+  showBanner: promotionFields.showBanner.default(false),
   popupFrequency: promotionFields.popupFrequency.default(PopupFrequency.SESSION),
   popupDelayMs: promotionFields.popupDelayMs.default(1200),
 });
@@ -212,6 +218,9 @@ const serializePromotion = (p: Promotion, stats: PromotionStats = EMPTY_STATS, n
   usageLimit: p.usageLimit,
   usageCount: p.usageCount,
   showPopup: p.showPopup,
+  showBar: p.showBar,
+  barText: p.barText,
+  showBanner: p.showBanner,
   popupTitle: p.popupTitle,
   popupSubtitle: p.popupSubtitle,
   popupBadge: p.popupBadge,
@@ -289,6 +298,42 @@ export async function promotionRoutes(app: FastifyInstance): Promise<void> {
         delayMs: promotion.popupDelayMs,
         endsAt: promotion.endsAt,
       },
+    };
+  });
+
+  /**
+   * Las promociones de la portada: las franjas de texto y los banners.
+   *
+   * Mismo filtro que el pop-up (encendida, dentro de fechas, con usos) y los
+   * mismos campos públicos. Van en el orden en que se muestran: la de más
+   * prioridad primero y, entre iguales, la más nueva.
+   */
+  app.get('/api/promotions/landing', async () => {
+    const now = new Date();
+    const candidates = await prisma.promotion.findMany({
+      where: {
+        active: true,
+        OR: [{ showBar: true }, { showBanner: true }],
+        startsAt: { lte: now },
+        AND: [{ OR: [{ endsAt: null }, { endsAt: { gt: now } }] }],
+      },
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+    });
+    const live = candidates.filter((p) => isLive(p, now));
+    const publicFields = (p: Promotion) => ({
+      id: p.id,
+      title: p.popupTitle,
+      subtitle: p.popupSubtitle,
+      badge: p.popupBadge,
+      image: p.popupImage,
+      ctaLabel: p.popupCtaLabel,
+      ctaUrl: p.popupCtaUrl,
+    });
+    return {
+      bars: live
+        .filter((p) => p.showBar && p.barText)
+        .map((p) => ({ id: p.id, text: p.barText as string, url: p.popupCtaUrl })),
+      banners: live.filter((p) => p.showBanner && p.popupTitle).map(publicFields),
     };
   });
 
@@ -405,6 +450,9 @@ export async function promotionRoutes(app: FastifyInstance): Promise<void> {
         priority: d.priority,
         usageLimit: d.usageLimit ?? null,
         showPopup: d.showPopup,
+        showBar: d.showBar,
+        barText: d.barText ?? null,
+        showBanner: d.showBanner,
         popupTitle,
         popupSubtitle: d.popupSubtitle ?? null,
         popupBadge: d.popupBadge ?? null,
@@ -471,6 +519,9 @@ export async function promotionRoutes(app: FastifyInstance): Promise<void> {
         ...(d.active === undefined ? {} : { active: d.active }),
         ...(d.priority === undefined ? {} : { priority: d.priority }),
         ...(d.usageLimit === undefined ? {} : { usageLimit: d.usageLimit }),
+        ...(d.showBar === undefined ? {} : { showBar: d.showBar }),
+        ...(d.barText === undefined ? {} : { barText: d.barText }),
+        ...(d.showBanner === undefined ? {} : { showBanner: d.showBanner }),
         ...(d.showPopup === undefined ? {} : { showPopup: d.showPopup }),
         ...(d.popupTitle === undefined ? {} : { popupTitle: d.popupTitle }),
         ...(d.popupSubtitle === undefined ? {} : { popupSubtitle: d.popupSubtitle }),

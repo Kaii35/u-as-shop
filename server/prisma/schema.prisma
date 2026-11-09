@@ -282,6 +282,8 @@ enum PromotionType {
   FIXED_AMOUNT
   /// Envío gratis. `value` se ignora.
   FREE_SHIPPING
+  /// Solo se anuncia (flyer y texto en el pop-up). No descuenta nada.
+  ANNOUNCEMENT
 }
 
 enum PromotionScope {
@@ -344,6 +346,12 @@ model Promotion {
   // ---- El anuncio ----
   /// Si es false la promoción descuenta pero no se anuncia en la portada.
   showPopup      Boolean        @default(false)
+  /// En la franja de texto de arriba de toda la tienda.
+  showBar        Boolean        @default(false)
+  /// El texto de esa franja. Admite **negrita** y *cursiva*.
+  barText        String?
+  /// Como banner con foto dentro de la portada.
+  showBanner     Boolean        @default(false)
   popupTitle     String?
   popupSubtitle  String?
   popupBadge     String?

@@ -162,11 +162,33 @@ compilar** (cambiarlas en Vercel exige redesplegar).
 | `VITE_FEATURE_AUTH` | apagado | `"true"` enciende ingreso, registro y `/cuenta` |
 | `VITE_FEATURE_CART` | apagado | `"true"` enciende carrito, `/checkout`, `/pago/*` y pasarela |
 | `VITE_FEATURE_ADMIN` | apagado | `"true"` enciende `/admin` (necesita la API) |
+| `VITE_FEATURE_ADMIN_FULL` | apagado | `"true"` devuelve al panel resumen, pedidos, pagos, inventario y ajustes |
 | `VITE_CATALOG_SOURCE` | `static` | `static`: catálogo real empaquetado; `api`: lo pide a la API como antes |
 | `VITE_SITE_URL` | — | Dominio para `og:url`/`og:image`. En Vercel se toma solo el de producción |
 
 Apagada una función, sus rutas vuelven a la portada y sus accesos desaparecen
 del header, el menú, la barra móvil y el pie.
+
+### El panel por ahora: productos y promociones
+
+Con `VITE_FEATURE_ADMIN_FULL` apagado el panel muestra solo **Productos** y
+**Promociones**. Lo demás (resumen, pedidos, pagos, inventario, envíos y
+ajustes, más las columnas de costo y existencias) sigue en el código y en sus
+rutas, que mandan a Productos.
+
+- **Productos:** crear, editar, apagar y borrar, con precio y fotos. Las fotos
+  se suben desde el formulario: el navegador las achica (1600 px, WebP) y la
+  API las guarda en `UPLOADS_DIR` (por defecto `server/uploads/`, fuera del
+  repo) y las sirve en `/uploads/…`.
+- **Promociones:** un anuncio con flyer, título y texto que sale en un pop-up
+  de la tienda. Se guarda como tipo `ANNOUNCEMENT`: no descuenta nada. La
+  recién publicada es la que se muestra.
+- **En vivo:** para que la tienda refleje el panel tiene que leer de la API
+  (`VITE_CATALOG_SOURCE=api`). Vuelve a preguntar cada 20 s y al volver a la
+  pestaña, y redibuja la página si algo cambió.
+
+En el servidor de producción, `UPLOADS_DIR` tiene que ser un disco que
+sobreviva a los reinicios: si se pierde, se pierden las fotos subidas.
 
 En modo `static` el catálogo sale de `server/prisma/catalogo-real.json`,
 convertido por `src/data/realCatalog.ts` igual que lo cargaría el importador

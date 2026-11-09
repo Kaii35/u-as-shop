@@ -198,6 +198,11 @@ export function computeDiscount(
   const base = scopeBase(promotion, cart, subtotal);
   if (base <= 0) return rejected(SCOPE_REASON[promotion.scope]);
 
+  // Un anuncio no toca el carrito: existe para el pop-up de la portada.
+  if (promotion.type === PromotionType.ANNOUNCEMENT) {
+    return rejected('Esta promoción solo se anuncia: no descuenta nada.');
+  }
+
   // El envío gratis no descuenta mercancía, así que ni mira `value`.
   if (promotion.type === PromotionType.FREE_SHIPPING) {
     return { discount: 0, freeShipping: true, applies: true, reason: null };

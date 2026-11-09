@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Megaphone, Pencil, Plus, Power, Ticket, Trash2 } from 'lucide-react';
-import { ApiError, api } from '../../lib/api';
+import { ApiError, api, assetUrl } from '../../lib/api';
+import { features } from '../../config/features';
 import { useAction, useResource } from '../../lib/useResource';
 import {
   PROMOTION_STATE_LABEL,
@@ -27,6 +28,7 @@ import {
 } from '../../components/admin/Primitives';
 import { Button } from '../../components/ui/Button';
 import { PromotionEditor } from './PromotionEditor';
+import { AnnouncementEditor } from './AnnouncementEditor';
 import { STATE_TONE, ruleSummary, validityText } from './promotion-text';
 
 /**
@@ -49,6 +51,14 @@ const STATUS_OPTIONS: ReadonlyArray<{ value: StatusFilter; label: string }> = [
 ];
 
 const count = (n: number): string => n.toLocaleString('es-CO');
+
+/**
+ * Con el panel reducido, una promoción es un anuncio (flyer + texto): no se
+ * muestran pedidos, ingresos ni descuentos, y se edita con el formulario
+ * corto. El completo sigue aquí para cuando vuelvan las ventas en línea.
+ */
+const FULL = features.adminFull;
+const Editor = FULL ? PromotionEditor : AnnouncementEditor;
 
 export default function AdminPromotions() {
   const [status, setStatus] = useState<StatusFilter>('all');
@@ -96,7 +106,11 @@ export default function AdminPromotions() {
     <>
       <PageHeader
         title="Promociones"
-        subtitle="Lo que descuenta y, si quieres, el anuncio que lo cuenta en la portada."
+        subtitle={
+          FULL
+            ? 'Lo que descuenta y, si quieres, el anuncio que lo cuenta en la portada.'
+            : 'Anuncios con tu flyer que salen en la tienda apenas los publicas.'
+        }
         actions={
           <Button size="sm" onClick={() => setEditing({ promotion: null })}>
             <Plus size={15} strokeWidth={2} aria-hidden />
@@ -112,7 +126,7 @@ export default function AdminPromotions() {
           options={STATUS_OPTIONS}
           onChange={setStatus}
         />
-        {announced && (
+        {FULL && announced && (
           <p className="text-cap text-mist">
             ¿No ves el anuncio en la portada? Revisa el interruptor general en{' '}
             <Link to="/admin/ajustes" className="link-quiet">
@@ -140,7 +154,11 @@ export default function AdminPromotions() {
                     ? 'Todavía no hay promociones'
                     : 'Ninguna promoción en este estado'
                 }
-                description="Una promoción anunciada en la portada es la forma más rápida de mover una categoría entera."
+                description={
+                  FULL
+                    ? 'Una promoción anunciada en la portada es la forma más rápida de mover una categoría entera.'
+                    : 'Sube un flyer, escribe el texto y sale como anuncio en la tienda.'
+                }
                 action={
                   <Button size="sm" onClick={() => setEditing({ promotion: null })}>
                     Crear la primera
@@ -170,15 +188,15 @@ export default function AdminPromotions() {
                     <thead>
                       <tr>
                         <Th>Promoción</Th>
-                        <Th>Descuento</Th>
+                        {FULL && <Th>Descuento</Th>}
                         <Th>Vigencia</Th>
                         <Th>Estado</Th>
-                        <Th align="right">Pedidos</Th>
-                        <Th align="right">Ingresos</Th>
-                        <Th align="right">Descuento dado</Th>
+                        {FULL && <Th align="right">Pedidos</Th>}
+                        {FULL && <Th align="right">Ingresos</Th>}
+                        {FULL && <Th align="right">Descuento dado</Th>}
                         <Th align="right">Vistas</Th>
                         <Th align="right">Clics</Th>
-                        <Th align="right">CTR</Th>
+                        {FULL && <Th align="right">CTR</Th>}
                         <Th align="right">Acciones</Th>
                       </tr>
                     </thead>
@@ -186,12 +204,17 @@ export default function AdminPromotions() {
                       {promotions.map((promotion) => (
                         <tr key={promotion.id}>
                           <Td className="min-w-[200px]">
-                            <span className="block font-medium text-ink">{promotion.name}</span>
-                            <PromotionMeta promotion={promotion} />
+                            <div className="flex items-center gap-2.5">
+                              {!FULL && <FlyerThumb src={promotion.popupImage} />}
+                              <div className="min-w-0">
+                                <span className="block font-medium text-ink">{promotion.name}</span>
+                                {FULL ? <PromotionMeta promotion={promotion} /> : <Placements promotion={promotion} />}
+                              </div>
+                            </div>
                           </Td>
-                          <Td className="min-w-[180px] text-ash">
+                          {FULL && <Td className="min-w-[180px] text-ash">
                             {ruleSummary(promotion, names)}
-                          </Td>
+                          </Td>}
                           <Td className="min-w-[170px] text-ash">
                             {validityText(promotion.startsAt, promotion.endsAt)}
                             <UsageLine promotion={promotion} />
@@ -201,20 +224,20 @@ export default function AdminPromotions() {
                               {PROMOTION_STATE_LABEL[promotion.state]}
                             </Badge>
                           </Td>
-                          <Td align="right">{count(promotion.orders)}</Td>
-                          <Td align="right" className="font-medium">
+                          {FULL && <Td align="right">{count(promotion.orders)}</Td>}
+                          {FULL && <Td align="right" className="font-medium">
                             {money(promotion.revenue)}
-                          </Td>
-                          <Td align="right" className="text-ash">
+                          </Td>}
+                          {FULL && <Td align="right" className="text-ash">
                             {money(promotion.discountGiven)}
-                          </Td>
+                          </Td>}
                           <Td align="right">{count(promotion.popupViews)}</Td>
                           <Td align="right">{count(promotion.popupClicks)}</Td>
-                          <Td align="right" className="text-ash">
+                          {FULL && <Td align="right" className="text-ash">
                             {promotion.popupViews === 0
                               ? '—'
                               : `${promotion.ctr.toLocaleString('es-CO')} %`}
-                          </Td>
+                          </Td>}
                           <Td align="right">
                             <RowActions
                               promotion={promotion}
@@ -242,7 +265,7 @@ export default function AdminPromotions() {
       {editing && (
         // La clave reinicia el formulario al cambiar de promoción: sin ella se
         // editaría una campaña con lo que quedó escrito de la anterior.
-        <PromotionEditor
+        <Editor
           key={editing.promotion?.id ?? 'nueva'}
           promotion={editing.promotion}
           onClose={() => setEditing(null)}
@@ -354,31 +377,32 @@ function PromotionCard({
   return (
     <article className="rounded border border-line p-3">
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        {!FULL && <FlyerThumb src={promotion.popupImage} />}
+        <div className="min-w-0 flex-1">
           <p className="font-medium text-ink">{promotion.name}</p>
-          <PromotionMeta promotion={promotion} />
+          {FULL ? <PromotionMeta promotion={promotion} /> : <Placements promotion={promotion} />}
         </div>
         <Badge tone={STATE_TONE[promotion.state]}>
           {PROMOTION_STATE_LABEL[promotion.state]}
         </Badge>
       </div>
 
-      <p className="mt-2 text-body text-ash">{ruleSummary(promotion, names)}</p>
+      {FULL && <p className="mt-2 text-body text-ash">{ruleSummary(promotion, names)}</p>}
       <p className="text-cap text-mist">{validityText(promotion.startsAt, promotion.endsAt)}</p>
       <UsageLine promotion={promotion} />
 
       <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-line pt-2.5">
-        <Metric label="Pedidos" value={count(promotion.orders)} />
-        <Metric label="Ingresos" value={money(promotion.revenue)} />
-        <Metric label="Descuento" value={money(promotion.discountGiven)} />
+        {FULL && <Metric label="Pedidos" value={count(promotion.orders)} />}
+        {FULL && <Metric label="Ingresos" value={money(promotion.revenue)} />}
+        {FULL && <Metric label="Descuento" value={money(promotion.discountGiven)} />}
         <Metric label="Vistas" value={count(promotion.popupViews)} />
         <Metric label="Clics" value={count(promotion.popupClicks)} />
-        <Metric
+        {FULL && <Metric
           label="CTR"
           value={
             promotion.popupViews === 0 ? '—' : `${promotion.ctr.toLocaleString('es-CO')} %`
           }
-        />
+        />}
       </dl>
 
       <div className="mt-2 flex flex-wrap justify-end">
@@ -391,6 +415,33 @@ function PromotionCard({
         />
       </div>
     </article>
+  );
+}
+
+/** Dónde sale: pop-up, carrusel, banner. */
+function Placements({ promotion }: { promotion: AdminPromotion }) {
+  const where = [
+    promotion.showPopup && 'Pop-up',
+    promotion.showBar && 'Franja',
+    promotion.showBanner && 'Banner',
+  ].filter(Boolean);
+  return (
+    <span className="mt-0.5 block text-cap text-mist">
+      {where.length ? where.join(' · ') : 'No se muestra en ningún lugar'}
+    </span>
+  );
+}
+
+/** El flyer en pequeño, para reconocer cada promoción de un vistazo. */
+function FlyerThumb({ src }: { src: string | null }) {
+  return (
+    <span className="flex h-12 w-10 shrink-0 items-center justify-center overflow-hidden rounded border border-line bg-sand text-mist">
+      {src ? (
+        <img src={assetUrl(src)} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <Megaphone size={14} strokeWidth={1.75} />
+      )}
+    </span>
   );
 }
 

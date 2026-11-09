@@ -18,7 +18,7 @@ export type OrderStatus =
   | 'CANCELLED'
   | 'REFUNDED';
 export type SalesChannel = 'ONLINE' | 'COUNTER' | 'SOCIAL';
-export type PromotionType = 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_SHIPPING';
+export type PromotionType = 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_SHIPPING' | 'ANNOUNCEMENT';
 export type PromotionScope = 'ALL' | 'CATEGORY' | 'BRAND' | 'PRODUCT';
 export type PopupFrequency = 'ONCE' | 'SESSION' | 'DAILY' | 'ALWAYS';
 export type PromotionState = 'active' | 'scheduled' | 'expired' | 'inactive' | 'exhausted';
@@ -208,6 +208,9 @@ export interface AdminPromotion {
   usageCount: number;
 
   showPopup: boolean;
+  showBar: boolean;
+  barText: string | null;
+  showBanner: boolean;
   popupTitle: string | null;
   popupSubtitle: string | null;
   popupBadge: string | null;
@@ -231,6 +234,17 @@ export interface AdminPromotion {
 }
 
 /** Lo poco que la portada necesita saber. No expone la mecánica interna. */
+/** Una promoción de la portada (carrusel o banner): solo lo que se pinta. */
+export interface LandingPromotion {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  badge: string | null;
+  image: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+}
+
 export interface PopupPromotion {
   id: string;
   title: string;
@@ -378,6 +392,7 @@ export const PROMOTION_TYPE_LABEL: Record<PromotionType, string> = {
   PERCENTAGE: 'Porcentaje',
   FIXED_AMOUNT: 'Monto fijo',
   FREE_SHIPPING: 'Envío gratis',
+  ANNOUNCEMENT: 'Solo anuncio',
 };
 
 export const POPUP_FREQUENCY_LABEL: Record<PopupFrequency, string> = {

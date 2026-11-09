@@ -4,6 +4,8 @@ import { Boxes, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Checkbox, Input, Select, Textarea } from '../../components/ui/Input';
 import { FormError, Modal, money } from '../../components/admin/Primitives';
+import { ImageListField } from '../../components/admin/ImageFields';
+import { features } from '../../config/features';
 import { api } from '../../lib/api';
 import { useAction } from '../../lib/useResource';
 import { cn } from '../../lib/utils';
@@ -31,6 +33,9 @@ const HEX = /^#[0-9a-fA-F]{6}$/;
 /** tema-ok: gris del selector de color mientras el hex escrito no es valido.
     No es color de interfaz: es el valor de reserva de un <input type="color">. */
 const HEX_FALLBACK = '#CCCCCC';
+
+/** Costo, margen y existencias son del inventario, escondido por ahora. */
+const FULL = features.adminFull;
 
 interface SizeDraft {
   label: string;
@@ -90,7 +95,7 @@ function draftFrom(product: AdminProduct | null): Draft {
       tags: [],
       active: true,
       featured: false,
-      images: [''],
+      images: [],
       shades: [],
       sizes: [],
     };
@@ -113,7 +118,7 @@ function draftFrom(product: AdminProduct | null): Draft {
     tags: product.tags.filter((t): t is ProductTag => TAG_VALUES.includes(t as ProductTag)),
     active: product.active,
     featured: product.featured,
-    images: product.images.length > 0 ? [...product.images] : [''],
+    images: [...product.images],
     shades: product.shades.map((s) => ({ ...s })),
     sizes: product.sizes.map((s) => ({
       label: s.label,
@@ -428,7 +433,7 @@ export default function ProductForm({
             placeholder="39900"
             inputClassName="tnum"
           />
-          <Input
+          {FULL && <Input
             label="Costo"
             hint="lo que te cuesta"
             value={draft.cost}
@@ -437,7 +442,7 @@ export default function ProductForm({
             inputMode="numeric"
             placeholder="14200"
             inputClassName="tnum"
-          />
+          />}
           <Input
             label="IVA"
             hint="en porcentaje"
@@ -450,7 +455,7 @@ export default function ProductForm({
             trailing={<span className="px-1.5 text-cap text-mist">%</span>}
           />
 
-          <div className="rounded border border-line bg-sand px-3 py-2.5 sm:col-span-2">
+          {FULL && <div className="rounded border border-line bg-sand px-3 py-2.5 sm:col-span-2">
             {marginPreview === null ? (
               <p className="text-cap text-mist">
                 Escribe el precio de venta y el costo para ver cuánto te queda por unidad.
@@ -487,10 +492,10 @@ export default function ProductForm({
                 )}
               </div>
             )}
-          </div>
+          </div>}
         </Section>
 
-        <Section title="Existencias">
+        {FULL && <Section title="Existencias">
           <Input
             label="Avisarme cuando queden menos de"
             hint="unidades"
@@ -540,7 +545,7 @@ export default function ProductForm({
               />
             </>
           )}
-        </Section>
+        </Section>}
 
         <Section title="Ficha de la tienda" single>
           <Input
@@ -590,43 +595,8 @@ export default function ProductForm({
           </div>
         </Section>
 
-        <Section title="Imágenes" hint="Rutas dentro del sitio. La primera es la que se ve en el listado." single>
-          <div className="flex flex-col gap-2">
-            {draft.images.map((src, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <Input
-                  className="flex-1"
-                  aria-label={`Ruta de la imagen ${i + 1}`}
-                  value={src}
-                  onChange={(e) =>
-                    set(
-                      'images',
-                      draft.images.map((v, j) => (j === i ? e.target.value : v)),
-                    )
-                  }
-                  placeholder="/images/products/p1-a.svg"
-                />
-                <RemoveRow
-                  label={`Quitar la imagen ${i + 1}`}
-                  onRemove={() =>
-                    set(
-                      'images',
-                      draft.images.filter((_, j) => j !== i),
-                    )
-                  }
-                />
-              </div>
-            ))}
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              className="self-start"
-              onClick={() => set('images', [...draft.images, ''])}
-            >
-              <Plus size={14} strokeWidth={2} /> Añadir imagen
-            </Button>
-          </div>
+        <Section title="Fotos" hint="La primera es la que se ve en el listado de la tienda." single>
+          <ImageListField value={draft.images} onChange={(next) => set('images', next)} />
         </Section>
 
         <Section title="Tonos" hint="Solo si el producto viene en varios colores." single>

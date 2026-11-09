@@ -23,7 +23,7 @@ import {
   money,
   type Tone,
 } from '../../components/admin/Primitives';
-import { api } from '../../lib/api';
+import { api, assetUrl } from '../../lib/api';
 import { useAction, useDebounced, useResource } from '../../lib/useResource';
 import { cn } from '../../lib/utils';
 import type {
@@ -34,6 +34,7 @@ import type {
   StockStatus,
 } from '../../lib/admin-types';
 import ProductForm from './ProductForm';
+import { features } from '../../config/features';
 import ProductTaxonomy from './ProductTaxonomy';
 
 /**
@@ -154,6 +155,12 @@ function IconAction({
     </button>
   );
 }
+
+/**
+ * Con el panel reducido no se muestran costo, margen, existencias ni ventas:
+ * son del inventario, que está escondido por ahora.
+ */
+const FULL = features.adminFull;
 
 // ---------------------------------------------------------------------------
 
@@ -293,13 +300,17 @@ export default function AdminProducts() {
   const clearFilters = (): void =>
     patchParams({ buscar: '', categoria: '', marca: '', stock: 'all', estado: 'all', pagina: '1' });
 
-  const columns = 11;
+  const columns = FULL ? 11 : 7;
 
   return (
     <>
       <PageHeader
         title="Productos"
-        subtitle="Lo que vendes, a cuánto y qué te deja cada cosa."
+        subtitle={
+          FULL
+            ? 'Lo que vendes, a cuánto y qué te deja cada cosa.'
+            : 'Lo que se ve en la tienda. Cada cambio sale publicado al guardar.'
+        }
         actions={
           <>
             <SegmentedControl<Section>
@@ -374,7 +385,7 @@ export default function AdminProducts() {
               </Select>
             </FilterField>
 
-            <FilterField label="Existencias" className="basis-36">
+            {FULL && <FilterField label="Existencias" className="basis-36">
               <Select
                 aria-label="Filtrar por existencias"
                 value={stock}
@@ -385,7 +396,7 @@ export default function AdminProducts() {
                 <option value="out">Agotados</option>
                 <option value="ok">Con existencias</option>
               </Select>
-            </FilterField>
+            </FilterField>}
 
             <FilterField label="En la tienda" className="basis-32">
               <Select
@@ -433,9 +444,9 @@ export default function AdminProducts() {
                       >
                         Precio
                       </Th>
-                      <Th align="right">Costo</Th>
-                      <Th align="right">Te queda</Th>
-                      <Th
+                      {FULL && <Th align="right">Costo</Th>}
+                      {FULL && <Th align="right">Te queda</Th>}
+                      {FULL && <Th
                         align="right"
                         sortable
                         active={sort === 'stock'}
@@ -443,9 +454,9 @@ export default function AdminProducts() {
                         onSort={() => onSort('stock')}
                       >
                         Existencias
-                      </Th>
+                      </Th>}
                       <Th>En la tienda</Th>
-                      <Th
+                      {FULL && <Th
                         align="right"
                         sortable
                         active={sort === 'sales'}
@@ -453,7 +464,7 @@ export default function AdminProducts() {
                         onSort={() => onSort('sales')}
                       >
                         Vendidas 30 d
-                      </Th>
+                      </Th>}
                       <Th
                         align="right"
                         sortable
@@ -518,7 +529,7 @@ export default function AdminProducts() {
                           <tr key={product.id} className="transition-colors hover:bg-sand">
                             <Td className="min-w-[220px]">
                               <div className="flex items-center gap-2.5">
-                                <Thumb src={product.images[0]} alt="" />
+                                <Thumb src={assetUrl(product.images[0])} alt="" />
                                 <div className="min-w-0">
                                   <p
                                     className={cn(
@@ -546,10 +557,10 @@ export default function AdminProducts() {
                                 </span>
                               )}
                             </Td>
-                            <Td align="right" className="text-ash">
+                            {FULL && <Td align="right" className="text-ash">
                               {money(product.cost)}
-                            </Td>
-                            <Td align="right">
+                            </Td>}
+                            {FULL && <Td align="right">
                               <span
                                 className={cn(
                                   'font-medium',
@@ -569,23 +580,23 @@ export default function AdminProducts() {
                                 })}{' '}
                                 %
                               </span>
-                            </Td>
-                            <Td align="right">
+                            </Td>}
+                            {FULL && <Td align="right">
                               <span className="font-medium">
                                 {product.stock.toLocaleString('es-CO')}
                               </span>
                               <span className="mt-0.5 block">
                                 <Badge tone={badge.tone}>{badge.text}</Badge>
                               </span>
-                            </Td>
+                            </Td>}
                             <Td>
                               <Badge tone={product.active ? 'ok' : 'neutral'}>
                                 {product.active ? 'A la venta' : 'Apagado'}
                               </Badge>
                             </Td>
-                            <Td align="right" className="text-ash">
+                            {FULL && <Td align="right" className="text-ash">
                               {(product.unitsSold30d ?? 0).toLocaleString('es-CO')}
-                            </Td>
+                            </Td>}
                             <Td align="right" className="whitespace-nowrap text-cap text-mist">
                               {formatDate(product.createdAt)}
                             </Td>

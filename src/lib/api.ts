@@ -61,6 +61,8 @@ export const setUnauthorizedHandler = (fn: (() => void) | null): void => {
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   body?: unknown;
+  /** Archivo tal cual (fotos): viaja con su propio tipo, no como JSON. */
+  file?: Blob;
   /** Query en objeto: los `undefined`, `null` y `''` se omiten. */
   query?: Record<string, string | number | boolean | undefined | null>;
   /** Las rutas públicas (catálogo, pop-up) no mandan token. */
@@ -80,10 +82,11 @@ function buildUrl(path: string, query?: RequestOptions['query']): string {
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, query, auth = true, signal } = options;
+  const { method = 'GET', body, file, query, auth = true, signal } = options;
 
   const headers: Record<string, string> = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (file) headers['Content-Type'] = file.type;
+  else if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth) {
     const token = getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
@@ -95,7 +98,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
       method,
       headers,
       signal,
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      ...(file ? { body: file } : body === undefined ? {} : { body: JSON.stringify(body) }),
     });
   } catch (error) {
     // `fetch` solo rechaza si no hubo respuesta: API apagada, CORS o sin red.
@@ -118,6 +121,16 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   return payload as T;
 }
 
+/**
+ * Dirección completa de una imagen.
+ *
+ * Las fotos subidas desde el panel se guardan como `/uploads/<nombre>` y las
+ * sirve la API, que en desarrollo vive en otro puerto. Las demás rutas
+ * (`/images/...`, del propio sitio) y las direcciones completas pasan igual.
+ */
+export const assetUrl = <T extends string | null | undefined>(src: T): T =>
+  (typeof src === 'string' && src.startsWith('/uploads/') ? API_BASE + src : src) as T;
+
 export const api = {
   get: <T>(path: string, query?: RequestOptions['query'], signal?: AbortSignal) =>
     request<T>(path, { query, ...(signal ? { signal } : {}) }),
@@ -129,6 +142,9 @@ export const api = {
   /** Para las rutas públicas: catálogo y pop-up de promociones. */
   publicGet: <T>(path: string, signal?: AbortSignal) =>
     request<T>(path, { auth: false, ...(signal ? { signal } : {}) }),
+  /** Sube una foto al panel. Devuelve la ruta con la que se guarda. */
+  upload: (file: Blob) =>
+    request<{ url: string }>('/api/admin/uploads', { method: 'POST', file }),
   publicPost: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'POST', body, auth: false }),
 };

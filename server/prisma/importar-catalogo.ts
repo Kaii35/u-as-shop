@@ -166,11 +166,21 @@ export async function importRealCatalog(prisma: PrismaClient): Promise<{ product
     data: { active: false },
   });
 
-  // La demo se esconde de la tienda (ver cabecera).
+  // La demo se esconde de la tienda (ver cabecera). Solo la demo: lo que se
+  // crea desde el panel tampoco lleva el prefijo `ns-`, y reimportar no puede
+  // apagarlo. La demo se reconoce por sus ids (`p1`…, `c1`…) y sus marcas son
+  // las de esos productos.
+  const isDemo = (prefix: string) => (id: string) => new RegExp(`^${prefix}\\d+$`).test(id);
   const notReal = { NOT: { id: { startsWith: REAL_PREFIX } } };
-  await prisma.product.updateMany({ where: notReal, data: { active: false } });
-  await prisma.category.updateMany({ where: notReal, data: { active: false } });
-  await prisma.brand.updateMany({ where: notReal, data: { active: false } });
+  const demoProducts = (await prisma.product.findMany({ where: notReal, select: { id: true, brandId: true } }))
+    .filter((p) => isDemo('p')(p.id));
+  const demoCategories = (await prisma.category.findMany({ where: notReal, select: { id: true } }))
+    .map((c) => c.id)
+    .filter(isDemo('c'));
+  const demoBrands = [...new Set(demoProducts.map((p) => p.brandId))].filter((id) => !id.startsWith(REAL_PREFIX));
+  await prisma.product.updateMany({ where: { id: { in: demoProducts.map((p) => p.id) } }, data: { active: false } });
+  await prisma.category.updateMany({ where: { id: { in: demoCategories } }, data: { active: false } });
+  await prisma.brand.updateMany({ where: { id: { in: demoBrands } }, data: { active: false } });
 
   return {
     products: data.productos.length,

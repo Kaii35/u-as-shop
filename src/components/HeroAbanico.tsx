@@ -83,14 +83,14 @@ const display = "'Poppins', system-ui, sans-serif", sans = "'Inter', system-ui, 
 const LAYOUTS = {
   desktop: {
     W: 1920, H: 900, PX: 1390, PY: 820,
-    text: { left: 190, top: 210, width: 760 },
-    kicker: 14, h1: 148, p: 18, pMax: 440, btnH: 54, btnF: 16, btnPad: 26, gap: 12,
+    text: { left: 190, top: 90, width: 760 },
+    logo: 210, kicker: 14, h1: 112, p: 18, pMax: 440, btnH: 54, btnF: 16, btnPad: 26, gap: 12,
     statNum: 36, statLbl: 13, statGap: 40, m: 1,
   },
   mobile: {
     W: 900, H: 1700, PX: 450, PY: 1620,
-    text: { left: 70, top: 90, width: 760 },
-    kicker: 26, h1: 132, p: 34, pMax: 760, btnH: 104, btnF: 32, btnPad: 46, gap: 20,
+    text: { left: 70, top: 60, width: 760 },
+    logo: 220, kicker: 26, h1: 100, p: 34, pMax: 760, btnH: 104, btnF: 32, btnPad: 46, gap: 20,
     statNum: 64, statLbl: 26, statGap: 64, m: 1.9,
   },
 } as const;
@@ -272,11 +272,32 @@ export default function HeroAbanico({
 
           {/* Texto */}
           <div style={{ position: 'absolute', ...L.text, color: P.text, fontFamily: sans, transition: 'color .4s ease' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 * L.m, fontSize: L.kicker, letterSpacing: '0.28em', textTransform: 'uppercase', color: P.muted, ...rise(CUES.Title - 0.2) }}>
+            {/* El logo apilado, grande: es lo primero que se lee de la página.
+                Va como máscara para tomar el color de la marca de cada tema
+                (vino en claro, rosa en oscuro), igual que el del header. */}
+            <div
+              role="img"
+              aria-label="Natalia Sánchez"
+              style={{
+                height: L.logo,
+                aspectRatio: '140 / 100',
+                background: 'rgb(var(--clay))',
+                maskImage: 'url(/logo-ns.svg)',
+                WebkitMaskImage: 'url(/logo-ns.svg)',
+                maskRepeat: 'no-repeat',
+                WebkitMaskRepeat: 'no-repeat',
+                maskSize: 'contain',
+                WebkitMaskSize: 'contain',
+                maskPosition: 'left center',
+                WebkitMaskPosition: 'left center',
+                ...rise(CUES.Title - 0.4),
+              }}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 * L.m, marginTop: 16 * L.m, fontSize: L.kicker, letterSpacing: '0.28em', textTransform: 'uppercase', color: P.muted, ...rise(CUES.Title - 0.2) }}>
               <span style={{ width: line, height: L.m, background: P.accent }} />
               Insumos profesionales
             </div>
-            <h1 aria-label="Color que se queda." style={{ margin: `${26 * L.m}px 0 0`, fontFamily: display, fontSize: L.h1, lineHeight: 1.02, letterSpacing: '-0.03em', fontWeight: 700 }}>
+            <h1 aria-label="Color que se queda." style={{ margin: `${18 * L.m}px 0 0`, fontFamily: display, fontSize: L.h1, lineHeight: 1.02, letterSpacing: '-0.03em', fontWeight: 700 }}>
               <Chars text="Color que" T={Ti} start={CUES.Title} />
               <Chars text="se queda." T={Ti} start={CUES.Title + 0.4} style={{ fontStyle: 'italic', fontWeight: 600, color: P.accent }} />
             </h1>

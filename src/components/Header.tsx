@@ -83,7 +83,7 @@ export function Header() {
                 onClick={() => setMenuOpen(true)}
                 className="min-[1500px]:absolute min-[1500px]:left-6 min-[1500px]:top-1/2 min-[1500px]:-translate-y-1/2"
               />
-              <Link to="/" aria-label="Natalia Sánchez, inicio" className="shrink-0"><Logo /></Link>
+              <Link to="/" aria-label="Natalia Sánchez, inicio" className="shrink-0"><Logo variante="monograma" size="lg" /></Link>
             </div>
             <div className="min-w-0 flex-1"><SearchBar /></div>
             <div className="flex shrink-0 items-center gap-1">
@@ -137,7 +137,7 @@ export function Header() {
             <MenuButton open={menuOpen} onClick={() => setMenuOpen(true)} className="border-transparent" />
             <IconButton label="Buscar" onClick={() => setSearchOpen(true)}><Search size={19} strokeWidth={2} /></IconButton>
           </div>
-          <Link to="/" aria-label="Natalia Sánchez, inicio"><Logo size="sm" /></Link>
+          <Link to="/" aria-label="Natalia Sánchez, inicio"><Logo variante="monograma" size="md" /></Link>
           <div className="flex justify-end">
             {features.auth && <Link to={accountTo} aria-label="Mi cuenta" className="flex h-10 w-10 items-center justify-center rounded"><User size={19} strokeWidth={2} /></Link>}
             {features.cart

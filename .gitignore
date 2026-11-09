@@ -15,3 +15,6 @@ server/dist
 # Bitacora de avisos de la pasarela. Lleva dentro transacciones reales con
 # datos de la clienta: no se versiona. El informe sí, que es agregado.
 docs/pruebas-wompi/avisos-recibidos.jsonl
+
+# Fotos subidas desde el panel. Viven en el servidor, no en el repo.
+server/uploads/

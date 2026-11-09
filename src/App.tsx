@@ -38,6 +38,8 @@ const AdminInventory = lazy(() => import('./pages/Admin/AdminInventory'));
 const AdminPromotions = lazy(() => import('./pages/Admin/AdminPromotions'));
 const AdminSettings = lazy(() => import('./pages/Admin/AdminSettings'));
 
+const ToProducts = () => <Navigate to="/admin/productos" replace />;
+
 /** Lo que se ve mientras baja ese trozo. Suele durar un parpadeo. */
 function AdminLoading() {
   return (
@@ -89,13 +91,16 @@ export default function App() {
                 </Suspense>
               }
             >
-              <Route index element={<AdminDashboard />} />
-              <Route path="pedidos" element={<AdminOrders />} />
-              <Route path="pagos" element={<AdminPayments />} />
+              {/* Con el panel reducido, resumen, pedidos, pagos, inventario y
+                  ajustes siguen aquí pero mandan a Productos: el código no se
+                  toca, solo deja de verse (ver `features.adminFull`). */}
+              <Route index element={features.adminFull ? <AdminDashboard /> : <ToProducts />} />
+              <Route path="pedidos" element={features.adminFull ? <AdminOrders /> : <ToProducts />} />
+              <Route path="pagos" element={features.adminFull ? <AdminPayments /> : <ToProducts />} />
               <Route path="productos" element={<AdminProducts />} />
-              <Route path="inventario" element={<AdminInventory />} />
+              <Route path="inventario" element={features.adminFull ? <AdminInventory /> : <ToProducts />} />
               <Route path="promociones" element={<AdminPromotions />} />
-              <Route path="ajustes" element={<AdminSettings />} />
+              <Route path="ajustes" element={features.adminFull ? <AdminSettings /> : <ToProducts />} />
             </Route>
           </>
         ) : (

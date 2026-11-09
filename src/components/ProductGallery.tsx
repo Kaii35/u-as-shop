@@ -7,14 +7,15 @@ import { getBadge } from './ProductCard';
 import { CloseButton, Modal } from './ui/Overlays';
 import { Badge, Img } from './ui/Primitives';
 
-const SLOTS = 4;
-
 export function ProductGallery({ product }: { product: Product }) {
   const [active, setActive] = useState(0);
   const [zoom, setZoom] = useState(false);
   const [origin, setOrigin] = useState('50% 50%');
   const [hover, setHover] = useState(false);
-  const images = Array.from({ length: Math.max(SLOTS, product.images.length) }, (_, i) => product.images[i]);
+  // Solo las fotos que existen. Sin ninguna queda un hueco, que `Img` pinta
+  // como "Foto del producto" en vez de dejar la ficha sin imagen.
+  const real = product.images.filter(Boolean);
+  const images: Array<string | undefined> = real.length ? real : [undefined];
   const badge = getBadge(product);
   const current = images[active];
 
@@ -27,7 +28,8 @@ export function ProductGallery({ product }: { product: Product }) {
     // Sin la base de 480px el contenedor se encoge al ancho de las miniaturas
     // dentro del `flex-wrap` de la ficha y la foto grande queda en 0 px.
     <div className="flex min-w-0 flex-[1_1_480px] flex-col-reverse gap-2.5 sm:flex-row">
-      <div className="flex gap-2 sm:flex-col">
+      {/* Con una sola foto, las miniaturas sobran: repetirían la grande. */}
+      {images.length > 1 && <div className="flex gap-2 sm:flex-col">
         {images.map((src, i) => (
           <button
             key={i}
@@ -39,7 +41,7 @@ export function ProductGallery({ product }: { product: Product }) {
             <span className="block h-full w-full overflow-hidden rounded-xs bg-sand"><Img src={src} /></span>
           </button>
         ))}
-      </div>
+      </div>}
       <div
         className={cn('relative aspect-[4/5] flex-1 overflow-hidden rounded border border-line bg-sand', current && 'cursor-zoom-in')}
         onMouseMove={onMove}
