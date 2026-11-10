@@ -334,9 +334,11 @@ export async function paymentRoutes(app: FastifyInstance): Promise<void> {
    *
    * La ruta NO SE REGISTRA con Wompi activo. No es un detalle de higiene: una
    * ruta pública capaz de marcar pagos como aprobados a voluntad es la forma
-   * más directa de vaciar el inventario sin pagar un peso.
+   * más directa de vaciar el inventario sin pagar un peso. Por lo mismo
+   * tampoco existe en producción, aunque la pasarela simulada quede puesta
+   * por defecto (el lanzamiento va sin carrito y nadie configura Wompi).
    */
-  if (isMockProvider()) {
+  if (isMockProvider() && !env.isProduction) {
     app.post('/api/payments/mock/:reference', async (request, reply) => {
       const { reference } = parse(referenceParam, request.params);
       const body = parse(mockBody, request.body);

@@ -16,10 +16,11 @@ function validateStaticCatalog(source: string): Plugin {
   return {
     name: 'validar-catalogo-estatico',
     buildStart() {
-      if (source !== 'static') return;
+      // Se valida en los dos modos: en `api` el JSON también va en el build,
+      // como respaldo si la API no responde (ver `src/main.tsx`).
       const data = JSON.parse(readFileSync(realCatalog, 'utf-8')) as RawCatalog;
       const { products, categories } = mapRealCatalog(data);
-      this.info(`catálogo estático: ${products.length} productos en ${categories.length} categorías`);
+      this.info(`catálogo estático (${source}): ${products.length} productos en ${categories.length} categorías`);
     },
   };
 }

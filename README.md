@@ -190,6 +190,11 @@ rutas, que mandan a Productos.
 En el servidor de producción, `UPLOADS_DIR` tiene que ser un disco que
 sobreviva a los reinicios: si se pierde, se pierden las fotos subidas.
 
+**Publicarlo en producción:** paso a paso en
+[docs/despliegue-panel.md](docs/despliegue-panel.md). La base de producción
+se carga con `npm --prefix server run prod:init` (catálogo real y una cuenta
+propia), **nunca** con el seed de ejemplo.
+
 En modo `static` el catálogo sale de `server/prisma/catalogo-real.json`,
 convertido por `src/data/realCatalog.ts` igual que lo cargaría el importador
 de la API. No se llama a la API y **nunca** se usa el catálogo de ejemplo: si
