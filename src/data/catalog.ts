@@ -36,7 +36,7 @@ const CATS: Array<[string, string, string, string, string]> = [
     'Detalles que transforman un diseño. Materiales seleccionados para precisión, brillo y fijación duradera.',
     'Aplica sobre capa de gel sin curar o con adhesivo específico. Sella con top coat no-wipe.'],
   ['c5', 'Herramientas y equipos', 'Lámparas, tornos e instrumental profesional.',
-    'Equipo de uso profesional con componentes de alta durabilidad y garantía oficial de 12 meses.',
+    'Equipo de uso profesional con componentes de alta durabilidad y garantía de 2 meses.',
     'Lee el manual antes del primer uso. Limpia y desinfecta después de cada servicio.'],
   ['c6', 'Pestañas y cejas', 'Extensiones, lifting y diseño de mirada.',
     'Fibras suaves de alta calidad que conservan la curva, ligeras y cómodas para la clienta.',

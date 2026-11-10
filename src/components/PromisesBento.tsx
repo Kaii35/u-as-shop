@@ -213,7 +213,7 @@ export function PromisesBento() {
         kicker="Asesoría"
         icon={<Headset size={16} strokeWidth={2} />}
         title="Te asesoramos de verdad"
-        detail="Por WhatsApp, de lunes a sábado. Te ayudamos a elegir el producto y a usarlo."
+        detail="Por WhatsApp, todos los días (domingos hasta las 2:00 p. m.). Te ayudamos a elegir el producto y a usarlo."
       >
         <Chat />
       </Tile>

@@ -183,7 +183,7 @@ function ProductDetail({ product: p }: { product: Product }) {
           {tab === 'ship' && (
             <>
               <p className="mb-3">Despachamos a todos los municipios de Colombia. Envío estándar de 3 a 5 días hábiles ($12.900, gratis desde $250.000) y express de 24 a 48 horas en ciudades principales.</p>
-              <p>Tienes 30 días para cambios en productos sin abrir. Los equipos eléctricos tienen garantía oficial de 12 meses.</p>
+              <p>Tienes 30 días para cambios en productos sin abrir. Los equipos eléctricos tienen garantía de 2 meses por defectos de fabricación.</p>
             </>
           )}
         </div>

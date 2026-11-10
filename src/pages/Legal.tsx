@@ -294,7 +294,7 @@ const POLICIES: Record<LegalSlug, Policy> = {
         body: [
           'Todos nuestros productos tienen la garantía legal que exige la Ley 1480 de 2011: deben servir para lo que fueron hechos y cumplir lo que anunciamos.',
           [
-            'Equipos eléctricos (lámparas, ventiladores y similares): 12 meses por defectos de fabricación.',
+            'Equipos eléctricos (lámparas, ventiladores y similares): 2 meses por defectos de fabricación.',
             'Demás productos: el término que indique el fabricante o, si no lo indica, el que establece la ley.',
           ],
           'La garantía no cubre daños por mal uso, golpes, humedad, uso de voltaje equivocado, desgaste normal o reparaciones hechas por terceros.',

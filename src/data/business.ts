@@ -15,7 +15,7 @@ export const BUSINESS = {
   mall: 'Centro Comercial Ruiseñor',
   city: 'Caldas, Antioquia',
   country: 'Colombia',
-  hours: 'Lunes a sábado · 8:00 a. m. – 7:00 p. m.',
+  hours: 'Lunes a sábado de 9:00 a. m. a 7:30 p. m. · Domingos de 10:00 a. m. a 2:00 p. m.',
 } as const;
 
 export const fullAddress = `${BUSINESS.address}, ${BUSINESS.mall}, ${BUSINESS.city}, ${BUSINESS.country}`;
