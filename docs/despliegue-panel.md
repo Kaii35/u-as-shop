@@ -108,3 +108,157 @@ vuelve.
   contenedor las aplica solo al arrancar.
 - Contraseña olvidada: hoy no hay "recuperar contraseña". Se puede crear otra
   cuenta con `prod:init` usando otro `ADMIN_EMAIL`.
+
+---
+
+## Opción gratis: Vercel + Neon + Blob
+
+Mientras no haya presupuesto para el VPS, la API puede vivir gratis en Vercel:
+la base en **Neon** (Postgres gratis) y las fotos en **Vercel Blob**. El camino
+de Docker/VPS de arriba sigue funcionando igual; el día que se pase a Hostinger
+solo hay que seguir las secciones 1 a 4 y cambiar `VITE_API_URL`.
+
+### Cómo queda
+
+- **Dos proyectos de Vercel sobre el mismo repo.** El de siempre (la tienda,
+  raíz del repo) no cambia. Uno nuevo para la API, con *Root Directory* =
+  `server`. Vercel reconoce Fastify solo y publica `server/src/index.ts` como
+  una función. La configuración está en `server/vercel.json`.
+- **Fotos:** si existe `BLOB_READ_WRITE_TOKEN`, el panel las sube a Vercel Blob
+  y en la base queda su URL pública (`https://….blob.vercel-storage.com/…`).
+  Sin esa variable se guardan en disco, como en el VPS
+  (`server/src/storage.ts`). Las fotos del catálogo siguen saliendo de la
+  tienda.
+- **Migraciones:** se aplican solas al compilar, **solo** en el despliegue de
+  producción (`server/scripts/vercel-build.mjs`), por la conexión directa de
+  Neon (`DATABASE_URL_UNPOOLED`), no por la del pooler. Si una migración falla,
+  falla el despliegue y sigue en línea la versión anterior. Los despliegues de
+  prueba (preview) no migran. Para hacerlo a mano: `SKIP_MIGRATIONS=true` en
+  Vercel y `npx prisma migrate deploy` con la URL directa.
+- **El catálogo público se cachea 10 s en el CDN de Vercel**
+  (`CDN-Cache-Control`; el navegador no lo lee). Cada pestaña abierta de la
+  tienda lo pide cada 20 s; así la función y la base se usan pocas veces por
+  minuto, haya una visita o cien. Un cambio del panel se ve en una pestaña ya
+  abierta en unos 30 s (a lo sumo un minuto); el panel mismo no usa esta
+  caché y muestra el cambio al instante.
+
+### Pasos en el panel de Vercel (una sola vez)
+
+**A. Crear el proyecto de la API**
+
+1. Vercel → **Add New… → Project** → importar el mismo repositorio de GitHub.
+2. En **Root Directory** pulsar **Edit** y elegir `server`. *Framework Preset*
+   debe decir **Fastify** (lo toma de `server/vercel.json`).
+3. Abrir **Environment Variables** y añadir (entorno *Production*; marcar
+   también *Preview* si se quieren despliegues de prueba):
+
+   | Variable | Valor |
+   |---|---|
+   | `NODE_ENV` | `production` |
+   | `JWT_SECRET` | 64 caracteres al azar. Generarlo con `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` y no guardarlo en ningún otro sitio |
+   | `CORS_ORIGIN` | `https://www.xn--nstiendadeuas-skb.com,https://xn--nstiendadeuas-skb.com` |
+   | `APP_URL` | `https://www.xn--nstiendadeuas-skb.com` |
+   | `TRUST_PROXY` | `true` (Vercel va delante; lo usa el límite de peticiones) |
+
+   No hacen falta `PORT` ni `UPLOADS_DIR`, ni nada de Wompi.
+4. **Deploy.** Este primer despliegue **falla** con "Falta DATABASE_URL": es lo
+   esperado, todavía no hay base. Seguir.
+
+**B. Crear la base (Neon)**
+
+5. En el proyecto de la API → pestaña **Storage** → **Create Database** →
+   **Neon** (Marketplace) → plan **Free** → región la más cercana
+   (*Washington, D.C. / us-east-1* es la usual para Colombia) → **Create**.
+6. Al terminar ofrece conectarla al proyecto: **Connect** al proyecto de la
+   API, con *Production* y *Preview* marcados. Esto crea solas, entre otras,
+   `DATABASE_URL` (con pooler) y `DATABASE_URL_UNPOOLED` (directa).
+   Comprobar en **Settings → Environment Variables** que están las dos. Si la
+   integración les puso otro prefijo, crear a mano `DATABASE_URL` (la de
+   pooler) y `DIRECT_URL` (la directa) con esos valores.
+
+**C. Crear el almacén de fotos (Blob)**
+
+7. Misma pestaña **Storage** → **Create Database** → **Blob** → nombre, por
+   ejemplo, `fotos-panel` → acceso **Public** → **Create** → **Connect** al
+   proyecto de la API. Esto crea `BLOB_READ_WRITE_TOKEN`.
+
+**D. Publicar la API**
+
+8. **Deployments** → el último → menú **⋯** → **Redeploy**. Ahora compila,
+   aplica las migraciones en Neon y queda en línea.
+9. Anotar la dirección del proyecto (por ejemplo
+   `https://natalia-api.vercel.app`) y comprobar:
+   `https://natalia-api.vercel.app/health` → `{"status":"ok",…}`.
+   Opcional: en **Settings → Domains** añadir `api.nstiendadeuñas.com` (si el
+   dominio está en Vercel se configura solo; si no, el registro CNAME `api`
+   que indique Vercel en esa misma pantalla).
+
+**E. Cargar la base (una vez, desde un computador con el repo)**
+
+10. En Vercel → proyecto de la API → **Settings → Environment Variables** →
+    `DATABASE_URL_UNPOOLED` → mostrar y copiar el valor (también sale en
+    **Storage** → la base Neon → *Quickstart / .env.local*). No pegarlo en
+    ningún archivo del repo.
+11. En PowerShell, desde la carpeta del repo:
+
+    ```powershell
+    cd server
+    npm ci
+    npx prisma generate
+    $env:DATABASE_URL = "<el valor copiado>"
+    $env:ADMIN_EMAIL = "<correo de Natalia>"
+    $env:ADMIN_PASSWORD = "<contraseña de 12+ caracteres>"
+    npm run prod:init
+    Remove-Item Env:DATABASE_URL, Env:ADMIN_EMAIL, Env:ADMIN_PASSWORD
+    ```
+
+    Debe terminar con "Listo. Entra al panel en /admin con ese correo." Nunca
+    `npm run seed` aquí (ver sección 1).
+
+**F. Apuntar la tienda a la API**
+
+12. Proyecto de la **tienda** → **Settings → Environment Variables**
+    (*Production*):
+
+    | Variable | Valor |
+    |---|---|
+    | `VITE_CATALOG_SOURCE` | `api` |
+    | `VITE_FEATURE_ADMIN` | `true` |
+    | `VITE_API_URL` | la dirección del paso 9, sin `/` al final |
+
+13. **Deployments → ⋯ → Redeploy** del último despliegue de la tienda.
+14. Comprobar como en la sección 4: entrar a `/admin`, cambiar un precio,
+    crear un producto con foto, crear una Franja.
+
+Para volver atrás en cualquier momento: borrar las tres variables `VITE_*` de
+la tienda y hacer Redeploy. Vuelve a ser la tienda estática de hoy.
+
+### Límites y riesgos del plan gratis
+
+- **Vercel Hobby es para uso no comercial.** Una tienda que vende es uso
+  comercial según sus condiciones: Vercel puede pedir pasar a Pro (USD 20 al
+  mes) o pausar el proyecto. Es la razón de fondo para pasar al VPS en cuanto
+  se pueda. Ya aplica hoy a la tienda estática.
+- **Arranque en frío.** Si nadie usa la API un rato, la primera petición tarda
+  1–3 s (arranca la función) y Neon puede sumar ~1 s si la base estaba
+  dormida (se duerme a los 5 min sin uso). La tienda no se rompe: muestra el
+  catálogo empaquetado y se pone al día al llegar la respuesta. En el panel se
+  nota como una primera carga lenta.
+- **Cuotas gratis** (revisarlas en **Usage** de Vercel y en el panel de Neon;
+  cambian con el tiempo): Neon da 0.5 GB de base y un cupo mensual de horas de
+  cómputo; Blob da del orden de 1 GB guardado y unos GB de descarga al mes;
+  las funciones tienen su cupo de invocaciones y de CPU. Con 161 productos y
+  fotos de ~200–400 KB sobra para empezar. Si una cuota se agota, la API deja
+  de responder y la tienda sigue con el catálogo empaquetado.
+- **Límite de peticiones:** vive en la memoria de cada instancia de la
+  función, no compartido. Sigue frenando la prueba masiva de contraseñas en
+  el login, pero es menos estricto que en un VPS de una sola máquina.
+- **Fotos de más de 4.5 MB:** Vercel corta el cuerpo de las peticiones en
+  4.5 MB. No pasa en la práctica porque el panel achica cada foto a 1600 px
+  antes de subirla.
+- **Fotos huérfanas:** borrar un producto no borra su foto de Blob (tampoco
+  del disco en el VPS). Ocupa poco, pero cuenta para la cuota.
+- **Pasar al VPS después:** copiar la base de Neon (`pg_dump`/`pg_restore`) y
+  seguir las secciones 1–4. Las fotos ya subidas siguen siendo URLs de Blob y
+  seguirán funcionando mientras el almacén exista; si se quiere cortar con
+  Vercel del todo, hay que descargarlas y cambiar sus URLs en la base.

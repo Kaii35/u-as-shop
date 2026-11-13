@@ -91,7 +91,9 @@ const idParams = z.object({ id: z.string().trim().min(1) });
 export async function settingRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/admin/settings', { preHandler: requireAuth }, async () => listSettings());
 
-  app.put('/api/admin/settings', { preHandler: requireAuth }, async (request, reply) => {
+  // Cambiar ajustes es de ADMIN (ver `UserRole` en el esquema: STAFF no toca
+  // ajustes). Leerlos sí puede cualquiera con sesión.
+  app.put('/api/admin/settings', { preHandler: [requireAuth, requireAdmin] }, async (request, reply) => {
     const parsed = z
       .record(z.unknown())
       .refine((v) => Object.keys(v).length > 0, 'No mandaste ningún ajuste que cambiar.')

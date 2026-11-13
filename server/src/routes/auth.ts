@@ -35,7 +35,17 @@ let decoy: Promise<string> | null = null;
 const decoyHash = (): Promise<string> => (decoy ??= hashPassword('contrasena-senuelo-natalia'));
 
 export async function authRoutes(app: FastifyInstance): Promise<void> {
-  app.post('/api/admin/login', async (request, reply) => {
+  /**
+   * Con el panel publicado, el login es la única puerta abierta a internet que
+   * acepta contraseñas, y no tenía freno: se podían probar claves sin parar.
+   * Diez intentos por minuto y por IP sobran para quien se equivoca al
+   * escribir. En Vercel el contador vive en cada instancia de la función (no
+   * hay uno compartido), así que el freno real es algo mayor, pero sigue
+   * cortando la prueba masiva.
+   */
+  app.post('/api/admin/login', {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const parsed = loginSchema.safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ error: zodMessage(parsed.error) });
 

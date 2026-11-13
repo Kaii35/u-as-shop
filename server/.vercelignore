@@ -1,0 +1,9 @@
+# Proyecto de Vercel de la API (Root Directory = server/).
+#
+# Este archivo tiene que existir: si falta, Vercel usa el .vercelignore de la
+# raíz del repo, que excluye server/ entero (es el de la tienda estática).
+node_modules/
+dist/
+uploads/
+.env
+.env.*

@@ -42,6 +42,13 @@ export const env = {
   uploadsDir: process.env.UPLOADS_DIR ?? fileURLToPath(new URL('../uploads', import.meta.url)),
 
   /**
+   * Token de Vercel Blob. Si está, las fotos del panel van a Blob en vez de al
+   * disco: en Vercel no hay disco que sobreviva. Lo pone Vercel solo al
+   * conectar un Blob store al proyecto. Ver `storage.ts`.
+   */
+  blobToken: process.env.BLOB_READ_WRITE_TOKEN ?? '',
+
+  /**
    * Semilla del primer administrador. Solo se usa al sembrar: si el usuario
    * ya existe, el seed no le toca la contraseña.
    */

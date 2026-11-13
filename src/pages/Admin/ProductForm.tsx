@@ -589,9 +589,15 @@ export default function ProductForm({
             <Checkbox checked={draft.active} onChange={(v) => set('active', v)}>
               A la venta en la tienda
             </Checkbox>
-            <Checkbox checked={draft.featured} onChange={(v) => set('featured', v)}>
-              Mostrar en portada
-            </Checkbox>
+            {/* `featured` no llega a la tienda (el catálogo público no lo trae)
+                y la portada arma «Lo más vendido» con la etiqueta «Más vendido».
+                En el panel sencillo prometía algo que no pasaba: se esconde ahí
+                hasta que la portada lo use. */}
+            {FULL && (
+              <Checkbox checked={draft.featured} onChange={(v) => set('featured', v)}>
+                Mostrar en portada
+              </Checkbox>
+            )}
           </div>
         </Section>
 

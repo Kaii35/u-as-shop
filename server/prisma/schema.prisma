@@ -11,6 +11,10 @@
 
 generator client {
   provider = "prisma-client-js"
+  // `native` es la máquina que genera (tu PC, el contenedor Alpine del
+  // Dockerfile). `rhel-openssl-3.0.x` es el sistema de las funciones de
+  // Vercel: sin él, la API compila allí pero no encuentra el motor al arrancar.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {

@@ -1,10 +1,11 @@
 import { createReadStream } from 'node:fs';
-import { mkdir, stat, writeFile } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import type { FastifyInstance } from 'fastify';
 import { requireAuth } from '../auth.js';
 import { env } from '../env.js';
+import { createImageStorage, type ImageStorage } from '../storage.js';
 
 /**
  * Fotos que se suben desde el panel: las de los productos y los flyers de las
@@ -17,8 +18,15 @@ import { env } from '../env.js';
  *
  * Se guardan en disco (`UPLOADS_DIR`) y se sirven en `/uploads/<nombre>`. En la
  * base queda esa ruta relativa; la tienda le antepone la dirección de la API.
+ * Con `BLOB_READ_WRITE_TOKEN` (Vercel) van a Vercel Blob y en la base queda su
+ * URL pública absoluta, que la tienda usa tal cual. Ver `../storage.ts`.
  */
 
+/**
+ * En Vercel manda otro tope antes que este: el cuerpo de una función no pasa
+ * de 4.5 MB (responde 413 sin llegar aquí). No estorba: el panel achica la foto
+ * a 1600 px en WebP/JPG antes de subirla y queda muy por debajo (cientos de KB).
+ */
 const MAX_BYTES = 8 * 1024 * 1024;
 
 /** Tipo declarado → extensión y firma de los primeros bytes. */
@@ -38,7 +46,12 @@ const CONTENT_TYPE: Record<string, string> = { jpg: 'image/jpeg', png: 'image/pn
 /** Solo nombres que este archivo pudo haber generado. */
 const SAFE_NAME = /^[a-f0-9]{24}\.(jpg|png|webp)$/;
 
-export async function uploadRoutes(app: FastifyInstance): Promise<void> {
+export async function uploadRoutes(
+  app: FastifyInstance,
+  options: { storage?: ImageStorage } = {},
+): Promise<void> {
+  const storage = options.storage ?? createImageStorage(env);
+
   // El parser vive dentro de este plugin: el resto de la API sigue aceptando
   // solo JSON.
   app.addContentTypeParser(MIMES, { parseAs: 'buffer', bodyLimit: MAX_BYTES }, (_request, body, done) => {
@@ -56,10 +69,9 @@ export async function uploadRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(400).send({ error: 'El archivo no es una imagen válida.' });
     }
 
-    await mkdir(env.uploadsDir, { recursive: true });
     const name = `${randomBytes(12).toString('hex')}.${format.ext}`;
-    await writeFile(join(env.uploadsDir, name), body);
-    return reply.code(201).send({ url: `/uploads/${name}` });
+    const url = await storage.save(name, body, mime);
+    return reply.code(201).send({ url });
   });
 
   app.get<{ Params: { name: string } }>('/uploads/:name', async (request, reply) => {
