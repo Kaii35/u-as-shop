@@ -6,6 +6,7 @@ import { requireAuth } from '../auth.js';
 import { soldWhere } from '../sales.js';
 import { computeDiscount, isLive, promotionState, type PromotionRule } from '../promotions.js';
 import { findSetting } from '../settings-defaults.js';
+import { publicCache } from './catalog.js';
 
 /** Primer problema que encontró zod, con el campo que lo causó. */
 const zodMessage = (error: ZodError): string => {
@@ -261,7 +262,7 @@ export async function promotionRoutes(app: FastifyInstance): Promise<void> {
   // Públicas
   // -------------------------------------------------------------------------
 
-  app.get('/api/promotions/popup', async () => {
+  app.get('/api/promotions/popup', { onSend: publicCache }, async () => {
     if (!(await popupEnabled())) return { promotion: null };
 
     const now = new Date();
@@ -308,7 +309,7 @@ export async function promotionRoutes(app: FastifyInstance): Promise<void> {
    * mismos campos públicos. Van en el orden en que se muestran: la de más
    * prioridad primero y, entre iguales, la más nueva.
    */
-  app.get('/api/promotions/landing', async () => {
+  app.get('/api/promotions/landing', { onSend: publicCache }, async () => {
     const now = new Date();
     const candidates = await prisma.promotion.findMany({
       where: {
