@@ -153,9 +153,23 @@ const shutdown = async (signal: string): Promise<void> => {
 process.on('SIGINT', () => void shutdown('SIGINT'));
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
-try {
-  await app.listen({ port: env.port, host: env.host });
-} catch (error) {
+/**
+ * Sin `await`, y no es descuido: es lo que hace funcionar la API en Vercel.
+ *
+ * Vercel no deja escuchar en un puerto. Al cargar este archivo reemplaza
+ * `http.Server.prototype.listen` por una versión que solo se guarda el
+ * servidor y NO escucha, espera a que el `import` de este módulo termine y
+ * recién entonces lo pone a escuchar él mismo. Con `await app.listen(...)` el
+ * módulo se quedaba esperando un evento `listening` que nunca llega antes de
+ * que el módulo termine: el `import` no acababa nunca, Vercel no recibía el
+ * servidor y TODA petición moría a los 60 s con
+ * INTERNAL_FUNCTION_INVOCATION_FAILED, sin un solo log (ver
+ * `tests/arranque-vercel.test.ts`).
+ *
+ * En Docker, en el VPS o con `npm run api` no cambia nada: el servidor escucha
+ * igual y, si el puerto falla, se registra el error y el proceso sale con 1.
+ */
+app.listen({ port: env.port, host: env.host }).catch((error: unknown) => {
   app.log.error(error);
   process.exit(1);
-}
+});
